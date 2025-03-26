@@ -968,11 +968,11 @@
                 
                 <!-- Profile Dropdown -->
                 <div class="dropdown" id="profile-dropdown">
-                    <div class="dropdown-item" id="my-profile-link">
+                    <div class="dropdown-item" id="my-profile-link" onclick="window.location.href='profile.html'">
                         <i class="fas fa-user-circle"></i>
                         <span>My Profile</span>
                     </div>
-                    <div class="dropdown-item" id="contact-us-link">
+                    <div class="dropdown-item" id="contact-us-link" onclick="window.location.href='contact.html'">
                         <i class="fas fa-headset"></i>
                         <span>Contact Us</span>
                     </div>
@@ -991,7 +991,7 @@
                 <div class="balance-card-content">
                     <div class="balance-label">Available Balance</div>
                     <div class="balance-amount" id="user-balance">₦0.00</div>
-                    <button class="fund-wallet-btn" id="fund-wallet-btn">
+                    <button class="fund-wallet-btn" id="fund-wallet-btn" onclick="window.location.href='wallet.html'">
                         <i class="fas fa-wallet"></i>
                         Fund Wallet
                     </button>
@@ -1006,7 +1006,7 @@
         </div>
         <div class="services-grid">
             <!-- Data Service -->
-            <div class="service-card" data-service="data">
+            <div class="service-card" data-service="data" onclick="window.location.href='data.html'">
                 <div class="service-icon">
                     <i class="fas fa-wifi"></i>
                 </div>
@@ -1015,7 +1015,7 @@
             </div>
             
             <!-- Airtime Service -->
-            <div class="service-card" data-service="airtime">
+            <div class="service-card" data-service="airtime" onclick="window.location.href='airtime.html'">
                 <div class="service-icon">
                     <i class="fas fa-phone-alt"></i>
                 </div>
@@ -1024,7 +1024,7 @@
             </div>
             
             <!-- Game Topup Service -->
-            <div class="service-card" data-service="game">
+            <div class="service-card" data-service="game" onclick="window.location.href='game.html'">
                 <div class="service-icon">
                     <i class="fas fa-gamepad"></i>
                 </div>
@@ -1033,7 +1033,7 @@
             </div>
             
             <!-- Store Service -->
-            <div class="service-card" data-service="store">
+            <div class="service-card" data-service="store" onclick="window.location.href='store.html'">
                 <div class="service-icon">
                     <i class="fas fa-shopping-bag"></i>
                 </div>
@@ -1042,7 +1042,7 @@
             </div>
             
             <!-- Cable TV Service -->
-            <div class="service-card" data-service="cable">
+            <div class="service-card" data-service="cable" onclick="window.location.href='cable.html'">
                 <div class="service-icon">
                     <i class="fas fa-tv"></i>
                 </div>
@@ -1051,7 +1051,7 @@
             </div>
             
             <!-- Results Service -->
-            <div class="service-card" data-service="result">
+            <div class="service-card" data-service="result" onclick="window.location.href='result.html'">
                 <div class="service-icon">
                     <i class="fas fa-graduation-cap"></i>
                 </div>
@@ -1060,7 +1060,7 @@
             </div>
             
             <!-- Contact Service -->
-            <div class="service-card" data-service="contact">
+            <div class="service-card" data-service="contact" onclick="window.location.href='contact.html'">
                 <div class="service-icon">
                     <i class="fas fa-envelope"></i>
                 </div>
@@ -1076,7 +1076,7 @@
                     <i class="fas fa-history"></i>
                     Recent Transactions
                 </div>
-                <div class="view-all" id="view-all-transactions">
+                <div class="view-all" id="view-all-transactions" onclick="window.location.href='transactions.html'">
                     <span>View All</span>
                     <i class="fas fa-arrow-right"></i>
                 </div>
@@ -1092,22 +1092,22 @@
     <div class="nav-container">
         <div class="nav-bar">
             <div class="nav-indicator"></div>
-            <div class="nav-item active" data-page="home">
+            <a href="index.html" class="nav-item active" data-page="home">
                 <i class="fas fa-home"></i>
                 <span>Home</span>
-            </div>
-            <div class="nav-item" data-page="services">
+            </a>
+            <a href="services.html" class="nav-item" data-page="services">
                 <i class="fas fa-th-large"></i>
                 <span>Services</span>
-            </div>
-            <div class="nav-item" data-page="transactions">
+            </a>
+            <a href="transactions.html" class="nav-item" data-page="transactions">
                 <i class="fas fa-exchange-alt"></i>
                 <span>Transactions</span>
-            </div>
-            <div class="nav-item" data-page="account">
+            </a>
+            <a href="account.html" class="nav-item" data-page="account">
                 <i class="fas fa-user"></i>
                 <span>Account</span>
-            </div>
+            </a>
         </div>
     </div>
     
@@ -1122,7 +1122,7 @@
             }
         }
 
-        // Firebase Configuration using environment variables
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDQnOWm9MPNK1CMB3YC_XbxVJwlXl5fFZU",
             authDomain: "veltrawave-vtu.firebaseapp.com",
@@ -1147,14 +1147,11 @@
         const profileIcon = document.getElementById('profile-icon');
         const profileDropdown = document.getElementById('profile-dropdown');
         const transactionList = document.getElementById('transaction-list');
-        const viewAllTransactions = document.getElementById('view-all-transactions');
-        const serviceCards = document.querySelectorAll('.service-card');
         const navItems = document.querySelectorAll('.nav-item');
         const navIndicator = document.querySelector('.nav-indicator');
         const toastNotification = document.getElementById('toast-notification');
         const userBalance = document.getElementById('user-balance');
         const loadingOverlay = document.querySelector('.loading-overlay');
-        const fundWalletBtn = document.getElementById('fund-wallet-btn');
 
         // Loading Animation
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1336,76 +1333,58 @@
             transactionList.innerHTML = '';
             debug("Loading transactions for user: " + userId);
             
-            // Check if transactions is an array field or a subcollection
-            db.collection('users').doc(userId).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        
-                        // Check if transactions is an array field
-                        if (userData.transactions && Array.isArray(userData.transactions)) {
-                            debug("Transactions found as array field: " + userData.transactions.length);
-                            displayTransactionsFromArray(userData.transactions);
-                        } else {
-                            // Try loading from subcollection
-                            debug("Transactions not found as array, trying subcollection...");
-                            loadTransactionsFromSubcollection(userId);
-                        }
-                    } else {
-                        debug("User document not found");
-                        transactionList.innerHTML = '<div class="transaction-loading">No transactions yet</div>';
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error checking transactions: ", error);
-                    debug("ERROR checking transactions: " + error.message);
-                    transactionList.innerHTML = '<div class="transaction-loading">Error loading transactions</div>';
-                });
-        }
-        
-        // Display transactions from array field
-        function displayTransactionsFromArray(transactions) {
-            if (!transactions || transactions.length === 0) {
-                transactionList.innerHTML = '<div class="transaction-loading">No transactions yet</div>';
-                debug("No transactions in array");
-                return;
-            }
-            
-            // Sort transactions by timestamp (newest first)
-            const sortedTransactions = [...transactions].sort((a, b) => {
-                const timeA = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date(0);
-                const timeB = b.timestamp ? new Date(b.timestamp.seconds * 1000) : new Date(0);
-                return timeB - timeA;
-            });
-            
-            // Take only the 5 most recent
-            const recentTransactions = sortedTransactions.slice(0, 5);
-            
-            debug("Displaying " + recentTransactions.length + " transactions from array");
-            
-            recentTransactions.forEach(transaction => {
-                createTransactionItem(transaction);
-            });
-        }
-        
-        // Load transactions from subcollection
-        function loadTransactionsFromSubcollection(userId) {
+            // Try loading from subcollection first
             db.collection('users').doc(userId).collection('transactions')
                 .orderBy('timestamp', 'desc')
                 .limit(5)
                 .get()
                 .then((querySnapshot) => {
-                    debug("Transactions subcollection query completed: " + querySnapshot.size + " results");
-                    if (querySnapshot.empty) {
-                        transactionList.innerHTML = '<div class="transaction-loading">No transactions yet</div>';
-                        debug("No transactions in subcollection");
-                        return;
+                    if (!querySnapshot.empty) {
+                        debug("Transactions found in subcollection: " + querySnapshot.size);
+                        querySnapshot.forEach((doc) => {
+                            const transaction = doc.data();
+                            createTransactionItem(transaction);
+                        });
+                    } else {
+                        // If no subcollection, check if transactions is an array field
+                        db.collection('users').doc(userId).get()
+                            .then((doc) => {
+                                if (doc.exists) {
+                                    const userData = doc.data();
+                                    
+                                    if (userData.transactions && Array.isArray(userData.transactions)) {
+                                        debug("Transactions found as array field: " + userData.transactions.length);
+                                        
+                                        // Sort transactions by timestamp (newest first)
+                                        const sortedTransactions = [...userData.transactions].sort((a, b) => {
+                                            const timeA = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date(0);
+                                            const timeB = b.timestamp ? new Date(b.timestamp.seconds * 1000) : new Date(0);
+                                            return timeB - timeA;
+                                        });
+                                        
+                                        // Take only the 5 most recent
+                                        const recentTransactions = sortedTransactions.slice(0, 5);
+                                        
+                                        if (recentTransactions.length > 0) {
+                                            recentTransactions.forEach(transaction => {
+                                                createTransactionItem(transaction);
+                                            });
+                                        } else {
+                                            transactionList.innerHTML = '<div class="transaction-loading">No transactions yet</div>';
+                                        }
+                                    } else {
+                                        transactionList.innerHTML = '<div class="transaction-loading">No transactions yet</div>';
+                                    }
+                                } else {
+                                    transactionList.innerHTML = '<div class="transaction-loading">No transactions yet</div>';
+                                }
+                            })
+                            .catch((error) => {
+                                console.error("Error checking transactions array: ", error);
+                                debug("ERROR checking transactions array: " + error.message);
+                                transactionList.innerHTML = '<div class="transaction-loading">Error loading transactions</div>';
+                            });
                     }
-                    
-                    querySnapshot.forEach((doc) => {
-                        const transaction = doc.data();
-                        createTransactionItem(transaction);
-                    });
                 })
                 .catch((error) => {
                     console.error("Error loading transactions subcollection: ", error);
@@ -1542,103 +1521,14 @@
                 profileDropdown.classList.remove('show');
             });
             
-            // View all transactions
-            viewAllTransactions.addEventListener('click', function() {
-                navigateToPage('transactions.html');
-            });
-            
-            // Service cards click
-            serviceCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    const service = this.dataset.service;
-                    navigateToPage(service + '.html');
-                });
-            });
-            
-            // Navigation items click
+            // Set up navigation indicator
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
-                    // Remove active class from all items
-                    navItems.forEach(navItem => {
-                        navItem.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked item
-                    this.classList.add('active');
-                    
-                    // Move indicator
-                    setIndicatorPosition(this);
-                    
-                    // Create ripple effect
                     createRippleEffect(e);
-                    
-                    // Handle navigation
-                    const page = this.dataset.page;
-                    switch(page) {
-                        case 'home':
-                            // Already on home page
-                            break;
-                        case 'services':
-                            navigateToPage('services.html');
-                            break;
-                        case 'transactions':
-                            navigateToPage('transactions.html');
-                            break;
-                        case 'account':
-                            navigateToPage('account.html');
-                            break;
-                    }
                 });
-            });
-            
-            // My profile link
-            document.getElementById('my-profile-link').addEventListener('click', function() {
-                navigateToPage('profile.html');
-            });
-            
-            // Contact us link
-            document.getElementById('contact-us-link').addEventListener('click', function() {
-                navigateToPage('contact.html');
-            });
-            
-            // Fund wallet button
-            fundWalletBtn.addEventListener('click', function() {
-                navigateToPage('fund-wallet.html');
             });
             
             debug("Event listeners set up");
-        }
-
-        // Navigate to page without triggering Telegram WebApp sendData
-        function navigateToPage(pagePath) {
-            debug("Navigating to: " + pagePath);
-            
-            // Create a hidden iframe to load the page
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = pagePath;
-            
-            // When iframe loads, extract its content and replace current page
-            iframe.onload = function() {
-                try {
-                    // Show loading overlay
-                    loadingOverlay.classList.remove('hide');
-                    
-                    // Use window.location to navigate
-                    window.location.href = pagePath;
-                } catch (error) {
-                    console.error("Navigation error:", error);
-                    debug("ERROR navigating: " + error.message);
-                    showToastNotification("Error navigating to " + pagePath);
-                    loadingOverlay.classList.add('hide');
-                }
-            };
-            
-            // Add iframe to document to start loading
-            document.body.appendChild(iframe);
-            
-            // Show toast notification
-            showToastNotification("Navigating to " + pagePath.replace('.html', ''));
         }
 
         // Show toast notification
@@ -1757,7 +1647,7 @@
             } else if (['data.html', 'airtime.html', 'game.html', 'store.html', 'cable.html', 'result.html'].includes(currentPage)) {
                 // Service pages
                 setActiveNavItem('services');
-            } else if (currentPage === 'profile.html') {
+            } else if (currentPage === 'account.html' || currentPage === 'profile.html') {
                 // Account page
                 setActiveNavItem('account');
             }
