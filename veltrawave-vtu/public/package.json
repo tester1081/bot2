@@ -1,0 +1,13 @@
+{
+    "name": "veltrawave-vtu-dashboard",
+    "version": "1.0.0",
+    "description": "VeltraWave VTU Dashboard",
+    "main": "index.js",
+    "scripts": {
+      "build": "node build.js",
+      "dev": "node build.js && serve public"
+    },
+    "dependencies": {
+      "serve": "^14.0.0"
+    }
+  }
