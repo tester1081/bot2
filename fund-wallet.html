@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fund Wallet - VeltraWave VTU</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Wallet - VeltraWave VTU</title>
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Paystack SDK -->
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
@@ -175,7 +177,7 @@
         
         /* Main Content */
         .main-content {
-            padding: 0 20px 20px;
+            padding: 0 20px 100px;
             max-width: 800px;
             margin: 0 auto;
         }
@@ -192,6 +194,57 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+        
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, rgba(45, 127, 249, 0.2), rgba(140, 82, 255, 0.2));
+            border-radius: 24px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+            border-radius: 24px;
+            z-index: 0;
+        }
+        
+        .balance-card-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .balance-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .balance-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
         }
         
         /* Fund Wallet Card */
@@ -425,6 +478,90 @@
             font-size: 1.2rem;
         }
         
+        /* Transactions */
+        .transactions-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .transactions-list {
+            margin-top: 16px;
+        }
+        
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .transaction-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+        
+        .transaction-icon.credit {
+            color: var(--success);
+        }
+        
+        .transaction-icon.debit {
+            color: var(--error);
+        }
+        
+        .transaction-details {
+            flex: 1;
+        }
+        
+        .transaction-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .transaction-date {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .transaction-amount {
+            font-weight: 600;
+            text-align: right;
+        }
+        
+        .transaction-amount.credit {
+            color: var(--success);
+        }
+        
+        .transaction-amount.debit {
+            color: var(--error);
+        }
+        
+        .no-transactions {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-secondary);
+        }
+        
         /* Navigation Bar */
         .nav-container {
             position: fixed;
@@ -596,7 +733,23 @@
             opacity: 1;
         }
         
-        
+        /* Debug Panel */
+        .debug-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 9999;
+            display: none;
+        }
         
         /* Responsive Adjustments */
         @media (max-width: 768px) {
@@ -623,10 +776,11 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Debug Panel -->
-    
+    <!-- Debug Panel (hidden in production) -->
+    <div id="debug-panel" class="debug-panel"></div>
     
     <!-- Loading Animation -->
     <div class="loading-overlay">
@@ -669,10 +823,25 @@
     <div class="main-content">
         <h1 class="page-title">
             <i class="fas fa-wallet"></i>
-            Fund Wallet
+            My Wallet
         </h1>
         
-        <div class="fund-wallet-card">
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-card-content">
+                <div class="balance-label">Available Balance</div>
+                <div class="balance-amount" id="user-balance">₦0.00</div>
+                <div class="balance-actions">
+                    <button class="btn" id="fund-wallet-btn">
+                        <i class="fas fa-plus"></i>
+                        Fund Wallet
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fund Wallet Card -->
+        <div class="fund-wallet-card" id="fund-wallet-section" style="display: none;">
             <div class="fund-wallet-card-content">
                 <div class="section-title">
                     <i class="fas fa-coins"></i>
@@ -744,6 +913,21 @@
                 </button>
             </div>
         </div>
+        
+        <!-- Transactions Card -->
+        <div class="transactions-card">
+            <div class="section-title">
+                <i class="fas fa-exchange-alt"></i>
+                Recent Transactions
+            </div>
+            <div class="transactions-list" id="transactions-list">
+                <!-- Transactions will be loaded here -->
+                <div class="no-transactions" id="no-transactions">
+                    <i class="fas fa-receipt"></i>
+                    <p>No transactions yet</p>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Navigation Bar -->
@@ -754,13 +938,13 @@
                 <i class="fas fa-home"></i>
                 <span>Home</span>
             </div>
-            <div class="nav-item active" data-page="services">
+            <div class="nav-item" data-page="services">
                 <i class="fas fa-th-large"></i>
                 <span>Services</span>
             </div>
-            <div class="nav-item" data-page="transactions">
-                <i class="fas fa-exchange-alt"></i>
-                <span>Transactions</span>
+            <div class="nav-item active" data-page="wallet">
+                <i class="fas fa-wallet"></i>
+                <span>Wallet</span>
             </div>
             <div class="nav-item" data-page="account">
                 <i class="fas fa-user"></i>
@@ -770,83 +954,86 @@
     </div>
     
     <script>
-        // Debug function
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDQnOWm9MPNK1CMB3YC_XbxVJwlXl5fFZU",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.appspot.com",
+            messagingSenderId: "1098979571490",
+            appId: "1:1098979571490:web:c9b6f1a7d9956e5c4d2fb6"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // Debug function (set to true to enable debugging)
+        const DEBUG_MODE = false;
         function debug(message) {
-            const debugPanel = document.getElementById('debug-panel');
-            if (debugPanel) {
-                const timestamp = new Date().toLocaleTimeString();
-                debugPanel.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            if (DEBUG_MODE) {
+                const debugPanel = document.getElementById('debug-panel');
+                if (debugPanel) {
+                    debugPanel.style.display = 'block';
+                    const timestamp = new Date().toLocaleTimeString();
+                    debugPanel.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+                    debugPanel.scrollTop = debugPanel.scrollHeight;
+                }
                 console.log(`[DEBUG] ${message}`);
             }
         }
-
-        // Firebase Configuration using environment variables
-        const firebaseConfig = {
-            apiKey: "%NEXT_PUBLIC_FIREBASE_API_KEY%",
-            authDomain: "%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%",
-            projectId: "%NEXT_PUBLIC_FIREBASE_PROJECT_ID%",
-            storageBucket: "%NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET%",
-            messagingSenderId: "%NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID%",
-            appId: "%NEXT_PUBLIC_FIREBASE_APP_ID%"
-        };
-
-        // Paystack public key
-        const PAYSTACK_PUBLIC_KEY = "%NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY%";
-
-        // Initialize Firebase
-        debug("Initializing Firebase...");
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        debug("Firebase initialized with project ID: " + firebaseConfig.projectId);
         
         // Variables
+        let userId = null;
+        let userName = null;
+        let userBalance = 0;
         let selectedAmount = 0;
         let selectedMethod = 'card';
-        let userId = null;
-        let userEmail = null;
-        let userName = null;
         
         // Service fee
         const serviceFee = 50;
         
         // DOM Elements
+        const loadingOverlay = document.querySelector('.loading-overlay');
+        const userBalanceElement = document.getElementById('user-balance');
+        const fundWalletBtn = document.getElementById('fund-wallet-btn');
+        const fundWalletSection = document.getElementById('fund-wallet-section');
         const amountInput = document.getElementById('amount');
         const amountPresets = document.querySelectorAll('.amount-preset');
         const paymentMethods = document.querySelectorAll('.payment-method');
         const summaryAmount = document.getElementById('summary-amount');
         const summaryTotal = document.getElementById('summary-total');
         const payButton = document.getElementById('pay-button');
-        const navItems = document.querySelectorAll('.nav-item');
+        const transactionsList = document.getElementById('transactions-list');
+        const noTransactions = document.getElementById('no-transactions');
         const notificationCount = document.getElementById('notification-count');
-        const loadingOverlay = document.querySelector('.loading-overlay');
+        const navItems = document.querySelectorAll('.nav-item');
         const toastNotification = document.getElementById('toast-notification');
         
-        // Loading Animation
+        // Initialize the app
         document.addEventListener('DOMContentLoaded', async function() {
+            debug("DOM loaded, initializing app...");
             try {
-                debug("DOM loaded, initializing app...");
-                // Initialize the app
                 await initApp();
                 
                 // Hide loading screen after initialization
                 setTimeout(function() {
                     loadingOverlay.classList.add('hide');
-                    debug("Loading screen hidden");
                 }, 1000);
             } catch (error) {
                 console.error("Initialization error:", error);
                 debug("ERROR: " + error.message);
-                showError("Failed to initialize the app: " + error.message);
+                showToastNotification("Failed to initialize: " + error.message);
             }
         });
-
+        
         // Initialize the app
         async function initApp() {
             // Check if running in Telegram WebApp
             if (window.Telegram && window.Telegram.WebApp) {
+                debug("Telegram WebApp detected");
                 const tg = window.Telegram.WebApp;
                 tg.expand(); // Expand the web app to full view
-                debug("Telegram WebApp detected");
                 
                 // Get user data from Telegram
                 if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
@@ -854,22 +1041,24 @@
                     userName = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name || ''}`.trim();
                     debug("Telegram user ID: " + userId);
                     
-                    // Load user data directly from Firestore
+                    // Load user data
                     await loadUserData(userId);
                 } else {
                     debug("No Telegram user data available");
-                    // For testing, use a hardcoded user ID that matches your Firestore
+                    showToastNotification("Authentication failed. Please restart the bot.");
+                    
+                    // For testing only - use a default user ID
                     userId = '5966603094';
                     userName = 'Test User';
-                    debug("Using hardcoded user ID for testing: " + userId);
+                    debug("Using test user ID: " + userId);
                     await loadUserData(userId);
                 }
             } else {
                 debug("Not in Telegram WebApp - using test mode");
-                // For testing only - use your actual user ID from Firestore
+                // For testing only - use a default user ID
                 userId = '5966603094';
                 userName = 'Test User';
-                debug("Using hardcoded user ID for testing: " + userId);
+                debug("Using test user ID: " + userId);
                 await loadUserData(userId);
             }
             
@@ -879,36 +1068,135 @@
             // Set initial indicator position for navigation
             setIndicatorPosition(document.querySelector('.nav-item.active'));
         }
-
+        
         // Load user data from Firestore
         async function loadUserData(userId) {
             try {
                 debug("Loading user data for ID: " + userId);
                 const userRef = db.collection("users").doc(userId);
-                debug("Fetching user document...");
                 const doc = await userRef.get();
                 
                 if (doc.exists) {
                     const userData = doc.data();
                     debug("User data loaded: " + JSON.stringify(userData));
-                    userEmail = userData.email || `${userId}@veltrawave.com`;
-                    debug("User email: " + userEmail);
+                    
+                    // Update user balance
+                    userBalance = userData.balance || 0;
+                    updateBalanceDisplay();
+                    
+                    // Load transactions
+                    loadTransactions(userId);
+                    
+                    // Load notifications
+                    loadNotifications(userId);
                 } else {
                     debug("No user document found for ID: " + userId);
-                    userEmail = `${userId}@veltrawave.com`;
-                    debug("Using default email: " + userEmail);
+                    showToastNotification("User data not found. Please contact support.");
                 }
             } catch (error) {
                 console.error("Error loading user data:", error);
                 debug("ERROR loading user data: " + error.message);
-                userEmail = `${userId}@veltrawave.com`;
-                debug("Using default email due to error: " + userEmail);
+                showToastNotification("Error loading user data: " + error.message);
             }
         }
-
+        
+        // Load transactions
+        async function loadTransactions(userId) {
+            try {
+                debug("Loading transactions for user: " + userId);
+                const transactionsRef = db.collection("users").doc(userId).collection("transactions");
+                const snapshot = await transactionsRef.orderBy("timestamp", "desc").limit(10).get();
+                
+                if (snapshot.empty) {
+                    debug("No transactions found");
+                    noTransactions.style.display = 'block';
+                    return;
+                }
+                
+                noTransactions.style.display = 'none';
+                transactionsList.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const transaction = doc.data();
+                    const transactionDate = transaction.timestamp ? new Date(transaction.timestamp.toDate()) : new Date();
+                    const formattedDate = transactionDate.toLocaleDateString() + ' ' + transactionDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    const isCredit = transaction.type === 'wallet' || transaction.type === 'credit';
+                    const iconClass = isCredit ? 'credit' : 'debit';
+                    const icon = isCredit ? 'fa-arrow-down' : 'fa-arrow-up';
+                    
+                    const amount = transaction.amount || 0;
+                    const formattedAmount = amount.toLocaleString('en-NG', {
+                        style: 'currency',
+                        currency: 'NGN',
+                        minimumFractionDigits: 2
+                    }).replace('NGN', '₦');
+                    
+                    const transactionItem = document.createElement('div');
+                    transactionItem.className = 'transaction-item';
+                    transactionItem.innerHTML = `
+                        <div class="transaction-icon ${iconClass}">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-title">${transaction.title || 'Transaction'}</div>
+                            <div class="transaction-date">${formattedDate}</div>
+                        </div>
+                        <div class="transaction-amount ${iconClass}">${isCredit ? '+' : '-'}${formattedAmount}</div>
+                    `;
+                    
+                    transactionsList.appendChild(transactionItem);
+                });
+                
+                debug("Transactions loaded successfully");
+            } catch (error) {
+                console.error("Error loading transactions:", error);
+                debug("ERROR loading transactions: " + error.message);
+                showToastNotification("Error loading transactions");
+            }
+        }
+        
+        // Load notifications
+        async function loadNotifications(userId) {
+            try {
+                debug("Loading notifications for user: " + userId);
+                const notificationsRef = db.collection("users").doc(userId).collection("notifications");
+                const snapshot = await notificationsRef.where("read", "==", false).get();
+                
+                const count = snapshot.size;
+                notificationCount.textContent = count;
+                notificationCount.style.display = count > 0 ? 'flex' : 'none';
+                
+                debug("Unread notifications: " + count);
+            } catch (error) {
+                console.error("Error loading notifications:", error);
+                debug("ERROR loading notifications: " + error.message);
+            }
+        }
+        
+        // Update balance display
+        function updateBalanceDisplay() {
+            const formattedBalance = userBalance.toLocaleString('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2
+            }).replace('NGN', '₦');
+            
+            userBalanceElement.textContent = formattedBalance;
+            debug("Balance display updated: " + formattedBalance);
+        }
+        
         // Set up event listeners
         function setupEventListeners() {
             debug("Setting up event listeners");
+            
+            // Fund wallet button
+            fundWalletBtn.addEventListener('click', function() {
+                fundWalletSection.style.display = fundWalletSection.style.display === 'none' ? 'block' : 'none';
+                if (fundWalletSection.style.display === 'block') {
+                    fundWalletSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
             
             // Amount input change
             amountInput.addEventListener('input', function() {
@@ -970,36 +1258,37 @@
             // Navigation items click
             navItems.forEach(item => {
                 item.addEventListener('click', function() {
-                    // Remove active class from all items
-                    navItems.forEach(navItem => {
-                        navItem.classList.remove('active');
-                    });
+                    const page = this.dataset.page;
                     
-                    // Add active class to clicked item
-                    this.classList.add('active');
-                    
-                    // Move indicator
-                    setIndicatorPosition(this);
+                    if (page === 'wallet') {
+                        // Already on wallet page
+                        return;
+                    }
                     
                     // Navigate to the corresponding page
-                    const page = this.dataset.page;
                     if (page === 'home') {
                         window.location.href = 'index.html';
-                    } else if (page === 'transactions') {
-                        // You can decide which page to navigate to
-                        showToastNotification('Transactions page not available yet');
                     } else if (page === 'services') {
-                        // Already on services page
+                        window.location.href = 'services.html';
                     } else if (page === 'account') {
-                        // Profile page
-                        showToastNotification('Account page not available yet');
+                        window.location.href = 'account.html';
                     }
                 });
             });
             
+            // Notification icon click
+            document.getElementById('notification-icon').addEventListener('click', function() {
+                showToastNotification('Notifications coming soon');
+            });
+            
+            // Profile icon click
+            document.getElementById('profile-icon').addEventListener('click', function() {
+                showToastNotification('Profile settings coming soon');
+            });
+            
             debug("Event listeners set up");
         }
-
+        
         // Update amount in summary
         function updateAmount(amount) {
             selectedAmount = amount;
@@ -1031,7 +1320,7 @@
             debug("Amount updated: " + amount + ", Total: " + total);
         }
         
-        // Initiate payment with Paystack
+        // Initiate payment
         function initiatePayment() {
             debug("Initiating payment...");
             
@@ -1045,59 +1334,11 @@
             const reference = 'VW_' + Math.floor(Math.random() * 1000000000) + '_' + new Date().getTime();
             debug("Payment reference: " + reference);
             
-            try {
-                // Initialize Paystack payment
-                const handler = PaystackPop.setup({
-                    key: PAYSTACK_PUBLIC_KEY,
-                    email: userEmail,
-                    amount: totalAmount * 100, // Paystack amount is in kobo (100 kobo = 1 Naira)
-                    currency: 'NGN',
-                    ref: reference,
-                    metadata: {
-                        custom_fields: [
-                            {
-                                display_name: "User ID",
-                                variable_name: "user_id",
-                                value: userId
-                            },
-                            {
-                                display_name: "Service Fee",
-                                variable_name: "service_fee",
-                                value: serviceFee
-                            }
-                        ]
-                    },
-                    callback: function(response) {
-                        // Payment was successful
-                        debug("Payment complete! Reference: " + response.reference);
-                        
-                        // Process the successful payment
-                        processSuccessfulPayment(response.reference, totalAmount, selectedAmount);
-                    },
-                    onClose: function() {
-                        // User closed the payment modal
-                        debug("Payment window closed");
-                        
-                        // Hide loading overlay
-                        loadingOverlay.classList.add('hide');
-                        
-                        // Show toast notification
-                        showToastNotification('Payment cancelled');
-                    }
-                });
-                
-                // Open the payment modal
-                handler.openIframe();
-            } catch (error) {
-                console.error("Error initializing Paystack:", error);
-                debug("ERROR initializing Paystack: " + error.message);
-                
-                // Hide loading overlay
-                loadingOverlay.classList.add('hide');
-                
-                // Show error notification
-                showToastNotification('Error initializing payment: ' + error.message);
-            }
+            // Simulate payment process (replace with actual payment gateway)
+            setTimeout(() => {
+                // Process the successful payment
+                processSuccessfulPayment(reference, totalAmount, selectedAmount);
+            }, 2000);
         }
         
         // Process successful payment
@@ -1159,19 +1400,21 @@
                 
                 debug("User balance updated successfully");
                 
-                // Add notification
-                await addNotification(userId, `Your wallet has been funded with ₦${actualAmount.toLocaleString()}`);
+                // Update local balance
+                userBalance += actualAmount;
+                updateBalanceDisplay();
+                
+                // Reload transactions
+                loadTransactions(userId);
                 
                 // Hide loading overlay
                 loadingOverlay.classList.add('hide');
                 
+                // Hide fund wallet section
+                fundWalletSection.style.display = 'none';
+                
                 // Show success toast
                 showToastNotification('Wallet funded successfully!');
-                
-                // Redirect to dashboard after 2 seconds
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
                 
             } catch (error) {
                 console.error("Error processing payment: ", error);
@@ -1185,31 +1428,6 @@
             }
         }
         
-        // Add a notification
-        async function addNotification(userId, message, type = 'transaction') {
-            try {
-                debug("Adding notification: " + message);
-                
-                await db.collection('users').doc(userId).collection('notifications').add({
-                    text: message,
-                    type: type,
-                    read: false,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                debug("Notification added successfully");
-                
-                // Increment notification count
-                const currentCount = parseInt(notificationCount.textContent || '0');
-                notificationCount.textContent = (currentCount + 1).toString();
-                notificationCount.style.display = 'flex';
-                
-            } catch (error) {
-                console.error("Error adding notification: ", error);
-                debug("ERROR adding notification: " + error.message);
-            }
-        }
-        
         // Show toast notification
         function showToastNotification(message) {
             toastNotification.textContent = message;
@@ -1219,24 +1437,6 @@
             setTimeout(() => {
                 toastNotification.classList.remove('show');
             }, 3000);
-        }
-        
-        // Show error message
-        function showError(message) {
-            // Display error message
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.textContent = message;
-            document.body.appendChild(errorDiv);
-            debug("Error message shown: " + message);
-            
-            // Hide loading screen
-            loadingOverlay.classList.add('hide');
-            
-            // Remove error after 5 seconds
-            setTimeout(() => {
-                errorDiv.remove();
-            }, 5000);
         }
         
         // Set indicator position for navigation
