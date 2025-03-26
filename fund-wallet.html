@@ -134,47 +134,6 @@
             object-fit: contain;
         }
         
-        .header-actions {
-            display: flex;
-            gap: 16px;
-        }
-        
-        .header-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--surface);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: relative;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-        
-        .header-icon:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent);
-            color: white;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            padding: 0 4px;
-        }
-        
         /* Main Content */
         .main-content {
             padding: 0 20px 100px;
@@ -596,6 +555,7 @@
             position: relative;
             z-index: 2;
             transition: color 0.3s ease;
+            text-decoration: none;
         }
         
         .nav-item.active {
@@ -808,15 +768,6 @@
             <img src="/logo.png" alt="VeltraWave" class="logo-image">
             <span>VeltraWave</span>
         </div>
-        <div class="header-actions">
-            <div class="header-icon" id="notification-icon">
-                <i class="fas fa-bell"></i>
-                <div class="notification-badge" id="notification-count">0</div>
-            </div>
-            <div class="header-icon" id="profile-icon">
-                <i class="fas fa-user"></i>
-            </div>
-        </div>
     </header>
     
     <!-- Main Content -->
@@ -841,7 +792,7 @@
         </div>
         
         <!-- Fund Wallet Card -->
-        <div class="fund-wallet-card" id="fund-wallet-section" style="display: none;">
+        <div class="fund-wallet-card" id="fund-wallet-section">
             <div class="fund-wallet-card-content">
                 <div class="section-title">
                     <i class="fas fa-coins"></i>
@@ -934,34 +885,34 @@
     <div class="nav-container">
         <div class="nav-bar">
             <div class="nav-indicator"></div>
-            <div class="nav-item" data-page="home">
+            <a href="index.html" class="nav-item" data-page="home">
                 <i class="fas fa-home"></i>
                 <span>Home</span>
-            </div>
-            <div class="nav-item" data-page="services">
+            </a>
+            <a href="services.html" class="nav-item active" data-page="services">
                 <i class="fas fa-th-large"></i>
                 <span>Services</span>
-            </div>
-            <div class="nav-item active" data-page="wallet">
-                <i class="fas fa-wallet"></i>
-                <span>Wallet</span>
-            </div>
-            <div class="nav-item" data-page="account">
+            </a>
+            <a href="transactions.html" class="nav-item" data-page="transactions">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Transactions</span>
+            </a>
+            <a href="account.html" class="nav-item" data-page="account">
                 <i class="fas fa-user"></i>
                 <span>Account</span>
-            </div>
+            </a>
         </div>
     </div>
     
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDQnOWm9MPNK1CMB3YC_XbxVJwlXl5fFZU",
-            authDomain: "veltrawave-vtu.firebaseapp.com",
-            projectId: "veltrawave-vtu",
-            storageBucket: "veltrawave-vtu.appspot.com",
-            messagingSenderId: "1098979571490",
-            appId: "1:1098979571490:web:c9b6f1a7d9956e5c4d2fb6"
+            apiKey: "%NEXT_PUBLIC_FIREBASE_API_KEY%",
+            authDomain: "%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%",
+            projectId: "%NEXT_PUBLIC_FIREBASE_PROJECT_ID%",
+            storageBucket: "%NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET%",
+            messagingSenderId: "%NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID%",
+            appId: "%NEXT_PUBLIC_FIREBASE_APP_ID%"
         };
 
         // Initialize Firebase
@@ -1006,9 +957,9 @@
         const payButton = document.getElementById('pay-button');
         const transactionsList = document.getElementById('transactions-list');
         const noTransactions = document.getElementById('no-transactions');
-        const notificationCount = document.getElementById('notification-count');
         const navItems = document.querySelectorAll('.nav-item');
         const toastNotification = document.getElementById('toast-notification');
+        const navIndicator = document.querySelector('.nav-indicator');
         
         // Initialize the app
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1086,9 +1037,6 @@
                     
                     // Load transactions
                     loadTransactions(userId);
-                    
-                    // Load notifications
-                    loadNotifications(userId);
                 } else {
                     debug("No user document found for ID: " + userId);
                     showToastNotification("User data not found. Please contact support.");
@@ -1105,7 +1053,7 @@
             try {
                 debug("Loading transactions for user: " + userId);
                 const transactionsRef = db.collection("users").doc(userId).collection("transactions");
-                const snapshot = await transactionsRef.orderBy("timestamp", "desc").limit(10).get();
+                const snapshot = await transactionsRef.orderBy("timestamp", "desc").limit(5).get();
                 
                 if (snapshot.empty) {
                     debug("No transactions found");
@@ -1153,24 +1101,6 @@
                 console.error("Error loading transactions:", error);
                 debug("ERROR loading transactions: " + error.message);
                 showToastNotification("Error loading transactions");
-            }
-        }
-        
-        // Load notifications
-        async function loadNotifications(userId) {
-            try {
-                debug("Loading notifications for user: " + userId);
-                const notificationsRef = db.collection("users").doc(userId).collection("notifications");
-                const snapshot = await notificationsRef.where("read", "==", false).get();
-                
-                const count = snapshot.size;
-                notificationCount.textContent = count;
-                notificationCount.style.display = count > 0 ? 'flex' : 'none';
-                
-                debug("Unread notifications: " + count);
-            } catch (error) {
-                console.error("Error loading notifications:", error);
-                debug("ERROR loading notifications: " + error.message);
             }
         }
         
@@ -1252,39 +1182,11 @@
                     return;
                 }
                 
-                initiatePayment();
+                initiatePaystackPayment();
             });
             
-            // Navigation items click
-            navItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    const page = this.dataset.page;
-                    
-                    if (page === 'wallet') {
-                        // Already on wallet page
-                        return;
-                    }
-                    
-                    // Navigate to the corresponding page
-                    if (page === 'home') {
-                        window.location.href = 'index.html';
-                    } else if (page === 'services') {
-                        window.location.href = 'services.html';
-                    } else if (page === 'account') {
-                        window.location.href = 'account.html';
-                    }
-                });
-            });
-            
-            // Notification icon click
-            document.getElementById('notification-icon').addEventListener('click', function() {
-                showToastNotification('Notifications coming soon');
-            });
-            
-            // Profile icon click
-            document.getElementById('profile-icon').addEventListener('click', function() {
-                showToastNotification('Profile settings coming soon');
-            });
+            // Set indicator position for navigation
+            setIndicatorPosition(document.querySelector('.nav-item.active'));
             
             debug("Event listeners set up");
         }
@@ -1320,9 +1222,9 @@
             debug("Amount updated: " + amount + ", Total: " + total);
         }
         
-        // Initiate payment
-        function initiatePayment() {
-            debug("Initiating payment...");
+        // Initiate Paystack payment
+        function initiatePaystackPayment() {
+            debug("Initiating Paystack payment...");
             
             // Show loading overlay
             loadingOverlay.classList.remove('hide');
@@ -1334,11 +1236,31 @@
             const reference = 'VW_' + Math.floor(Math.random() * 1000000000) + '_' + new Date().getTime();
             debug("Payment reference: " + reference);
             
-            // Simulate payment process (replace with actual payment gateway)
-            setTimeout(() => {
-                // Process the successful payment
-                processSuccessfulPayment(reference, totalAmount, selectedAmount);
-            }, 2000);
+            // Initialize Paystack
+            const handler = PaystackPop.setup({
+                key: "%NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY%", // Use environment variable
+                email: userName.replace(/\s+/g, '') + '@veltrawave.com', // Generate an email from username
+                amount: totalAmount * 100, // Amount in kobo
+                currency: 'NGN',
+                ref: reference,
+                metadata: {
+                    user_id: userId,
+                    service_fee: serviceFee,
+                    actual_amount: selectedAmount
+                },
+                callback: function(response) {
+                    // Process the successful payment
+                    processSuccessfulPayment(reference, totalAmount, selectedAmount);
+                },
+                onClose: function() {
+                    // Hide loading overlay
+                    loadingOverlay.classList.add('hide');
+                    debug("Payment window closed");
+                }
+            });
+            
+            // Open Paystack payment window
+            handler.openIframe();
         }
         
         // Process successful payment
@@ -1443,7 +1365,6 @@
         function setIndicatorPosition(item) {
             const itemRect = item.getBoundingClientRect();
             const navRect = document.querySelector('.nav-bar').getBoundingClientRect();
-            const navIndicator = document.querySelector('.nav-indicator');
             
             navIndicator.style.width = `${itemRect.width}px`;
             navIndicator.style.left = `${itemRect.left - navRect.left}px`;
