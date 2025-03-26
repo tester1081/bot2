@@ -8,13 +8,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
-        /* Your existing CSS styles */
-        /* ... */
-        
-
-        
-        /* Your other CSS styles remain the same */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         
         :root {
@@ -180,17 +175,35 @@
         
         /* Main Content */
         .main-content {
-            padding: 0 20px 20px;
-            max-width: 1200px;
+            padding: 0 20px 100px;
+            max-width: 800px;
             margin: 0 auto;
         }
         
-        /* Balance Card */
-        .balance-card-container {
-            margin-bottom: 24px;
-            perspective: 1000px;
+        /* Page Container */
+        .page-container {
+            display: none;
         }
         
+        .page-container.active {
+            display: block;
+        }
+        
+        /* Page Title */
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Balance Card */
         .balance-card {
             background: linear-gradient(135deg, rgba(45, 127, 249, 0.2), rgba(140, 82, 255, 0.2));
             border-radius: 24px;
@@ -199,12 +212,7 @@
             overflow: hidden;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            transform-style: preserve-3d;
-            transition: transform 0.5s ease;
-        }
-        
-        .balance-card:hover {
-            transform: rotateX(5deg) rotateY(5deg);
+            margin-bottom: 24px;
         }
         
         .balance-card::before {
@@ -217,23 +225,6 @@
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
             border-radius: 24px;
             z-index: 0;
-        }
-        
-        .balance-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            pointer-events: none;
-        }
-        
-        .balance-card:hover::after {
-            opacity: 1;
         }
         
         .balance-card-content {
@@ -257,32 +248,9 @@
             -webkit-text-fill-color: transparent;
         }
         
-        .fund-wallet-btn {
-            width: 100%;
-            max-width: 300px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border: none;
-            border-radius: 16px;
-            padding: 16px 24px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
+        .balance-actions {
             display: flex;
-            align-items: center;
-            justify-content: center;
             gap: 12px;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(45, 127, 249, 0.25);
-        }
-        
-        .fund-wallet-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(45, 127, 249, 0.4);
-        }
-        
-        .fund-wallet-btn i {
-            font-size: 1.2rem;
         }
         
         /* Quick Services */
@@ -329,23 +297,6 @@
             border-color: rgba(255, 255, 255, 0.1);
         }
         
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: -100%;
-            left: -100%;
-            width: 300%;
-            height: 300%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            pointer-events: none;
-        }
-        
-        .service-card:hover::before {
-            opacity: 1;
-        }
-        
         .service-icon {
             width: 50px;
             height: 50px;
@@ -358,34 +309,6 @@
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
             position: relative;
             z-index: 1;
-        }
-        
-        .service-card:nth-child(1) .service-icon {
-            color: #5A9DFF;
-        }
-        
-        .service-card:nth-child(2) .service-icon {
-            color: #FF5E8A;
-        }
-        
-        .service-card:nth-child(3) .service-icon {
-            color: #8C52FF;
-        }
-        
-        .service-card:nth-child(4) .service-icon {
-            color: #00E1A0;
-        }
-        
-        .service-card:nth-child(5) .service-icon {
-            color: #FFB547;
-        }
-        
-        .service-card:nth-child(6) .service-icon {
-            color: #FF5E7D;
-        }
-        
-        .service-card:nth-child(7) .service-icon {
-            color: #5A9DFF;
         }
         
         .service-title {
@@ -402,7 +325,7 @@
             z-index: 1;
         }
         
-        /* Recent Transactions */
+        /* Transactions */
         .transactions-container {
             background: linear-gradient(135deg, rgba(45, 127, 249, 0.1), rgba(140, 82, 255, 0.1));
             border-radius: 20px;
@@ -410,7 +333,7 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            margin-bottom: 80px; /* Added space for nav bar */
+            margin-bottom: 24px;
         }
         
         .transaction-header {
@@ -443,28 +366,6 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 16px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        
-        /* Custom scrollbar for transaction list */
-        .transaction-list::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .transaction-list::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-        
-        .transaction-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-        
-        .transaction-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
         }
         
         .transaction-item {
@@ -501,29 +402,14 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         
-        .transaction-icon.data {
-            background: rgba(90, 157, 255, 0.2);
-            color: #5A9DFF;
-        }
-        
-        .transaction-icon.airtime {
-            background: rgba(255, 94, 138, 0.2);
-            color: #FF5E8A;
-        }
-        
-        .transaction-icon.tv {
-            background: rgba(140, 82, 255, 0.2);
-            color: #8C52FF;
-        }
-        
-        .transaction-icon.wallet {
+        .transaction-icon.credit {
             background: rgba(0, 225, 160, 0.2);
-            color: #00E1A0;
+            color: var(--success);
         }
         
-        .transaction-icon.game {
-            background: rgba(255, 181, 71, 0.2);
-            color: #FFB547;
+        .transaction-icon.debit {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
         }
         
         .transaction-details h4 {
@@ -559,6 +445,255 @@
             padding: 20px;
             color: var(--text-secondary);
             font-style: italic;
+        }
+        
+        /* Fund Wallet Card */
+        .fund-wallet-card {
+            background: linear-gradient(135deg, rgba(45, 127, 249, 0.2), rgba(140, 82, 255, 0.2));
+            border-radius: 24px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .fund-wallet-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+            border-radius: 24px;
+            z-index: 0;
+        }
+        
+        .fund-wallet-card-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section-description {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        
+        /* Form Group */
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(45, 127, 249, 0.3);
+        }
+        
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Amount Presets */
+        .amount-presets {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .amount-preset {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .amount-preset:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .amount-preset.active {
+            background: rgba(45, 127, 249, 0.3);
+            border-color: var(--primary);
+        }
+        
+        /* Payment Methods */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .payment-method {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-method:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .payment-method.active {
+            background: rgba(45, 127, 249, 0.3);
+            border-color: var(--primary);
+        }
+        
+        .payment-method-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .payment-method-title {
+            font-weight: 500;
+        }
+        
+        /* Summary */
+        .summary-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .summary-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .summary-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .summary-label {
+            color: var(--text-secondary);
+        }
+        
+        .summary-value {
+            font-weight: 500;
+        }
+        
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        /* Button */
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 24px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(45, 127, 249, 0.25);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(45, 127, 249, 0.4);
+        }
+        
+        .btn:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn i {
+            font-size: 1.2rem;
+        }
+        
+        /* Coming Soon */
+        .coming-soon-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .coming-soon-icon {
+            font-size: 4rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        
+        .coming-soon-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .coming-soon-description {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            max-width: 400px;
         }
         
         /* Navigation Bar */
@@ -622,23 +757,6 @@
             background: rgba(255, 255, 255, 0.1);
             z-index: 1;
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        /* Ripple Effect */
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0);
-            animation: ripple 0.8s linear;
-            pointer-events: none;
-        }
-        
-        @keyframes ripple {
-            to {
-                transform: scale(2);
-                opacity: 0;
-            }
         }
         
         /* Loading Animation */
@@ -726,128 +844,6 @@
             }
         }
         
-        /* Dropdown Menus */
-        .dropdown {
-            position: absolute;
-            top: calc(100% + 10px);
-            right: 0;
-            background: rgba(20, 30, 50, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            min-width: 200px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-        }
-        
-        .dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .dropdown-item {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        
-        .dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .dropdown-item:first-child {
-            border-radius: 12px 12px 0 0;
-        }
-        
-        .dropdown-item:last-child {
-            border-radius: 0 0 12px 12px;
-        }
-        
-        .dropdown-item i {
-            color: var(--primary);
-        }
-        
-        /* Notification Dropdown */
-        .notification-dropdown {
-            min-width: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .notification-header {
-            padding: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            background: rgba(20, 30, 50, 0.95);
-            z-index: 1;
-        }
-        
-        .notification-title {
-            font-weight: 600;
-        }
-        
-        .mark-read {
-            font-size: 0.8rem;
-            color: var(--primary);
-            cursor: pointer;
-        }
-        
-        .notification-list {
-            max-height: 350px;
-            overflow-y: auto;
-        }
-        
-        .notification-item {
-            padding: 12px 16px;
-            display: flex;
-            gap: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        
-        .notification-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        
-        .notification-item:last-child {
-            border-bottom: none;
-        }
-        
-        .notification-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--primary);
-            margin-top: 6px;
-            flex-shrink: 0;
-        }
-        
-        .notification-content {
-            flex: 1;
-        }
-        
-        .notification-message {
-            margin-bottom: 4px;
-        }
-        
-        .notification-time {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        
         /* Toast Notification */
         .toast-notification {
             position: fixed;
@@ -871,39 +867,20 @@
             opacity: 1;
         }
         
-        /* Error Message */
-        .error-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 94, 125, 0.9);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            z-index: 2001;
-            max-width: 80%;
-            text-align: center;
-        }
-        
         /* Responsive Adjustments */
         @media (max-width: 768px) {
-            .balance-card {
-                padding: 20px;
-            }
-            
-            .balance-amount {
-                font-size: 2rem;
-            }
-            
-            .services-grid {
-                grid-template-columns: repeat(3, 1fr);
+            .payment-methods {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
         
         @media (max-width: 480px) {
-            .services-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .amount-presets {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .payment-methods {
+                grid-template-columns: repeat(1, 1fr);
             }
             
             .nav-item span {
@@ -917,8 +894,6 @@
     </style>
 </head>
 <body>
-   
-    
     <!-- Loading Animation -->
     <div class="loading-overlay">
         <div class="loading-container">
@@ -942,147 +917,261 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <img src="/logo.png" class="logo-image">
+            <img src="/logo.png" alt="VeltraWave" class="logo-image">
             <span>VeltraWave</span>
         </div>
         <div class="header-actions">
             <div class="header-icon" id="notification-icon">
                 <i class="fas fa-bell"></i>
                 <div class="notification-badge" id="notification-count">0</div>
-                
-                <!-- Notification Dropdown -->
-                <div class="dropdown notification-dropdown" id="notification-dropdown">
-                    <div class="notification-header">
-                        <div class="notification-title">Notifications</div>
-                        <div class="mark-read" id="mark-all-read">Mark all as read</div>
-                    </div>
-                    <div class="notification-list" id="notification-list">
-                        <!-- Notifications will be loaded here -->
-                        <div class="notification-empty">No notifications yet</div>
-                    </div>
-                </div>
             </div>
             <div class="header-icon" id="profile-icon">
                 <i class="fas fa-user"></i>
-                
-                <!-- Profile Dropdown -->
-                <div class="dropdown" id="profile-dropdown">
-                    <div class="dropdown-item" id="my-profile-link">
-                        <i class="fas fa-user-circle"></i>
-                        <span>My Profile</span>
-                    </div>
-                    <div class="dropdown-item" id="contact-us-link">
-                        <i class="fas fa-headset"></i>
-                        <span>Contact Us</span>
-                    </div>
-                </div>
             </div>
         </div>
     </header>
     
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Balance Card -->
-        <div class="balance-card-container">
+        <!-- Home Page -->
+        <div class="page-container active" id="home-page">
+            <!-- Balance Card -->
             <div class="balance-card">
-                <div class="card-decoration decoration-1"></div>
-                <div class="card-decoration decoration-2"></div>
                 <div class="balance-card-content">
                     <div class="balance-label">Available Balance</div>
                     <div class="balance-amount" id="user-balance">₦0.00</div>
-                    <a href="fund-wallet.html" class="fund-wallet-btn">
+                    <div class="balance-actions">
+                        <button class="btn" id="fund-wallet-btn">
+                            <i class="fas fa-plus"></i>
+                            Fund Wallet
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Services -->
+            <div class="section-title">
+                <i class="fas fa-bolt"></i>
+                Quick Services
+            </div>
+            <div class="services-grid">
+                <div class="service-card" data-service="data">
+                    <div class="service-icon">
+                        <i class="fas fa-wifi"></i>
+                    </div>
+                    <div class="service-title">Data</div>
+                    <div class="service-description">Buy internet data</div>
+                </div>
+                
+                <div class="service-card" data-service="cable">
+                    <div class="service-icon">
+                        <i class="fas fa-tv"></i>
+                    </div>
+                    <div class="service-title">Cable TV</div>
+                    <div class="service-description">Pay TV subscriptions</div>
+                </div>
+                
+                <div class="service-card" data-service="wallet">
+                    <div class="service-icon">
                         <i class="fas fa-wallet"></i>
-                        Fund Wallet
-                    </a>
+                    </div>
+                    <div class="service-title">Wallet</div>
+                    <div class="service-description">Fund your wallet</div>
+                </div>
+                
+                <div class="service-card" data-service="account">
+                    <div class="service-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="service-title">Account</div>
+                    <div class="service-description">Manage account</div>
+                </div>
+            </div>
+            
+            <!-- Recent Transactions -->
+            <div class="transactions-container">
+                <div class="transaction-header">
+                    <div class="section-title" style="margin-bottom: 0;">
+                        <i class="fas fa-history"></i>
+                        Recent Transactions
+                    </div>
+                    <div class="view-all" id="view-all-transactions">
+                        <span>View All</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+                <div class="transaction-list" id="transaction-list">
+                    <!-- Transactions will be loaded here -->
+                    <div class="transaction-loading">Loading transactions...</div>
                 </div>
             </div>
         </div>
         
-        <!-- Quick Services -->
-        <div class="section-title">
-            <i class="fas fa-bolt"></i>
-            Quick Services
-        </div>
-        <div class="services-grid">
-            <!-- Data Service -->
-            <div class="service-card" data-service="data">
-                <div class="service-icon">
-                    <i class="fas fa-wifi"></i>
-                </div>
-                <div class="service-title">Data</div>
-                <div class="service-description">Buy internet data</div>
+        <!-- Wallet Page -->
+        <div class="page-container" id="wallet-page">
+            <div class="page-title">
+                <i class="fas fa-wallet"></i>
+                My Wallet
             </div>
             
-            <!-- Airtime Service -->
-            <div class="service-card" data-service="airtime">
-                <div class="service-icon">
-                    <i class="fas fa-phone-alt"></i>
+            <!-- Balance Card -->
+            <div class="balance-card">
+                <div class="balance-card-content">
+                    <div class="balance-label">Available Balance</div>
+                    <div class="balance-amount" id="wallet-balance">₦0.00</div>
                 </div>
-                <div class="service-title">Airtime</div>
-                <div class="service-description">Recharge any network</div>
             </div>
             
-            <!-- Game Topup Service -->
-            <div class="service-card" data-service="game">
-                <div class="service-icon">
-                    <i class="fas fa-gamepad"></i>
+            <!-- Fund Wallet Card -->
+            <div class="fund-wallet-card">
+                <div class="fund-wallet-card-content">
+                    <div class="section-title">
+                        <i class="fas fa-coins"></i>
+                        Add Money to Your Wallet
+                    </div>
+                    <p class="section-description">
+                        Fund your wallet to enjoy seamless transactions for all services. Choose your preferred amount and payment method below.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label for="amount" class="form-label">Enter Amount (₦)</label>
+                        <input type="number" id="amount" class="form-input" placeholder="Enter amount" min="100" step="100">
+                    </div>
+                    
+                    <div class="amount-presets">
+                        <div class="amount-preset" data-amount="1000">₦1,000</div>
+                        <div class="amount-preset" data-amount="2000">₦2,000</div>
+                        <div class="amount-preset" data-amount="5000">₦5,000</div>
+                        <div class="amount-preset" data-amount="10000">₦10,000</div>
+                        <div class="amount-preset" data-amount="20000">₦20,000</div>
+                        <div class="amount-preset" data-amount="50000">₦50,000</div>
+                    </div>
+                    
+                    <div class="section-title">
+                        <i class="fas fa-credit-card"></i>
+                        Payment Method
+                    </div>
+                    
+                    <div class="payment-methods">
+                        <div class="payment-method active" data-method="card">
+                            <div class="payment-method-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="payment-method-title">Card</div>
+                        </div>
+                        <div class="payment-method" data-method="bank">
+                            <div class="payment-method-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="payment-method-title">Bank</div>
+                        </div>
+                        <div class="payment-method" data-method="ussd">
+                            <div class="payment-method-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="payment-method-title">USSD</div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <div class="summary-title">Payment Summary</div>
+                        <div class="summary-item">
+                            <div class="summary-label">Amount</div>
+                            <div class="summary-value" id="summary-amount">₦0.00</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Service Fee</div>
+                            <div class="summary-value">₦50.00</div>
+                        </div>
+                        <div class="summary-total">
+                            <div>Total</div>
+                            <div id="summary-total">₦50.00</div>
+                        </div>
+                    </div>
+                    
+                    <button id="pay-button" class="btn" disabled>
+                        <i class="fas fa-lock"></i>
+                        Proceed to Payment
+                    </button>
                 </div>
-                <div class="service-title">Game Topup</div>
-                <div class="service-description">Fund your game account</div>
             </div>
             
-            <!-- Store Service -->
-            <div class="service-card" data-service="store">
-                <div class="service-icon">
-                    <i class="fas fa-shopping-bag"></i>
-                </div>
-                <div class="service-title">Store</div>
-                <div class="service-description">Digital products</div>
-            </div>
-            
-            <!-- Cable TV Service -->
-            <div class="service-card" data-service="cable">
-                <div class="service-icon">
-                    <i class="fas fa-tv"></i>
-                </div>
-                <div class="service-title">Cable TV</div>
-                <div class="service-description">Pay TV subscriptions</div>
-            </div>
-            
-            <!-- Results Service -->
-            <div class="service-card" data-service="result">
-                <div class="service-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <div class="service-title">Results</div>
-                <div class="service-description">Check exam results</div>
-            </div>
-            
-            <!-- Contact Service -->
-            <div class="service-card" data-service="contact">
-                <div class="service-icon">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div class="service-title">Contact</div>
-                <div class="service-description">Get in touch with us</div>
-            </div>
-        </div>
-        
-        <!-- Recent Transactions -->
-        <div class="transactions-container">
-            <div class="transaction-header">
-                <div class="section-title" style="margin-bottom: 0;">
-                    <i class="fas fa-history"></i>
+            <!-- Transactions Card -->
+            <div class="transactions-container">
+                <div class="section-title">
+                    <i class="fas fa-exchange-alt"></i>
                     Recent Transactions
                 </div>
-                <div class="view-all" id="view-all-transactions">
-                    <span>View All</span>
-                    <i class="fas fa-arrow-right"></i>
+                <div class="transaction-list" id="wallet-transactions-list">
+                    <!-- Transactions will be loaded here -->
+                    <div class="transaction-loading">Loading transactions...</div>
                 </div>
             </div>
-            <div class="transaction-list" id="transaction-list">
-                <!-- Transactions will be loaded here -->
-                <div class="transaction-loading">Loading transactions...</div>
+        </div>
+        
+        <!-- Data Page -->
+        <div class="page-container" id="data-page">
+            <div class="page-title">
+                <i class="fas fa-wifi"></i>
+                Data Bundles
+            </div>
+            
+            <div class="coming-soon-container">
+                <div class="coming-soon-icon">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <div class="coming-soon-title">Coming Soon</div>
+                <div class="coming-soon-description">
+                    Data bundle services will be available soon. Check back later!
+                </div>
+                <button class="btn" id="back-to-home-btn-data">
+                    <i class="fas fa-home"></i>
+                    Return to Home
+                </button>
+            </div>
+        </div>
+        
+        <!-- Cable Page -->
+        <div class="page-container" id="cable-page">
+            <div class="page-title">
+                <i class="fas fa-tv"></i>
+                Cable TV
+            </div>
+            
+            <div class="coming-soon-container">
+                <div class="coming-soon-icon">
+                    <i class="fas fa-tv"></i>
+                </div>
+                <div class="coming-soon-title">Coming Soon</div>
+                <div class="coming-soon-description">
+                    Cable TV subscription services will be available soon. Check back later!
+                </div>
+                <button class="btn" id="back-to-home-btn-cable">
+                    <i class="fas fa-home"></i>
+                    Return to Home
+                </button>
+            </div>
+        </div>
+        
+        <!-- Account Page -->
+        <div class="page-container" id="account-page">
+            <div class="page-title">
+                <i class="fas fa-user"></i>
+                Account
+            </div>
+            
+            <div class="coming-soon-container">
+                <div class="coming-soon-icon">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+                <div class="coming-soon-title">Coming Soon</div>
+                <div class="coming-soon-description">
+                    Account management features will be available soon. Check back later!
+                </div>
+                <button class="btn" id="back-to-home-btn-account">
+                    <i class="fas fa-home"></i>
+                    Return to Home
+                </button>
             </div>
         </div>
     </div>
@@ -1095,13 +1184,17 @@
                 <i class="fas fa-home"></i>
                 <span>Home</span>
             </div>
-            <div class="nav-item" data-page="services">
-                <i class="fas fa-th-large"></i>
-                <span>Services</span>
+            <div class="nav-item" data-page="data">
+                <i class="fas fa-wifi"></i>
+                <span>Data</span>
             </div>
-            <div class="nav-item" data-page="transactions">
-                <i class="fas fa-exchange-alt"></i>
-                <span>Transactions</span>
+            <div class="nav-item" data-page="cable">
+                <i class="fas fa-tv"></i>
+                <span>Cable</span>
+            </div>
+            <div class="nav-item" data-page="wallet">
+                <i class="fas fa-wallet"></i>
+                <span>Wallet</span>
             </div>
             <div class="nav-item" data-page="account">
                 <i class="fas fa-user"></i>
@@ -1111,97 +1204,89 @@
     </div>
     
     <script>
-        // Debug function
-        function debug(message) {
-            const debugPanel = document.getElementById('debug-panel');
-            if (debugPanel) {
-                const timestamp = new Date().toLocaleTimeString();
-                debugPanel.innerHTML += `<div>[${timestamp}] ${message}</div>`;
-                console.log(`[DEBUG] ${message}`);
-            }
-        }
-
-        // Firebase Configuration using environment variables
+        // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "%NEXT_PUBLIC_FIREBASE_API_KEY%",
-            authDomain: "%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%",
-            projectId: "%NEXT_PUBLIC_FIREBASE_PROJECT_ID%",
-            storageBucket: "%NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET%",
-            messagingSenderId: "%NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID%",
-            appId: "%NEXT_PUBLIC_FIREBASE_APP_ID%"
+            apiKey: "AIzaSyDQnOWm9MPNK1CMB3YC_XbxVJwlXl5fFZU",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.appspot.com",
+            messagingSenderId: "1098979571490",
+            appId: "1:1098979571490:web:c9b6f1a7d9956e5c4d2fb6"
         };
 
         // Initialize Firebase
-        debug("Initializing Firebase...");
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        debug("Firebase initialized with project ID: " + firebaseConfig.projectId);
+        
+        // Variables
+        let userId = null;
+        let userName = null;
+        let userBalance = 0;
+        let selectedAmount = 0;
+        let selectedMethod = 'card';
+        
+        // Service fee
+        const serviceFee = 50;
         
         // DOM Elements
-        const notificationIcon = document.getElementById('notification-icon');
-        const notificationDropdown = document.getElementById('notification-dropdown');
-        const notificationList = document.getElementById('notification-list');
-        const notificationCount = document.getElementById('notification-count');
-        const markAllRead = document.getElementById('mark-all-read');
-        const profileIcon = document.getElementById('profile-icon');
-        const profileDropdown = document.getElementById('profile-dropdown');
-        const transactionList = document.getElementById('transaction-list');
-        const viewAllTransactions = document.getElementById('view-all-transactions');
-        const serviceCards = document.querySelectorAll('.service-card');
-        const navItems = document.querySelectorAll('.nav-item');
-        const navIndicator = document.querySelector('.nav-indicator');
-        const toastNotification = document.getElementById('toast-notification');
-        const userBalance = document.getElementById('user-balance');
         const loadingOverlay = document.querySelector('.loading-overlay');
-
-        // Loading Animation
+        const userBalanceElement = document.getElementById('user-balance');
+        const walletBalanceElement = document.getElementById('wallet-balance');
+        const fundWalletBtn = document.getElementById('fund-wallet-btn');
+        const amountInput = document.getElementById('amount');
+        const amountPresets = document.querySelectorAll('.amount-preset');
+        const paymentMethods = document.querySelectorAll('.payment-method');
+        const summaryAmount = document.getElementById('summary-amount');
+        const summaryTotal = document.getElementById('summary-total');
+        const payButton = document.getElementById('pay-button');
+        const transactionsList = document.getElementById('transaction-list');
+        const walletTransactionsList = document.getElementById('wallet-transactions-list');
+        const notificationCount = document.getElementById('notification-count');
+        const navItems = document.querySelectorAll('.nav-item');
+        const toastNotification = document.getElementById('toast-notification');
+        const pageContainers = document.querySelectorAll('.page-container');
+        
+        // Initialize the app
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                debug("DOM loaded, initializing app...");
-                // Initialize the app
                 await initApp();
                 
                 // Hide loading screen after initialization
                 setTimeout(function() {
                     loadingOverlay.classList.add('hide');
-                    debug("Loading screen hidden");
                 }, 1000);
             } catch (error) {
                 console.error("Initialization error:", error);
-                debug("ERROR: " + error.message);
-                showError("Failed to initialize the app: " + error.message);
+                showToastNotification("Failed to initialize: " + error.message);
             }
         });
-
+        
         // Initialize the app
         async function initApp() {
             // Check if running in Telegram WebApp
-            let userId = null;
-            
             if (window.Telegram && window.Telegram.WebApp) {
                 const tg = window.Telegram.WebApp;
                 tg.expand(); // Expand the web app to full view
-                debug("Telegram WebApp detected");
                 
                 // Get user data from Telegram
                 if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                     userId = tg.initDataUnsafe.user.id.toString();
-                    debug("Telegram user ID: " + userId);
+                    userName = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name || ''}`.trim();
                     
-                    // Load user data directly from Firestore
+                    // Load user data
                     await loadUserData(userId);
                 } else {
-                    debug("No Telegram user data available");
-                    // For testing, use a hardcoded user ID that matches your Firestore
+                    showToastNotification("Authentication failed. Please restart the bot.");
+                    
+                    // For testing only - use a default user ID
                     userId = '5966603094';
-                    debug("Using hardcoded user ID for testing: " + userId);
+                    userName = 'Test User';
                     await loadUserData(userId);
                 }
             } else {
-                debug("Not in Telegram WebApp - using test mode");
-                // For testing only - use your actual user ID from Firestore
+                // For testing only - use a default user ID
                 userId = '5966603094';
-                debug("Using hardcoded user ID for testing: " + userId);
+                userName = 'Test User';
                 await loadUserData(userId);
             }
             
@@ -1210,555 +1295,238 @@
             
             // Set initial indicator position for navigation
             setIndicatorPosition(document.querySelector('.nav-item.active'));
-            
-            // Check if we're on a service page and set the active nav
-            checkActivePage();
         }
-
+        
         // Load user data from Firestore
         async function loadUserData(userId) {
             try {
-                debug("Loading user data for ID: " + userId);
                 const userRef = db.collection("users").doc(userId);
-                debug("Fetching user document...");
                 const doc = await userRef.get();
                 
                 if (doc.exists) {
                     const userData = doc.data();
-                    debug("User data loaded: " + JSON.stringify(userData));
-                    displayUserData(userData);
                     
-                    // Load dependent data
-                    loadNotifications(userId);
+                    // Update user balance
+                    userBalance = userData.balance || 0;
+                    updateBalanceDisplay();
+                    
+                    // Load transactions
                     loadTransactions(userId);
+                    
+                    // Load notifications
+                    loadNotifications(userId);
                 } else {
-                    debug("No user document found for ID: " + userId);
-                    showError("User data not found. Please contact support or restart the bot.");
+                    showToastNotification("User data not found. Please contact support.");
                 }
             } catch (error) {
                 console.error("Error loading user data:", error);
-                debug("ERROR loading user data: " + error.message);
-                showError("Failed to load user data: " + error.message);
+                showToastNotification("Error loading user data: " + error.message);
             }
         }
-
-        // Display user data in the UI
-        function displayUserData(userData) {
-            debug("Displaying user data: Balance = " + userData.balance);
-            // Format balance with commas
-            const formattedBalance = userData.balance.toLocaleString('en-NG', {
+        
+        // Load transactions
+        async function loadTransactions(userId) {
+            try {
+                const transactionsRef = db.collection("users").doc(userId).collection("transactions");
+                const snapshot = await transactionsRef.orderBy("timestamp", "desc").limit(5).get();
+                
+                // Clear transaction lists
+                transactionsList.innerHTML = '';
+                walletTransactionsList.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    const emptyMessage = '<div class="transaction-loading">No transactions yet</div>';
+                    transactionsList.innerHTML = emptyMessage;
+                    walletTransactionsList.innerHTML = emptyMessage;
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const transaction = doc.data();
+                    const transactionDate = transaction.timestamp ? new Date(transaction.timestamp.toDate()) : new Date();
+                    const formattedDate = transactionDate.toLocaleDateString() + ' ' + transactionDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    const isCredit = transaction.type === 'wallet' || transaction.type === 'credit';
+                    const iconClass = isCredit ? 'credit' : 'debit';
+                    const icon = isCredit ? 'fa-arrow-down' : 'fa-arrow-up';
+                    
+                    const amount = transaction.amount || 0;
+                    const formattedAmount = amount.toLocaleString('en-NG', {
+                        style: 'currency',
+                        currency: 'NGN',
+                        minimumFractionDigits: 2
+                    }).replace('NGN', '₦');
+                    
+                    const transactionItem = `
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon ${iconClass}">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h4>${transaction.title || 'Transaction'}</h4>
+                                    <p>${formattedDate}</p>
+                                </div>
+                            </div>
+                            <div class="transaction-amount ${isCredit ? 'amount-positive' : 'amount-negative'}">
+                                ${isCredit ? '+' : '-'}${formattedAmount}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add to both transaction lists
+                    transactionsList.innerHTML += transactionItem;
+                    walletTransactionsList.innerHTML += transactionItem;
+                });
+            } catch (error) {
+                console.error("Error loading transactions:", error);
+                showToastNotification("Error loading transactions");
+            }
+        }
+        
+        // Load notifications
+        async function loadNotifications(userId) {
+            try {
+                const notificationsRef = db.collection("users").doc(userId).collection("notifications");
+                const snapshot = await notificationsRef.where("read", "==", false).get();
+                
+                const count = snapshot.size;
+                notificationCount.textContent = count;
+                notificationCount.style.display = count > 0 ? 'flex' : 'none';
+            } catch (error) {
+                console.error("Error loading notifications:", error);
+            }
+        }
+        
+        // Update balance display
+        function updateBalanceDisplay() {
+            const formattedBalance = userBalance.toLocaleString('en-NG', {
                 style: 'currency',
                 currency: 'NGN',
                 minimumFractionDigits: 2
             }).replace('NGN', '₦');
             
-            userBalance.textContent = formattedBalance;
-            debug("Balance displayed: " + formattedBalance);
-        }
-
-        // Load notifications from Firebase
-        function loadNotifications(userId) {
-            // Clear the notification list
-            notificationList.innerHTML = '';
-            debug("Loading notifications for user: " + userId);
-            
-            // Get notifications for the current user
-            db.collection('users').doc(userId).collection('notifications')
-                .orderBy('timestamp', 'desc')
-                .limit(10)
-                .get()
-                .then((querySnapshot) => {
-                    debug("Notifications query completed: " + querySnapshot.size + " results");
-                    if (querySnapshot.empty) {
-                        notificationList.innerHTML = '<div class="notification-empty">No notifications yet</div>';
-                        notificationCount.textContent = '0';
-                        notificationCount.style.display = 'none';
-                        debug("No notifications found");
-                        return;
-                    }
-                    
-                    let unreadCount = 0;
-                    
-                    querySnapshot.forEach((doc) => {
-                        const notification = doc.data();
-                        debug("Processing notification: " + JSON.stringify(notification));
-                        const notificationItem = document.createElement('div');
-                        notificationItem.className = 'notification-item';
-                        
-                        // Check if notification is unread
-                        if (!notification.read) {
-                            unreadCount++;
-                            notificationItem.innerHTML = `
-                                <div class="notification-dot"></div>
-                                <div class="notification-content">
-                                    <div class="notification-message">${notification.text}</div>
-                                    <div class="notification-time">${formatTimestamp(notification.timestamp)}</div>
-                                </div>
-                            `;
-                        } else {
-                            notificationItem.innerHTML = `
-                                <div class="notification-content">
-                                    <div class="notification-message">${notification.text}</div>
-                                    <div class="notification-time">${formatTimestamp(notification.timestamp)}</div>
-                                </div>
-                            `;
-                        }
-                        
-                        // Add click event to mark as read
-                        notificationItem.addEventListener('click', function() {
-                            markNotificationAsRead(userId, doc.id);
-                        });
-                        
-                        notificationList.appendChild(notificationItem);
-                    });
-                    
-                    // Update notification count
-                    notificationCount.textContent = unreadCount.toString();
-                    if (unreadCount === 0) {
-                        notificationCount.style.display = 'none';
-                    } else {
-                        notificationCount.style.display = 'flex';
-                    }
-                    debug("Notifications loaded: " + unreadCount + " unread");
-                })
-                .catch((error) => {
-                    console.error("Error loading notifications: ", error);
-                    debug("ERROR loading notifications: " + error.message);
-                    notificationList.innerHTML = '<div class="notification-empty">Error loading notifications</div>';
-                });
-        }
-
-        // Load transactions
-        function loadTransactions(userId) {
-            // Clear the transaction list
-            transactionList.innerHTML = '';
-            debug("Loading transactions for user: " + userId);
-            
-            // Check if transactions is an array field or a subcollection
-            db.collection('users').doc(userId).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        
-                        // Check if transactions is an array field
-                        if (userData.transactions && Array.isArray(userData.transactions)) {
-                            debug("Transactions found as array field: " + userData.transactions.length);
-                            displayTransactionsFromArray(userData.transactions);
-                        } else {
-                            // Try loading from subcollection
-                            debug("Transactions not found as array, trying subcollection...");
-                            loadTransactionsFromSubcollection(userId);
-                        }
-                    } else {
-                        debug("User document not found");
-                        transactionList.innerHTML = '<div class="transaction-loading">No transactions yet</div>';
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error checking transactions: ", error);
-                    debug("ERROR checking transactions: " + error.message);
-                    transactionList.innerHTML = '<div class="transaction-loading">Error loading transactions</div>';
-                });
+            userBalanceElement.textContent = formattedBalance;
+            walletBalanceElement.textContent = formattedBalance;
         }
         
-        // Display transactions from array field
-        function displayTransactionsFromArray(transactions) {
-            if (!transactions || transactions.length === 0) {
-                transactionList.innerHTML = '<div class="transaction-loading">No transactions yet</div>';
-                debug("No transactions in array");
-                return;
-            }
-            
-            // Sort transactions by timestamp (newest first)
-            const sortedTransactions = [...transactions].sort((a, b) => {
-                const timeA = a.timestamp ? new Date(a.timestamp.seconds * 1000) : new Date(0);
-                const timeB = b.timestamp ? new Date(b.timestamp.seconds * 1000) : new Date(0);
-                return timeB - timeA;
-            });
-            
-            // Take only the 5 most recent
-            const recentTransactions = sortedTransactions.slice(0, 5);
-            
-            debug("Displaying " + recentTransactions.length + " transactions from array");
-            
-            recentTransactions.forEach(transaction => {
-                createTransactionItem(transaction);
-            });
-        }
-        
-        // Load transactions from subcollection
-        function loadTransactionsFromSubcollection(userId) {
-            db.collection('users').doc(userId).collection('transactions')
-                .orderBy('timestamp', 'desc')
-                .limit(5)
-                .get()
-                .then((querySnapshot) => {
-                    debug("Transactions subcollection query completed: " + querySnapshot.size + " results");
-                    if (querySnapshot.empty) {
-                        transactionList.innerHTML = '<div class="transaction-loading">No transactions yet</div>';
-                        debug("No transactions in subcollection");
-                        return;
-                    }
-                    
-                    querySnapshot.forEach((doc) => {
-                        const transaction = doc.data();
-                        createTransactionItem(transaction);
-                    });
-                })
-                .catch((error) => {
-                    console.error("Error loading transactions subcollection: ", error);
-                    debug("ERROR loading transactions subcollection: " + error.message);
-                    transactionList.innerHTML = '<div class="transaction-loading">Error loading transactions</div>';
-                });
-        }
-        
-        // Create transaction item element
-        function createTransactionItem(transaction) {
-            debug("Creating transaction item: " + JSON.stringify(transaction));
-            const transactionItem = document.createElement('div');
-            transactionItem.className = 'transaction-item';
-            
-            // Determine transaction type icon and class
-            let iconClass = 'data';
-            let icon = 'fas fa-wifi';
-            
-            if (transaction.type === 'airtime') {
-                iconClass = 'airtime';
-                icon = 'fas fa-phone-alt';
-            } else if (transaction.type === 'tv' || transaction.type === 'cable') {
-                iconClass = 'tv';
-                icon = 'fas fa-tv';
-            } else if (transaction.type === 'wallet' || transaction.type === 'deposit') {
-                iconClass = 'wallet';
-                icon = 'fas fa-wallet';
-            } else if (transaction.type === 'game') {
-                iconClass = 'game';
-                icon = 'fas fa-gamepad';
-            }
-            
-            // Determine amount class
-            const amountClass = transaction.amount > 0 ? 'amount-positive' : 'amount-negative';
-            
-            transactionItem.innerHTML = `
-                <div class="transaction-info">
-                    <div class="transaction-icon ${iconClass}">
-                        <i class="${icon}"></i>
-                    </div>
-                    <div class="transaction-details">
-                        <h4>${transaction.title || transaction.description || 'Transaction'}</h4>
-                        <p>${formatTimestamp(transaction.timestamp)}</p>
-                    </div>
-                </div>
-                <div class="transaction-amount ${amountClass}">${formatAmount(transaction.amount || 0)}</div>
-            `;
-            
-            transactionList.appendChild(transactionItem);
-        }
-
-        // Mark a notification as read
-        function markNotificationAsRead(userId, notificationId) {
-            debug("Marking notification as read: " + notificationId);
-            db.collection('users').doc(userId).collection('notifications').doc(notificationId).update({
-                read: true
-            })
-            .then(() => {
-                // Reload notifications
-                loadNotifications(userId);
-                debug("Notification marked as read");
-            })
-            .catch((error) => {
-                console.error("Error marking notification as read: ", error);
-                debug("ERROR marking notification as read: " + error.message);
-                showToastNotification("Failed to mark notification as read");
-            });
-        }
-
-        // Mark all notifications as read
-        function markAllNotificationsAsRead() {
-            // Get Telegram user ID if available
-            let userId = '5966603094'; // Default for testing
-            
-            if (window.Telegram && window.Telegram.WebApp) {
-                const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-                if (tgUser) {
-                    userId = tgUser.id.toString();
-                }
-            }
-            
-            debug("Marking all notifications as read for user: " + userId);
-            
-            db.collection('users').doc(userId).collection('notifications')
-                .where('read', '==', false)
-                .get()
-                .then((querySnapshot) => {
-                    const batch = db.batch();
-                    
-                    querySnapshot.forEach((doc) => {
-                        batch.update(doc.ref, { read: true });
-                    });
-                    
-                    return batch.commit();
-                })
-                .then(() => {
-                    // Reload notifications
-                    loadNotifications(userId);
-                    showToastNotification("All notifications marked as read");
-                    debug("All notifications marked as read");
-                })
-                .catch((error) => {
-                    console.error("Error marking all notifications as read: ", error);
-                    debug("ERROR marking all notifications as read: " + error.message);
-                    showToastNotification("Failed to mark all notifications as read");
-                });
-        }
-
         // Set up event listeners
         function setupEventListeners() {
-            debug("Setting up event listeners");
-            // Notification icon click
-            notificationIcon.addEventListener('click', function(e) {
-                e.stopPropagation();
-                notificationDropdown.classList.toggle('show');
-                profileDropdown.classList.remove('show');
+            // Fund wallet button
+            fundWalletBtn.addEventListener('click', function() {
+                navigateToPage('wallet');
             });
             
-            // Profile icon click
-            profileIcon.addEventListener('click', function(e) {
-                e.stopPropagation();
-                profileDropdown.classList.toggle('show');
-                notificationDropdown.classList.remove('show');
-            });
-            
-            // Mark all notifications as read
-            markAllRead.addEventListener('click', function() {
-                markAllNotificationsAsRead();
-            });
-            
-            // Close dropdowns when clicking outside
-            document.addEventListener('click', function() {
-                notificationDropdown.classList.remove('show');
-                profileDropdown.classList.remove('show');
-            });
-            
-            // View all transactions
-            viewAllTransactions.addEventListener('click', function() {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    // Send message to bot to show transactions
-                    window.Telegram.WebApp.sendData(JSON.stringify({
-                        action: 'view_transactions'
-                    }));
-                } else {
-                    showToastNotification("Transactions view is only available in Telegram");
-                }
-            });
-            
-            // Service cards click
-            serviceCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    const service = this.dataset.service;
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        // Send message to bot to handle service
-                        window.Telegram.WebApp.sendData(JSON.stringify({
-                            action: 'service',
-                            service: service
-                        }));
-                    } else {
-                        showToastNotification(`${service} service selected`);
-                    }
+            // Amount input change
+            amountInput.addEventListener('input', function() {
+                // Clear active class from all presets
+                amountPresets.forEach(preset => {
+                    preset.classList.remove('active');
                 });
+                
+                updateAmount(parseFloat(this.value) || 0);
+            });
+            
+            // Amount presets click
+            amountPresets.forEach(preset => {
+                preset.addEventListener('click', function() {
+                    // Clear active class from all presets
+                    amountPresets.forEach(p => {
+                        p.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked preset
+                    this.classList.add('active');
+                    
+                    // Update amount input
+                    const amount = parseInt(this.dataset.amount);
+                    amountInput.value = amount;
+                    
+                    // Update summary
+                    updateAmount(amount);
+                });
+            });
+            
+            // Payment method selection
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    // Clear active class from all methods
+                    paymentMethods.forEach(m => {
+                        m.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked method
+                    this.classList.add('active');
+                    
+                    // Update selected method
+                    selectedMethod = this.dataset.method;
+                });
+            });
+            
+            // Pay button click
+            payButton.addEventListener('click', function() {
+                if (selectedAmount < 100) {
+                    showToastNotification('Please enter an amount of at least ₦100');
+                    return;
+                }
+                
+                initiatePayment();
             });
             
             // Navigation items click
             navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    // Remove active class from all items
-                    navItems.forEach(navItem => {
-                        navItem.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked item
-                    this.classList.add('active');
-                    
-                    // Move indicator
-                    setIndicatorPosition(this);
-                    
-                    // Create ripple effect
-                    createRippleEffect(e);
-                    
-                    // Handle navigation
+                item.addEventListener('click', function() {
                     const page = this.dataset.page;
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        // Send message to bot to handle navigation
-                        window.Telegram.WebApp.sendData(JSON.stringify({
-                            action: 'navigate',
-                            page: page
-                        }));
-                    } else {
-                        showToastNotification(`Navigate to ${page}`);
-                    }
+                    navigateToPage(page);
                 });
             });
             
-            // My profile link
-            document.getElementById('my-profile-link').addEventListener('click', function() {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.sendData(JSON.stringify({
-                        action: 'profile'
-                    }));
-                } else {
-                    showToastNotification("Profile view selected");
-                }
+            // Back to home buttons
+            document.getElementById('back-to-home-btn-data').addEventListener('click', function() {
+                navigateToPage('home');
             });
             
-            // Contact us link
-            document.getElementById('contact-us-link').addEventListener('click', function() {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.sendData(JSON.stringify({
-                        action: 'contact'
-                    }));
-                } else {
-                    showToastNotification("Contact us selected");
-                }
+            document.getElementById('back-to-home-btn-cable').addEventListener('click', function() {
+                navigateToPage('home');
             });
             
-            // Fund wallet button
-            document.querySelector('.fund-wallet-btn').addEventListener('click', function() {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.sendData(JSON.stringify({
-                        action: 'fund_wallet'
-                    }));
-                } else {
-                    showToastNotification("Fund wallet selected");
-                }
+            document.getElementById('back-to-home-btn-account').addEventListener('click', function() {
+                navigateToPage('home');
             });
             
-            debug("Event listeners set up");
-        }
-
-        // Show toast notification
-        function showToastNotification(message) {
-            toastNotification.textContent = message;
-            toastNotification.classList.add('show');
-            debug("Toast notification: " + message);
+            // Service cards
+            document.querySelectorAll('.service-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const service = this.dataset.service;
+                    navigateToPage(service);
+                });
+            });
             
-            setTimeout(() => {
-                toastNotification.classList.remove('show');
-            }, 3000);
-        }
-
-        // Show error message
-        function showError(message) {
-            // Display error message
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.textContent = message;
-            document.body.appendChild(errorDiv);
-            debug("Error message shown: " + message);
+            // Notification icon click
+            document.getElementById('notification-icon').addEventListener('click', function() {
+                showToastNotification('Notifications coming soon');
+            });
             
-            // Hide loading screen
-            loadingOverlay.classList.add('hide');
-            
-            // Remove error after 5 seconds
-            setTimeout(() => {
-                errorDiv.remove();
-            }, 5000);
+            // Profile icon click
+            document.getElementById('profile-icon').addEventListener('click', function() {
+                navigateToPage('account');
+            });
         }
-
-        // Format timestamp
-        function formatTimestamp(timestamp) {
-            if (!timestamp) {
-                return 'Just now';
+        
+        // Navigate to page
+        function navigateToPage(page) {
+            // Hide all pages
+            pageContainers.forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            // Show selected page
+            const pageElement = document.getElementById(`${page}-page`);
+            if (pageElement) {
+                pageElement.classList.add('active');
             }
             
-            let date;
-            if (timestamp.toDate) {
-                // Firestore Timestamp
-                date = timestamp.toDate();
-            } else if (timestamp.seconds) {
-                // Firestore Timestamp as object
-                date = new Date(timestamp.seconds * 1000);
-            } else {
-                // Regular date
-                date = new Date(timestamp);
-            }
-            
-            const now = new Date();
-            const diffMs = now - date;
-            const diffSec = Math.floor(diffMs / 1000);
-            const diffMin = Math.floor(diffSec / 60);
-            const diffHour = Math.floor(diffMin / 60);
-            const diffDay = Math.floor(diffHour / 24);
-            
-            if (diffSec < 60) {
-                return 'Just now';
-            } else if (diffMin < 60) {
-                return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
-            } else if (diffHour < 24) {
-                return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
-            } else if (diffDay < 7) {
-                return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
-            } else {
-                return date.toLocaleDateString();
-            }
-        }
-
-        // Format amount
-        function formatAmount(amount) {
-            return amount > 0 ? `+₦${Math.abs(amount).toLocaleString()}` : `-₦${Math.abs(amount).toLocaleString()}`;
-        }
-
-        // Set indicator position for navigation
-        function setIndicatorPosition(item) {
-            const itemRect = item.getBoundingClientRect();
-            const navRect = document.querySelector('.nav-bar').getBoundingClientRect();
-            
-            navIndicator.style.width = `${itemRect.width}px`;
-            navIndicator.style.left = `${itemRect.left - navRect.left}px`;
-        }
-
-        // Create ripple effect
-        function createRippleEffect(e) {
-            const navBar = document.querySelector('.nav-bar');
-            const ripple = document.createElement('span');
-            ripple.classList.add('ripple');
-            
-            const rect = navBar.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-            
-            ripple.style.width = ripple.style.height = `${size}px`;
-            ripple.style.left = `${x}px`;
-            ripple.style.top = `${y}px`;
-            
-            navBar.appendChild(ripple);
-            
-            setTimeout(() => {
-                ripple.remove();
-            }, 800);
-        }
-
-        // Check active page and set the active nav item
-        function checkActivePage() {
-            const currentPage = window.location.pathname.split('/').pop();
-            
-            if (currentPage === 'index.html' || !currentPage) {
-                // Home page
-                setActiveNavItem('home');
-            } else if (currentPage === 'transactions.html') {
-                // Transactions page
-                setActiveNavItem('transactions');
-            } else if (['data.html', 'airtime.html', 'game.html', 'store.html', 'cable.html', 'result.html'].includes(currentPage)) {
-                // Service pages
-                setActiveNavItem('services');
-            } else if (currentPage === 'profile.html') {
-                // Account page
-                setActiveNavItem('account');
-            }
-        }
-
-        // Set active nav item
-        function setActiveNavItem(page) {
+            // Update navigation
             navItems.forEach(item => {
                 if (item.dataset.page === page) {
                     item.classList.add('active');
@@ -1767,6 +1535,202 @@
                     item.classList.remove('active');
                 }
             });
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+        
+        // Update amount in summary
+        function updateAmount(amount) {
+            selectedAmount = amount;
+            
+            // Format amount with commas
+            const formattedAmount = amount.toLocaleString('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2
+            }).replace('NGN', '₦');
+            
+            // Calculate total
+            const total = amount + serviceFee;
+            
+            // Format total with commas
+            const formattedTotal = total.toLocaleString('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2
+            }).replace('NGN', '₦');
+            
+            // Update summary
+            summaryAmount.textContent = formattedAmount;
+            summaryTotal.textContent = formattedTotal;
+            
+            // Enable/disable pay button
+            payButton.disabled = amount < 100;
+        }
+        
+        // Initiate payment
+        function initiatePayment() {
+            // Show loading overlay
+            loadingOverlay.classList.remove('hide');
+            
+            // Calculate total amount (including service fee)
+            const totalAmount = selectedAmount + serviceFee;
+            
+            // Generate a reference
+            const reference = 'VW_' + Math.floor(Math.random() * 1000000000) + '_' + new Date().getTime();
+            
+            // Get user email
+            const userEmail = `${userId}@veltrawave.com`;
+            
+            // Initialize Paystack payment
+            if (typeof window.PaystackPop !== "undefined") {
+                const handler = window.PaystackPop.setup({
+                    key: "pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // Replace with your Paystack public key
+                    email: userEmail,
+                    amount: totalAmount * 100, // Paystack amount is in kobo (100 kobo = 1 Naira)
+                    currency: "NGN",
+                    ref: reference,
+                    metadata: {
+                        custom_fields: [
+                            {
+                                display_name: "User ID",
+                                variable_name: "user_id",
+                                value: userId,
+                            },
+                            {
+                                display_name: "Service Fee",
+                                variable_name: "service_fee",
+                                value: serviceFee,
+                            },
+                        ],
+                    },
+                    callback: function(response) {
+                        // Payment was successful
+                        processSuccessfulPayment(response.reference, totalAmount, selectedAmount);
+                    },
+                    onClose: function() {
+                        // User closed the payment modal
+                        loadingOverlay.classList.add('hide');
+                        showToastNotification("Payment cancelled");
+                    },
+                });
+                
+                // Open the payment modal
+                handler.openIframe();
+            } else {
+                // For testing - simulate successful payment
+                setTimeout(() => {
+                    processSuccessfulPayment(reference, totalAmount, selectedAmount);
+                }, 2000);
+            }
+        }
+        
+        // Process successful payment
+        async function processSuccessfulPayment(reference, totalAmount, actualAmount) {
+            try {
+                // Create transaction record
+                const transactionData = {
+                    user_id: userId,
+                    reference: reference,
+                    amount: actualAmount,
+                    service_fee: serviceFee,
+                    total_amount: totalAmount,
+                    type: 'wallet',
+                    title: 'Wallet Funding',
+                    description: `Wallet funded with ₦${actualAmount.toLocaleString()}`,
+                    payment_method: selectedMethod,
+                    status: 'success',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Add transaction to Firestore
+                const userRef = db.collection("users").doc(userId);
+                const transactionsRef = collection(userRef, "transactions");
+                await db.collection('users').doc(userId).collection('transactions').add(transactionData);
+                
+                // Update user balance using a transaction
+                await db.runTransaction(async (transaction) => {
+                    const userDoc = await transaction.get(userRef);
+                    
+                    if (!userDoc.exists()) {
+                        // Create user if not exists
+                        transaction.set(userRef, {
+                            user_id: userId,
+                            balance: actualAmount,
+                            updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    } else {
+                        // Update existing user
+                        const userData = userDoc.data();
+                        const newBalance = (userData.balance || 0) + actualAmount;
+                        
+                        transaction.update(userRef, {
+                            balance: newBalance,
+                            updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                });
+                
+                // Add notification
+                await db.collection('users').doc(userId).collection('notifications').add({
+                    text: `Your wallet has been funded with ₦${actualAmount.toLocaleString()}`,
+                    type: "transaction",
+                    read: false,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Update local balance
+                userBalance += actualAmount;
+                updateBalanceDisplay();
+                
+                // Reload transactions
+                loadTransactions(userId);
+                
+                // Hide loading overlay
+                loadingOverlay.classList.add('hide');
+                
+                // Show success toast
+                showToastNotification("Wallet funded successfully!");
+                
+                // Reset form
+                amountInput.value = '';
+                selectedAmount = 0;
+                updateAmount(0);
+                
+                // Navigate back to home after 2 seconds
+                setTimeout(() => {
+                    navigateToPage('home');
+                }, 2000);
+            } catch (error) {
+                console.error("Error processing payment: ", error);
+                
+                // Hide loading overlay
+                loadingOverlay.classList.add('hide');
+                
+                // Show error notification
+                showToastNotification('Error processing payment: ' + error.message);
+            }
+        }
+        
+        // Show toast notification
+        function showToastNotification(message) {
+            toastNotification.textContent = message;
+            toastNotification.classList.add('show');
+            
+            setTimeout(() => {
+                toastNotification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Set indicator position for navigation
+        function setIndicatorPosition(item) {
+            const itemRect = item.getBoundingClientRect();
+            const navRect = document.querySelector('.nav-bar').getBoundingClientRect();
+            const navIndicator = document.querySelector('.nav-indicator');
+            
+            navIndicator.style.width = `${itemRect.width}px`;
+            navIndicator.style.left = `${itemRect.left - navRect.left}px`;
         }
     </script>
 </body>
