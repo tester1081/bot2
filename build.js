@@ -1,83 +1,59 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs")
+const path = require("path")
 
-// Read the HTML files
-const htmlFiles = ["index.html", "fund-wallet.html", "data.html", "cable.html", "account.html", "admin.html", "login.html"];
-const outputDir = path.join(__dirname, 'public');
+// Define the directory containing HTML files and the output directory
+const htmlDir = "./"
+const outputDir = "./"
 
-// Create output directory if it doesn't exist
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
-}
+// List of HTML files to process
+const htmlFiles = [
+  "index.html",
+  "login.html",
+  "admin.html",
+  "data.html",
+  "cable.html",
+  "account.html",
+  "fund-wallet.html",
+]
 
 // Process each HTML file
-htmlFiles.forEach(htmlFile => {
-  const htmlPath = path.join(__dirname, htmlFile);
-  
+htmlFiles.forEach((htmlFile) => {
+  const htmlPath = path.join(htmlDir, htmlFile)
+
   // Skip if file doesn't exist
   if (!fs.existsSync(htmlPath)) {
-    console.log(`Warning: ${htmlFile} not found. Skipping.`);
-    return;
+    console.log(`Warning: ${htmlFile} not found. Skipping.`)
+    return
   }
-  
-  let htmlContent = fs.readFileSync(htmlPath, 'utf8');
+
+  let htmlContent = fs.readFileSync(htmlPath, "utf8")
 
   // Replace environment variable placeholders
-  const envVars = [
-    'NEXT_PUBLIC_FIREBASE_API_KEY',
-    'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
-    'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
-    'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-    'NEXT_PUBLIC_FIREBASE_APP_ID',
-    'NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY'
-  ];
+  const envVars = {
+    NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
+    NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
+    NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
+  }
 
-  envVars.forEach(varName => {
-    const value = process.env[varName] || '';
-    // Use a regular expression to replace all occurrences
-    const regex = new RegExp(`%${varName}%`, 'g');
-    htmlContent = htmlContent.replace(regex, value);
-  });
+  // Debug environment variables
+  console.log(`Processing ${htmlFile}:`)
+  Object.keys(envVars).forEach((varName) => {
+    const value = envVars[varName]
+    console.log(`  ${varName}: ${value ? "(set)" : "(not set)"}`)
 
-  // Write the processed HTML to the output directory
-  fs.writeFileSync(path.join(outputDir, htmlFile), htmlContent);
-  console.log(`Processed ${htmlFile} successfully!`);
-});
+    // Replace all occurrences of %VARIABLE_NAME% with the actual value
+    const regex = new RegExp(`%${varName}%`, "g")
+    htmlContent = htmlContent.replace(regex, value)
+  })
 
-// Copy logo.png if it exists
-const logoPath = path.join(__dirname, 'logo.png');
-const logoOutputPath = path.join(outputDir, 'logo.png');
+  // Write the processed HTML back to the same file
+  fs.writeFileSync(path.join(outputDir, htmlFile), htmlContent)
+  console.log(`Processed ${htmlFile} successfully!`)
+})
 
-if (fs.existsSync(logoPath)) {
-  fs.copyFileSync(logoPath, logoOutputPath);
-  console.log('Logo copied successfully!');
-} else {
-  console.log('Warning: logo.png not found. Please add it to your project.');
-}
+console.log("All HTML files processed successfully!")
 
-// Create API directory and config.js
-const apiDir = path.join(outputDir, 'api');
-if (!fs.existsSync(apiDir)) {
-  fs.mkdirSync(apiDir, { recursive: true });
-}
-
-// Create config.js file
-const configJsContent = `
-export default function handler(req, res) {
-  res.status(200).json({
-    FIREBASE_API_KEY: "${process.env.NEXT_PUBLIC_FIREBASE_API_KEY || ''}",
-    FIREBASE_AUTH_DOMAIN: "${process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || ''}",
-    FIREBASE_PROJECT_ID: "${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''}",
-    FIREBASE_STORAGE_BUCKET: "${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || ''}",
-    FIREBASE_MESSAGING_SENDER_ID: "${process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || ''}",
-    FIREBASE_APP_ID: "${process.env.NEXT_PUBLIC_FIREBASE_APP_ID || ''}",
-    PAYSTACK_PUBLIC_KEY: "${process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}"
-  });
-}
-`;
-
-fs.writeFileSync(path.join(apiDir, 'config.js'), configJsContent);
-console.log('API config.js created successfully!');
-
-console.log('Build completed successfully!');
