@@ -1409,6 +1409,51 @@
             background: rgba(255, 255, 255, 0.15);
         }
         
+        /* API Integration Section */
+        .api-info {
+            background: rgba(45, 127, 249, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .api-info-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .api-info-title i {
+            color: var(--primary);
+        }
+        
+        .api-info-content {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .api-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 225, 160, 0.1);
+            color: var(--success);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+        
+        .api-status.error {
+            background: rgba(255, 94, 125, 0.1);
+            color: var(--error);
+        }
+        
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .networks-grid {
@@ -1526,6 +1571,21 @@
             </div>
         </div>
         
+        <!-- API Integration Info -->
+        <div class="api-info">
+            <div class="api-info-title">
+                <i class="fas fa-plug"></i>
+                N3TDATA API Integration
+            </div>
+            <div class="api-info-content">
+                This page is now connected to the N3TDATA API for direct data plan purchases. All transactions are processed securely and instantly.
+            </div>
+            <div class="api-status" id="api-status">
+                <i class="fas fa-check-circle"></i>
+                API Connected
+            </div>
+        </div>
+        
         <!-- Live Indicators -->
         <div class="live-users">
             <div class="live-users-avatars">
@@ -1552,27 +1612,27 @@
             <div class="network-selection">
                 <div class="section-title">Select Network</div>
                 <div class="networks-grid">
-                    <div class="network-card active" data-network="mtn">
+                    <div class="network-card active" data-network="mtn" data-network-id="1">
                         <div class="network-logo mtn">
                             <i class="fas fa-signal"></i>
                         </div>
                         <div class="network-name">MTN</div>
                     </div>
-                    <div class="network-card disabled" data-network="airtel">
+                    <div class="network-card disabled" data-network="airtel" data-network-id="2">
                         <div class="network-logo airtel">
                             <i class="fas fa-signal"></i>
                         </div>
                         <div class="network-name">Airtel</div>
                         <div class="coming-soon-badge">Soon</div>
                     </div>
-                    <div class="network-card disabled" data-network="glo">
+                    <div class="network-card disabled" data-network="glo" data-network-id="3">
                         <div class="network-logo glo">
                             <i class="fas fa-signal"></i>
                         </div>
                         <div class="network-name">Glo</div>
                         <div class="coming-soon-badge">Soon</div>
                     </div>
-                    <div class="network-card disabled" data-network="9mobile">
+                    <div class="network-card disabled" data-network="9mobile" data-network-id="4">
                         <div class="network-logo etisalat">
                             <i class="fas fa-signal"></i>
                         </div>
@@ -1588,9 +1648,9 @@
                     <label class="form-label">Plan Type</label>
                     <select class="form-select" id="plan-type" required>
                         <option value="" selected disabled>Select Plan Type</option>
-                        <option value="data">Data Plan</option>
-                        <option value="social">Social Bundle</option>
-                        <option value="corporate">Corporate Plan</option>
+                        <option value="GIFTING">GIFTING</option>
+                        <option value="SME">SME</option>
+                        <option value="CORPORATE">CORPORATE</option>
                     </select>
                 </div>
                 
@@ -1598,11 +1658,7 @@
                     <label class="form-label">Select Data Plan</label>
                     <select class="form-select" id="data-plan" required>
                         <option value="" selected disabled>Select Data Plan</option>
-                        <option value="500mb">500MB - 1 Day - ₦129</option>
-                        <option value="1gb">1GB - 1 Day - ₦249</option>
-                        <option value="2.5gb">2.5GB - 2 Days - ₦519</option>
-                        <option value="5gb">5GB - 7 Days - ₦1,299</option>
-                        <option value="10gb">10GB - 30 Days - ₦2,499</option>
+                        <!-- Plans will be loaded dynamically based on plan type -->
                     </select>
                 </div>
                 
@@ -1668,7 +1724,7 @@
                 </div>
                 
                 <div class="plans-grid">
-                    <div class="plan-card" data-plan="500mb-1day" data-id="manual-1day-500mb" data-price="129" data-original-price="150">
+                    <div class="plan-card" data-plan="500mb-1day" data-id="manual-1day-500mb" data-price="129" data-original-price="150" data-plan-id="1">
                         <div class="plan-data">500MB</div>
                         <div class="plan-validity">1 Day</div>
                         <div class="plan-price">
@@ -1677,7 +1733,7 @@
                         </div>
                     </div>
                     
-                    <div class="plan-card" data-plan="600mb-1day" data-id="manual-1day-600mb" data-price="159" data-original-price="180">
+                    <div class="plan-card" data-plan="600mb-1day" data-id="manual-1day-600mb" data-price="159" data-original-price="180" data-plan-id="2">
                         <div class="plan-data">600MB</div>
                         <div class="plan-validity">1 Day</div>
                         <div class="plan-price">
@@ -1686,7 +1742,7 @@
                         </div>
                     </div>
                     
-                    <div class="plan-card" data-plan="2.5gb-1day" data-id="manual-1day-2.5gb" data-price="519" data-original-price="600" data-badge="hot">
+                    <div class="plan-card" data-plan="2.5gb-1day" data-id="manual-1day-2.5gb" data-price="519" data-original-price="600" data-badge="hot" data-plan-id="3">
                         <div class="badge hot">HOT!</div>
                         <div class="plan-data">2.5GB</div>
                         <div class="plan-validity">1 Day</div>
@@ -1696,7 +1752,7 @@
                         </div>
                     </div>
                     
-                    <div class="plan-card" data-plan="4.5gb-1day" data-id="manual-1day-4.5gb" data-price="1299" data-original-price="1500">
+                    <div class="plan-card" data-plan="4.5gb-1day" data-id="manual-1day-4.5gb" data-price="1299" data-original-price="1500" data-plan-id="4">
                         <div class="plan-data">4.5GB</div>
                         <div class="plan-validity">1 Day</div>
                         <div class="plan-price">
@@ -1720,7 +1776,7 @@
                 </div>
                 
                 <div class="plans-grid">
-                    <div class="plan-card" data-plan="13gb-7day" data-id="manual-7day-13gb" data-price="2599" data-original-price="3000">
+                    <div class="plan-card" data-plan="13gb-7day" data-id="manual-7day-13gb" data-price="2599" data-original-price="3000" data-plan-id="5">
                         <div class="plan-data">13GB</div>
                         <div class="plan-validity">7 Days</div>
                         <div class="plan-price">
@@ -1729,7 +1785,7 @@
                         </div>
                     </div>
                     
-                    <div class="plan-card" data-plan="18gb-7day" data-id="manual-7day-18gb" data-price="4549" data-original-price="5200">
+                    <div class="plan-card" data-plan="18gb-7day" data-id="manual-7day-18gb" data-price="4549" data-original-price="5200" data-plan-id="6">
                         <div class="plan-data">18GB</div>
                         <div class="plan-validity">7 Days</div>
                         <div class="plan-price">
@@ -1738,7 +1794,7 @@
                         </div>
                     </div>
                     
-                    <div class="plan-card" data-plan="22gb-7day" data-id="manual-7day-22gb" data-price="5199" data-original-price="6000" data-badge="popular">
+                    <div class="plan-card" data-plan="22gb-7day" data-id="manual-7day-22gb" data-price="5199" data-original-price="6000" data-badge="popular" data-plan-id="7">
                         <div class="badge popular">MOST POPULAR</div>
                         <div class="plan-data">22GB</div>
                         <div class="plan-validity">7 Days</div>
@@ -1763,7 +1819,7 @@
                 </div>
                 
                 <div class="plans-grid">
-                    <div class="plan-card" data-plan="30gb-14day" data-id="manual-14day-30gb" data-price="6499" data-original-price="7500" data-badge="value">
+                    <div class="plan-card" data-plan="30gb-14day" data-id="manual-14day-30gb" data-price="6499" data-original-price="7500" data-badge="value" data-plan-id="8">
                         <div class="badge value">BEST VALUE</div>
                         <div class="plan-data">30GB</div>
                         <div class="plan-validity">14 Days</div>
@@ -1788,7 +1844,7 @@
                 </div>
                 
                 <div class="plans-grid">
-                    <div class="plan-card" data-plan="39gb-30day" data-id="manual-30day-39gb" data-price="7799" data-original-price="9000">
+                    <div class="plan-card" data-plan="39gb-30day" data-id="manual-30day-39gb" data-price="7799" data-original-price="9000" data-plan-id="9">
                         <div class="plan-data">39GB</div>
                         <div class="plan-validity">30 Days</div>
                         <div class="plan-price">
@@ -1797,7 +1853,7 @@
                         </div>
                     </div>
                     
-                    <div class="plan-card" data-plan="53gb-30day" data-id="manual-30day-53gb" data-price="12999" data-original-price="15000">
+                    <div class="plan-card" data-plan="53gb-30day" data-id="manual-30day-53gb" data-price="12999" data-original-price="15000" data-plan-id="10">
                         <div class="plan-data">53GB</div>
                         <div class="plan-validity">30 Days</div>
                         <div class="plan-price">
@@ -1942,11 +1998,41 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         
+        // N3TDATA API Configuration
+        const N3TDATA_ACCESS_TOKEN = "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d";
+        const N3TDATA_API_URL = "https://n3tdata.com/api/data";
+        
         // Global variables
         let currentUser = null;
         let userNotifications = [];
         let dataPlans = [];
         let fastTransferEnabled = false;
+        let selectedNetwork = 1; // Default to MTN (1)
+        let selectedPlanType = "";
+        let selectedPlanId = null;
+        
+        // Data Plan Mapping
+        const dataPlanMapping = {
+            "GIFTING": [
+                { id: 1, name: "500MB - 1 Day", data: "500MB", price: 129, validity: "1 Day" },
+                { id: 2, name: "1GB - 1 Day", data: "1GB", price: 249, validity: "1 Day" },
+                { id: 3, name: "2.5GB - 2 Days", data: "2.5GB", price: 519, validity: "2 Days" },
+                { id: 4, name: "5GB - 7 Days", data: "5GB", price: 1299, validity: "7 Days" },
+                { id: 5, name: "10GB - 30 Days", data: "10GB", price: 2499, validity: "30 Days" }
+            ],
+            "SME": [
+                { id: 6, name: "1GB - 30 Days", data: "1GB", price: 300, validity: "30 Days" },
+                { id: 7, name: "2GB - 30 Days", data: "2GB", price: 600, validity: "30 Days" },
+                { id: 8, name: "3GB - 30 Days", data: "3GB", price: 900, validity: "30 Days" },
+                { id: 9, name: "5GB - 30 Days", data: "5GB", price: 1500, validity: "30 Days" }
+            ],
+            "CORPORATE": [
+                { id: 10, name: "1GB - 30 Days", data: "1GB", price: 260, validity: "30 Days" },
+                { id: 11, name: "2GB - 30 Days", data: "2GB", price: 520, validity: "30 Days" },
+                { id: 12, name: "5GB - 30 Days", data: "5GB", price: 1300, validity: "30 Days" },
+                { id: 13, name: "10GB - 30 Days", data: "10GB", price: 2600, validity: "30 Days" }
+            ]
+        };
         
         // DOM Elements
         const modeOptions = document.querySelectorAll('.mode-option');
@@ -1960,6 +2046,9 @@
         const notificationsPanel = document.getElementById('notifications-panel');
         const notificationsClose = document.getElementById('notifications-close');
         const notificationsContent = document.getElementById('notifications-content');
+        const planTypeSelect = document.getElementById('plan-type');
+        const dataPlanSelect = document.getElementById('data-plan');
+        const apiStatus = document.getElementById('api-status');
         
         // Check Authentication State
         document.addEventListener('DOMContentLoaded', function() {
@@ -1970,6 +2059,7 @@
                     fetchUserData(user.uid);
                     fetchDataPlans();
                     fetchUserNotifications(user.uid);
+                    testApiConnection();
                 } else {
                     // User is not signed in, redirect to login
                     window.location.href = 'login.html';
@@ -1984,6 +2074,32 @@
             initEventListeners();
         });
         
+        // Test API Connection
+        function testApiConnection() {
+            fetch(N3TDATA_API_URL, {
+                method: 'OPTIONS',
+                headers: {
+                    'Authorization': `Token ${N3TDATA_ACCESS_TOKEN}`
+                }
+            })
+            .then(response => {
+                if (response.ok || response.status === 200) {
+                    apiStatus.innerHTML = '<i class="fas fa-check-circle"></i> API Connected';
+                    apiStatus.classList.remove('error');
+                } else {
+                    apiStatus.innerHTML = '<i class="fas fa-times-circle"></i> API Connection Failed';
+                    apiStatus.classList.add('error');
+                    showToast('error', 'API Error', 'Failed to connect to N3TDATA API');
+                }
+            })
+            .catch(error => {
+                console.error('API connection test failed:', error);
+                apiStatus.innerHTML = '<i class="fas fa-times-circle"></i> API Connection Failed';
+                apiStatus.classList.add('error');
+                showToast('error', 'API Error', 'Failed to connect to N3TDATA API');
+            });
+        }
+        
         // Fetch User Data
         async function fetchUserData(userId) {
             try {
@@ -1993,9 +2109,6 @@
                     const userData = userDoc.data();
                     // Update UI with user data
                     console.log('User data:', userData);
-                    
-                    // Show user balance somewhere in the UI if needed
-                    // document.getElementById('user-balance').textContent = `₦${userData.balance.toLocaleString()}`;
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -2028,22 +2141,24 @@
         
         // Update Data Plan Dropdown
         function updateDataPlanDropdown() {
-            const dataPlanSelect = document.getElementById('data-plan');
-            const planType = document.getElementById('plan-type').value;
-            
             // Clear existing options except the first one
             while (dataPlanSelect.options.length > 1) {
                 dataPlanSelect.remove(1);
             }
             
-            // Filter plans by type if needed
-            let filteredPlans = dataPlans.filter(plan => plan.provider === 'mtn');
+            // Get selected plan type
+            const planType = planTypeSelect.value;
+            
+            if (!planType) return;
+            
+            // Get plans for selected type
+            const plans = dataPlanMapping[planType] || [];
             
             // Add plans to dropdown
-            filteredPlans.forEach(plan => {
+            plans.forEach(plan => {
                 const option = document.createElement('option');
                 option.value = plan.id;
-                option.textContent = `${plan.data} - ${plan.validity} - ₦${plan.price.toLocaleString()}`;
+                option.textContent = `${plan.name} - ₦${plan.price}`;
                 dataPlanSelect.appendChild(option);
             });
         }
@@ -2233,6 +2348,17 @@
                 });
             });
             
+            // Plan Type Change
+            planTypeSelect.addEventListener('change', function() {
+                selectedPlanType = this.value;
+                updateDataPlanDropdown();
+            });
+            
+            // Data Plan Change
+            dataPlanSelect.addEventListener('change', function() {
+                selectedPlanId = this.value;
+            });
+            
             // Fast Transfer Toggle
             fastTransferToggle.addEventListener('change', function() {
                 fastTransferEnabled = this.checked;
@@ -2332,7 +2458,8 @@
                         validity: planValidity,
                         price: this.dataset.price,
                         originalPrice: this.dataset.originalPrice,
-                        badge: this.dataset.badge || null
+                        badge: this.dataset.badge || null,
+                        planId: this.dataset.planId
                     };
                     
                     showToast('success', 'Plan Selected', `Selected ${planData} plan for ${planValidity}`);
@@ -2362,13 +2489,18 @@
                     return;
                 }
                 
+                if (!dataPlan.value) {
+                    showToast('error', 'Invalid Plan', 'Please select a data plan');
+                    return;
+                }
+                
                 // Get selected plan text
                 const selectedPlanText = dataPlan.options[dataPlan.selectedIndex].text;
                 
                 // Update confirmation modal
-                confirmPlan.textContent = selectedPlanText.split(' - ')[0] + ' - ' + selectedPlanText.split(' - ')[1];
+                confirmPlan.textContent = selectedPlanText.split(' - ')[0];
                 confirmNumber.textContent = phoneNumber;
-                confirmAmount.textContent = selectedPlanText.split(' - ')[2];
+                confirmAmount.textContent = selectedPlanText.split(' - ')[1];
                 
                 // Show confirmation modal
                 confirmationModal.classList.add('show');
@@ -2380,6 +2512,11 @@
                 
                 if (!phoneNumber || phoneNumber.length !== 11) {
                     showToast('error', 'Invalid Number', 'Please enter a valid 11-digit phone number');
+                    return;
+                }
+                
+                if (!selectedPlan) {
+                    showToast('error', 'No Plan Selected', 'Please select a data plan');
                     return;
                 }
                 
@@ -2422,6 +2559,9 @@
                     // Update active network
                     networkCards.forEach(c => c.classList.remove('active'));
                     this.classList.add('active');
+                    
+                    // Update selected network
+                    selectedNetwork = parseInt(this.dataset.networkId);
                     
                     // Update network indicator
                     const networkName = this.querySelector('.network-name').textContent;
@@ -2468,40 +2608,153 @@
                 // Determine if this is from automatic or manual mode
                 const isManual = document.querySelector('.mode-option.active').dataset.mode === 'manual';
                 
-                // Create request data
-                const requestData = {
-                    customerName: currentUser.displayName || 'User',
-                    userId: currentUser.uid,
-                    phoneNumber: phoneNumber,
-                    planName: planText,
-                    amount: parseInt(amountText.replace(/[^\d]/g, '')),
-                    status: 'pending',
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    fastTransfer: fastTransferEnabled
+                // Get plan ID
+                let planId;
+                if (isManual) {
+                    planId = selectedPlan.planId;
+                } else {
+                    planId = selectedPlanId;
+                }
+                
+                // Generate a unique request ID
+                const requestId = `Data_${Date.now()}`;
+                
+                // Create API request payload
+                const payload = {
+                    network: selectedNetwork,
+                    phone: phoneNumber.replace(/^0/, '234'), // Convert to international format
+                    data_plan: parseInt(planId),
+                    bypass: false,
+                    'request-id': requestId
                 };
                 
-                // Add to dataRequests collection
-                const requestRef = await db.collection('dataRequests').add(requestData);
+                console.log('Sending API request:', payload);
                 
-                // Create notification for user
-                await db.collection('users').doc(currentUser.uid)
-                    .collection('notifications')
-                    .add({
-                        title: 'Data Purchase Request',
-                        text: `Your request for ${planText} to ${phoneNumber} has been submitted and is pending approval.`,
-                        type: 'info',
-                        read: false,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                
-                // Close modal
-                confirmationModal.classList.remove('show');
-                
-                // Show success toast
-                if (fastTransferEnabled) {
-                    showToast('success', 'Request Sent', 'Your data request has been sent to WhatsApp for faster processing');
+                // Call N3TDATA API
+                if (!fastTransferEnabled) {
+                    // Make API request
+                    try {
+                        const response = await fetch(N3TDATA_API_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Token ${N3TDATA_ACCESS_TOKEN}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                        
+                        const responseData = await response.json();
+                        
+                        if (response.ok) {
+                            console.log('API response:', responseData);
+                            
+                            // Create request data for Firestore
+                            const requestData = {
+                                customerName: currentUser.displayName || 'User',
+                                userId: currentUser.uid,
+                                phoneNumber: phoneNumber,
+                                planName: planText,
+                                amount: parseInt(amountText.replace(/[^\d]/g, '')),
+                                status: 'completed',
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                                fastTransfer: fastTransferEnabled,
+                                apiResponse: responseData,
+                                requestId: requestId
+                            };
+                            
+                            // Add to dataRequests collection
+                            await db.collection('dataRequests').add(requestData);
+                            
+                            // Create notification for user
+                            await db.collection('users').doc(currentUser.uid)
+                                .collection('notifications')
+                                .add({
+                                    title: 'Data Purchase Successful',
+                                    text: `Your ${planText} data has been successfully delivered to ${phoneNumber}. ${responseData.message || ''}`,
+                                    type: 'success',
+                                    read: false,
+                                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            
+                            // Close modal
+                            confirmationModal.classList.remove('show');
+                            
+                            // Show success toast
+                            showToast('success', 'Purchase Successful', 'Your data has been delivered successfully');
+                        } else {
+                            throw new Error(responseData.message || 'API request failed');
+                        }
+                    } catch (error) {
+                        console.error('API request error:', error);
+                        
+                        // Create request data for Firestore (failed)
+                        const requestData = {
+                            customerName: currentUser.displayName || 'User',
+                            userId: currentUser.uid,
+                            phoneNumber: phoneNumber,
+                            planName: planText,
+                            amount: parseInt(amountText.replace(/[^\d]/g, '')),
+                            status: 'pending',
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            fastTransfer: fastTransferEnabled,
+                            requestId: requestId,
+                            error: error.message
+                        };
+                        
+                        // Add to dataRequests collection
+                        await db.collection('dataRequests').add(requestData);
+                        
+                        // Create notification for user
+                        await db.collection('users').doc(currentUser.uid)
+                            .collection('notifications')
+                            .add({
+                                title: 'Data Purchase Failed',
+                                text: `Your request for ${planText} to ${phoneNumber} failed. Our admin will process it manually.`,
+                                type: 'error',
+                                read: false,
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        
+                        // Close modal
+                        confirmationModal.classList.remove('show');
+                        
+                        // Show error toast
+                        showToast('error', 'Purchase Failed', 'API request failed. Our admin will process it manually.');
+                    }
                 } else {
-                    showToast('success', 'Request Submitted', 'Your data request has been submitted successfully');
+                    // Fast transfer mode - send to admin dashboard
+                    const requestData = {
+                        customerName: currentUser.displayName || 'User',
+                        userId: currentUser.uid,
+                        phoneNumber: phoneNumber,
+                        planName: planText,
+                        amount: parseInt(amountText.replace(/[^\d]/g, '')),
+                        status: 'pending',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        fastTransfer: true,
+                        requestId: requestId,
+                        whatsappNumber: '07067479043'
+                    };
+                    
+                    // Add to dataRequests collection
+                    await db.collection('dataRequests').add(requestData);
+                    
+                    // Create notification for user
+                    await db.collection('users').doc(currentUser.uid)
+                        .collection('notifications')
+                        .add({
+                            title: 'Data Purchase Request',
+                            text: `Your request for ${planText} to ${phoneNumber} has been sent to WhatsApp for faster processing.`,
+                            type: 'info',
+                            read: false,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    
+                    // Close modal
+                    confirmationModal.classList.remove('show');
+                    
+                    // Show success toast
+                    showToast('success', 'Request Sent', 'Your data request has been sent to WhatsApp for faster processing');
                 }
                 
                 // Reset form
@@ -2514,9 +2767,13 @@
                     document.getElementById('selected-plan-display').classList.remove('active');
                     document.getElementById('place-order-btn').disabled = true;
                     document.getElementById('manual-phone-number').value = '';
+                    selectedPlan = null;
                 } else {
                     // Reset automatic form
                     document.getElementById('data-form').reset();
+                    selectedPlanId = null;
+                    selectedPlanType = "";
+                    updateDataPlanDropdown();
                 }
                 
                 // Reset confirmation button
@@ -2583,4 +2840,41 @@
             // Set toast content
             toast.innerHTML = `
                 <div class="toast-icon">
-                    <i class="fas f
+                    <i class="fas fa-${icon}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <div class="toast-close">
+                    <i class="fas fa-times"></i>
+                </div>
+            `;
+            
+            // Add toast to container
+            toastContainer.appendChild(toast);
+            
+            // Add click event to close button
+            toast.querySelector('.toast-close').addEventListener('click', function() {
+                toast.remove();
+            });
+            
+            // Auto remove toast after animation completes
+            setTimeout(() => {
+                toast.remove();
+            }, 5500);
+        }
+        
+        // Window resize handler for indicators
+        window.addEventListener('resize', function() {
+            setNavIndicatorPosition(document.querySelector('.nav-item.active'));
+            setModeIndicatorPosition(document.querySelector('.mode-option.active'));
+        });
+        
+        // Show initial toast on page load
+        setTimeout(() => {
+            showToast('info', 'Welcome', 'Buy data at the best prices with VeltraWave');
+        }, 1000);
+    </script>
+</body>
+</html>
