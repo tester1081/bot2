@@ -462,15 +462,15 @@
     </div>
     
     <script>
-        // Firebase Configuration - Hardcoded for testing
+        // Firebase Configuration - Using environment variables
         const firebaseConfig = {
-            apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
-            authDomain: "veltrawave-vtu.firebaseapp.com",
-            projectId: "veltrawave-vtu",
-            storageBucket: "veltrawave-vtu.firebasestorage.app",
-            messagingSenderId: "431351611304",
-            appId: "1:431351611304:web:7381dd659920f9f325a79d",
-            measurementId: "G-HRHN8GJCR3"
+            apiKey: "%NEXT_PUBLIC_FIREBASE_API_KEY%",
+            authDomain: "%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%",
+            projectId: "%NEXT_PUBLIC_FIREBASE_PROJECT_ID%",
+            storageBucket: "%NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET%",
+            messagingSenderId: "%NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID%",
+            appId: "%NEXT_PUBLIC_FIREBASE_APP_ID%",
+            measurementId: "%NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID%"
         };
 
         // Initialize Firebase
@@ -484,6 +484,10 @@
         const loginButton = document.getElementById('login-button');
         const errorMessage = document.getElementById('error-message');
         const toastNotification = document.getElementById('toast-notification');
+        
+        // Flag to prevent auth state change loop
+        let isCheckingAdmin = false;
+        let isSigningOut = false;
         
         // Initialize the app
         document.addEventListener('DOMContentLoaded', async function() {
@@ -504,24 +508,32 @@
         // Initialize the app
         async function initApp() {
             // Check if user is already logged in
-            auth.onAuthStateChanged(user => {
+            auth.onAuthStateChanged(async (user) => {
+                // Skip if we're in the process of checking admin status or signing out
+                if (isCheckingAdmin || isSigningOut) return;
+                
                 if (user) {
-                    // Check if user is an admin
-                    db.collection('admins').doc(user.uid).get()
-                        .then(doc => {
-                            if (doc.exists) {
-                                // User is an admin, redirect to admin page
-                                window.location.href = 'admin.html';
-                            } else {
-                                // User is not an admin, sign them out
-                                auth.signOut();
-                                showError('You do not have admin privileges.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error checking admin status:', error);
-                            showError('An error occurred. Please try again.');
-                        });
+                    isCheckingAdmin = true;
+                    try {
+                        // Check if user is an admin
+                        const adminDoc = await db.collection('admins').doc(user.uid).get();
+                        
+                        if (adminDoc.exists) {
+                            // User is an admin, redirect to admin page
+                            window.location.href = 'admin.html';
+                        } else {
+                            // User is not an admin, sign them out
+                            isSigningOut = true;
+                            await auth.signOut();
+                            isSigningOut = false;
+                            showError('You do not have admin privileges.');
+                        }
+                    } catch (error) {
+                        console.error('Error checking admin status:', error);
+                        showError('An error occurred. Please try again.');
+                    } finally {
+                        isCheckingAdmin = false;
+                    }
                 }
             });
             
@@ -548,6 +560,9 @@
                     // Sign in with email and password
                     const userCredential = await auth.signInWithEmailAndPassword(email, password);
                     
+                    // Set flag to prevent loop
+                    isCheckingAdmin = true;
+                    
                     // Check if user is an admin
                     const adminDoc = await db.collection('admins').doc(userCredential.user.uid).get();
                     
@@ -561,9 +576,14 @@
                         }, 1000);
                     } else {
                         // User is not an admin, sign them out
+                        isSigningOut = true;
                         await auth.signOut();
+                        isSigningOut = false;
                         showError('You do not have admin privileges.');
                     }
+                    
+                    // Reset flag
+                    isCheckingAdmin = false;
                 } catch (error) {
                     console.error('Login error:', error);
                     
