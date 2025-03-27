@@ -281,13 +281,15 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "%NEXT_PUBLIC_FIREBASE_API_KEY%",
-            authDomain: "%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%",
-            projectId: "%NEXT_PUBLIC_FIREBASE_PROJECT_ID%",
-            storageBucket: "%NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET%",
-            messagingSenderId: "%NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID%",
-            appId: "%NEXT_PUBLIC_FIREBASE_APP_ID%"
+            apiKey: "AIzaSyAQGxYFhHnZ_WKS1LJ-Z6G_aGJRgQinHjA",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.appspot.com",
+            messagingSenderId: "1234567890", // Replace with your actual value
+            appId: "1:1234567890:web:1234567890" // Replace with your actual value
         };
+
+        console.log("Firebase Config:", firebaseConfig); // For debugging
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
