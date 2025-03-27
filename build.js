@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Read the HTML files
-const htmlFiles = ["index.html", "fund-wallet.html", "data.html", "cable.html", "account.html", "admin.html"]
+const htmlFiles = ["index.html", "fund-wallet.html", "data.html", "cable.html", "account.html", "admin.html, login.html"]
 const outputDir = path.join(__dirname, 'public');
 
 // Create output directory if it doesn't exist
