@@ -1,13 +1,15 @@
-// api/config.js
-export default function handler(req, res) {
-    // Return only the public keys needed by the client
-    res.status(200).json({
-      FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-      FIREBASE_AUTH_DOMAIN: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-      FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      FIREBASE_STORAGE_BUCKET: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-      FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-      FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-      PAYSTACK_PUBLIC_KEY: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY
-    });
+// Static configuration file for client-side use
+const config = {
+  firebase: {
+    apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
+    authDomain: "veltrawave-vtu.firebaseapp.com",
+    projectId: "veltrawave-vtu",
+    storageBucket: "veltrawave-vtu.firebasestorage.app",
+    messagingSenderId: "431351611304",
+    appId: "1:431351611304:web:7381dd659920f9f325a79d",
+    measurementId: "G-HRHN8GJCR3"
+  },
+  paystack: {
+    publicKey: "your_paystack_public_key_here"
   }
+};
