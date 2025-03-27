@@ -2224,13 +2224,14 @@
                     });
                 });
                 
-                // Update data plan dropdowns
+                console.log('Data plans loaded:', dataPlans);
+                
+                // Update data plan dropdowns for automatic mode
                 updateDataPlanDropdown();
                 
                 // Update manual plans display
                 updateManualPlansDisplay();
                 
-                console.log('Data plans loaded:', dataPlans);
             } catch (error) {
                 console.error('Error fetching data plans:', error);
                 showToast('error', 'Error', 'Failed to load data plans');
@@ -2325,129 +2326,355 @@
             attachNetworkEventListeners();
         }
 
-        // Add a function to update manual plans display
-        function updateManualPlansDisplay() {
-            // Filter plans for manual display (provider === 'manual')
-            const manualPlans = dataPlans.filter(plan => plan.provider === 'manual');
-            
-            // Group by category
-            const groupedPlans = {};
-            manualPlans.forEach(plan => {
-                const category = plan.category || 'unknown';
-                if (!groupedPlans[category]) {
-                    groupedPlans[category] = [];
-                }
-                groupedPlans[category].push(plan);
-            });
-            
-            // Update each category
-            for (const category in groupedPlans) {
-                const plans = groupedPlans[category];
-                const categoryId = category.replace('manual-', '');
-                const plansGrid = document.querySelector(`.plan-category [data-category="manual-${categoryId}"] .plans-grid`);
-                
-                if (plansGrid) {
-                    plansGrid.innerHTML = '';
-                    
-                    plans.forEach(plan => {
-                        const planCard = document.createElement('div');
-                        planCard.className = 'plan-card';
-                        planCard.setAttribute('data-plan', plan.name.toLowerCase().replace(/\s+/g, '-'));
-                        planCard.setAttribute('data-id', `manual-${categoryId}-${plan.name.toLowerCase().replace(/\s+/g, '-')}`);
-                        planCard.setAttribute('data-price', plan.price);
-                        if (plan.originalPrice) planCard.setAttribute('data-original-price', plan.originalPrice);
-                        if (plan.badge) planCard.setAttribute('data-badge', plan.badge);
-                        planCard.setAttribute('data-plan-id', plan.id);
-                        
-                        let badgeHtml = '';
-                        if (plan.badge) {
-                            badgeHtml = `<div class="badge ${plan.badge}">${plan.badge.toUpperCase()}!</div>`;
-                        }
-                        
-                        planCard.innerHTML = `
-                            ${badgeHtml}
-                            <div class="plan-data">${plan.data}</div>
-                            <div class="plan-validity">${plan.validity}</div>
-                            <div class="plan-price">
-                                ${plan.originalPrice ? `<div class="price-old">₦${plan.originalPrice.toLocaleString()}</div>` : ''}
-                                <div class="price-new">₦${plan.price.toLocaleString()}</div>
-                            </div>
-                        `;
-                        
-                        plansGrid.appendChild(planCard);
-                    });
-                }
+        // Update Data Plan Dropdown
+        function updateDataPlanDropdown() {
+            // Clear existing options except the first one
+            while (dataPlanSelect.options.length > 1) {
+                dataPlanSelect.remove(1);
             }
             
-            // Re-attach event listeners to plan cards
+            // Get selected plan type
+            const planType = planTypeSelect.value;
+            
+            if (!planType) return;
+            
+            // Filter plans by type from Firestore data
+            const filteredPlans = dataPlans.filter(plan => 
+                plan.category && plan.category.toLowerCase().includes(planType.toLowerCase())
+            );
+            
+            if (filteredPlans.length > 0) {
+                // Add plans to dropdown
+                filteredPlans.forEach(plan => {
+                    const option = document.createElement('option');
+                    option.value = plan.id;
+                    option.textContent = `${plan.name} - ₦${plan.price}`;
+                    dataPlanSelect.appendChild(option);
+                });
+            } else {
+                // Fallback to hardcoded plans if no plans found in Firestore
+                const plans = dataPlanMapping[planType] || [];
+                
+                plans.forEach(plan => {
+                    const option = document.createElement('option');
+                    option.value = plan.id;
+                    option.textContent = `${plan.name} - ₦${plan.price}`;
+                    dataPlanSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Update manual plans display
+        function updateManualPlansDisplay() {
+            // Get all plan cards containers
+            const dayPlansGrid = document.querySelector('.plan-category:nth-child(1) .plans-grid');
+            const weekPlansGrid = document.querySelector('.plan-category:nth-child(2) .plans-grid');
+            const twoWeekPlansGrid = document.querySelector('.plan-category:nth-child(3) .plans-grid');
+            const monthPlansGrid = document.querySelector('.plan-category:nth-child(4) .plans-grid');
+            
+            // Clear existing plans
+            dayPlansGrid.innerHTML = '';
+            weekPlansGrid.innerHTML = '';
+            twoWeekPlansGrid.innerHTML = '';
+            monthPlansGrid.innerHTML = '';
+            
+            // Filter plans by provider and validity
+            const mtnPlans = dataPlans.filter(plan => 
+                plan.provider && plan.provider.toLowerCase() === 'mtn' && 
+                plan.status === true
+            );
+            
+            // Group plans by validity
+            mtnPlans.forEach(plan => {
+                let targetGrid;
+                
+                if (plan.validity && plan.validity.toLowerCase().includes('day') && !plan.validity.toLowerCase().includes('month')) {
+                    targetGrid = dayPlansGrid;
+                } else if (plan.validity && plan.validity.toLowerCase().includes('week')) {
+                    targetGrid = weekPlansGrid;
+                } else if (plan.validity && plan.validity.toLowerCase().includes('2 week')) {
+                    targetGrid = twoWeekPlansGrid;
+                } else if (plan.validity && plan.validity.toLowerCase().includes('month')) {
+                    targetGrid = monthPlansGrid;
+                }
+                
+                if (targetGrid) {
+                    // Calculate original price (10% higher than actual price)
+                    const originalPrice = Math.round(plan.price * 1.1);
+                    
+                    const planCard = document.createElement('div');
+                    planCard.className = 'plan-card';
+                    planCard.setAttribute('data-plan', plan.name.toLowerCase().replace(/\s+/g, '-'));
+                    planCard.setAttribute('data-id', `manual-${plan.id}`);
+                    planCard.setAttribute('data-price', plan.price);
+                    planCard.setAttribute('data-original-price', originalPrice);
+                    planCard.setAttribute('data-plan-id', plan.id);
+                    
+                    planCard.innerHTML = `
+                        <div class="plan-data">${plan.data}</div>
+                        <div class="plan-validity">${plan.validity}</div>
+                        <div class="plan-price">
+                            <div class="price-old">₦${originalPrice.toLocaleString()}</div>
+                            <div class="price-new">₦${plan.price.toLocaleString()}</div>
+                        </div>
+                    `;
+                    
+                    targetGrid.appendChild(planCard);
+                }
+            });
+            
+            // If no plans were loaded from Firestore, keep the default ones
+            if (dayPlansGrid.children.length === 0 && 
+                weekPlansGrid.children.length === 0 && 
+                twoWeekPlansGrid.children.length === 0 && 
+                monthPlansGrid.children.length === 0) {
+                console.log('No plans found in Firestore, using default plans');
+                return;
+            }
+            
+            // Attach event listeners to plan cards
             attachPlanCardEventListeners();
         }
 
-        // Add a function to attach event listeners to network cards and switcher items
-        function attachNetworkEventListeners() {
-            const networkCards = document.querySelectorAll('.network-card');
-            const networkSwitcherItems = document.querySelectorAll('.network-switcher-item');
-            const networkIndicator = document.getElementById('network-indicator');
-            
-            // Network card click handler
-            networkCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    // Update active network
-                    networkCards.forEach(c => c.classList.remove('active'));
-                    this.classList.add('active');
+        // Fetch User Requests
+        async function fetchUserRequests(userId) {
+            try {
+                const requestsSnapshot = await db.collection('dataRequests')
+                    .where('userId', '==', userId)
+                    .orderBy('timestamp', 'desc')
+                    .limit(10)
+                    .get();
+                
+                const requestsContainer = document.getElementById('requests-container');
+                requestsContainer.innerHTML = '';
+                
+                if (requestsSnapshot.empty) {
+                    requestsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                            <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
+                            <p>You haven't made any data purchase requests yet.</p>
+                            <button class="primary-btn" style="max-width: 200px; margin: 20px auto 0;" onclick="document.querySelector('.mode-option[data-mode=\'automatic\']').click()">
+                                Buy Data Now
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                requestsSnapshot.forEach(doc => {
+                    const request = doc.data();
+                    const timestamp = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+                    const formattedTime = formatTimestamp(timestamp);
                     
-                    // Update selected network
-                    selectedNetwork = this.dataset.networkId;
+                    const requestCard = document.createElement('div');
+                    requestCard.className = `request-card ${request.status}`;
                     
-                    // Update network indicator
-                    const networkName = this.querySelector('.network-name').textContent;
-                    networkIndicator.innerHTML = `<i class="fas fa-signal"></i> ${networkName}`;
+                    requestCard.innerHTML = `
+                        <div class="request-header">
+                            <div class="request-title">${request.planName}</div>
+                            <div class="request-status ${request.status}">${request.status.charAt(0).toUpperCase() + request.status.slice(1)}</div>
+                        </div>
+                        <div class="request-details">
+                            <div class="request-detail">
+                                <div class="request-detail-label">Phone Number</div>
+                                <div class="request-detail-value">${request.phoneNumber}</div>
+                            </div>
+                            <div class="request-detail">
+                                <div class="request-detail-label">Amount</div>
+                                <div class="request-detail-value">₦${request.amount ? request.amount.toLocaleString() : '0'}</div>
+                            </div>
+                            <div class="request-detail">
+                                <div class="request-detail-label">Date</div>
+                                <div class="request-detail-value">${formattedTime}</div>
+                            </div>
+                            <div class="request-detail">
+                                <div class="request-detail-label">Request ID</div>
+                                <div class="request-detail-value">${request.requestId || 'N/A'}</div>
+                            </div>
+                        </div>
+                        <div class="request-actions">
+                            ${request.status === 'pending' ? 
+                                `<button class="request-btn cancel-request-btn" data-id="${doc.id}">Cancel</button>
+                                <button class="request-btn primary track-request-btn" data-id="${doc.id}">Track</button>` : 
+                                `<button class="request-btn receipt-btn" data-id="${doc.id}">Receipt</button>
+                                <button class="request-btn primary buy-again-btn" data-id="${doc.id}" data-phone="${request.phoneNumber}" data-plan="${request.planName}">Buy Again</button>`
+                            }
+                        </div>
+                    `;
                     
-                    // Update network switcher
-                    networkSwitcherItems.forEach(item => {
-                        if (item.dataset.networkId === selectedNetwork) {
-                            item.classList.add('active');
-                        } else {
-                            item.classList.remove('active');
-                        }
-                    });
-                    
-                    showToast('success', 'Network Changed', `Switched to ${networkName} network`);
+                    requestsContainer.appendChild(requestCard);
                 });
-            });
-            
-            // Network switcher item click handler
-            networkSwitcherItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    // Update active network in switcher
-                    networkSwitcherItems.forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Update selected network
-                    selectedNetwork = this.dataset.networkId;
-                    
-                    // Update network cards
-                    networkCards.forEach(card => {
-                        if (card.dataset.networkId === selectedNetwork) {
-                            card.classList.add('active');
-                        } else {
-                            card.classList.remove('active');
-                        }
+                
+                // Add event listeners to buttons
+                document.querySelectorAll('.cancel-request-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        cancelRequest(this.getAttribute('data-id'));
                     });
-                    
-                    // Update network indicator
-                    const networkName = this.querySelector('.network-switcher-name').textContent;
-                    networkIndicator.innerHTML = `<i class="fas fa-signal"></i> ${networkName}`;
-                    
-                    // Close network switcher
-                    document.getElementById('network-switcher').classList.remove('show');
-                    
-                    showToast('success', 'Network Changed', `Switched to ${networkName} network`);
                 });
-            });
+                
+                document.querySelectorAll('.track-request-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        trackRequest(this.getAttribute('data-id'));
+                    });
+                });
+                
+                document.querySelectorAll('.receipt-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        showReceipt(this.getAttribute('data-id'));
+                    });
+                });
+                
+                document.querySelectorAll('.buy-again-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        buyAgain(
+                            this.getAttribute('data-id'),
+                            this.getAttribute('data-phone'),
+                            this.getAttribute('data-plan')
+                        );
+                    });
+                });
+                
+            } catch (error) {
+                console.error('Error fetching user requests:', error);
+                showToast('error', 'Error', 'Failed to load your data purchase requests');
+            }
         }
 
-        // Add a function to attach event listeners to plan cards
+        // Cancel Request
+        async function cancelRequest(requestId) {
+            try {
+                // Update the request status in Firestore
+                await db.collection('dataRequests').doc(requestId).update({
+                    status: 'cancelled',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('success', 'Request Cancelled', 'Your data purchase request has been cancelled');
+                
+                // Refresh the requests
+                fetchUserRequests(currentUser.uid);
+            } catch (error) {
+                console.error('Error cancelling request:', error);
+                showToast('error', 'Error', 'Failed to cancel your request');
+            }
+        }
+
+        // Track Request
+        function trackRequest(requestId) {
+            // Send the tracking info to dataA.html admin page
+            const adminUrl = `dataA.html?track=${requestId}`;
+            
+            // Open in new tab or redirect based on preference
+            window.open(adminUrl, '_blank');
+            
+            showToast('info', 'Request Tracking', 'Tracking information has been sent to admin');
+        }
+
+        // Show Receipt
+        function showReceipt(requestId) {
+            // Generate receipt URL
+            const receiptUrl = `receipt.html?id=${requestId}`;
+            
+            // Open in new tab
+            window.open(receiptUrl, '_blank');
+            
+            showToast('info', 'Receipt', 'Receipt has been opened in a new tab');
+        }
+
+        // Buy Again
+        function buyAgain(requestId, phoneNumber, planName) {
+            // Switch to automatic mode
+            document.querySelector('.mode-option[data-mode="automatic"]').click();
+            
+            // Fill in the phone number
+            document.getElementById('phone-number').value = phoneNumber;
+            
+            // Try to select the plan if possible
+            const planType = document.getElementById('plan-type');
+            if (planType) {
+                // Try to determine plan type from plan name
+                if (planName.includes('GIFTING')) {
+                    planType.value = 'GIFTING';
+                } else if (planName.includes('SME')) {
+                    planType.value = 'SME';
+                } else if (planName.includes('CORPORATE') || planName.includes('COOPERATE')) {
+                    planType.value = 'CORPORATE';
+                }
+                
+                // Trigger change event to load plans
+                const event = new Event('change');
+                planType.dispatchEvent(event);
+                
+                // Try to select the matching plan
+                setTimeout(() => {
+                    const dataPlan = document.getElementById('data-plan');
+                    for (let i = 0; i < dataPlan.options.length; i++) {
+                        if (dataPlan.options[i].textContent.includes(planName)) {
+                            dataPlan.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }, 500);
+            }
+            
+            showToast('info', 'Buy Again', 'Previous order details loaded for purchase');
+        }
+
+        // Navigation Bar
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Handle notifications panel
+                if (this.dataset.page === 'account') {
+                    notificationsPanel.classList.toggle('show');
+                    return;
+                }
+                
+                // Remove active class from all items
+                navItems.forEach(navItem => {
+                    navItem.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                this.classList.add('active');
+                
+                // Move indicator
+                setNavIndicatorPosition(this);
+                
+                // Create ripple effect
+                const navBar = document.querySelector('.nav-bar');
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                
+                const rect = navBar.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                
+                navBar.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 800);
+                
+                // Navigate to the corresponding page
+                if (this.dataset.page === 'home') {
+                    window.location.href = 'index.html';
+                } else if (this.dataset.page === 'transactions') {
+                    window.location.href = 'transactions.html';
+                } else if (this.dataset.page === 'services') {
+                    // Already on services page
+                } else if (this.dataset.page === 'account') {
+                    // Account panel is handled above
+                }
+            });
+        });
+
+        // Attach event listeners to plan cards
         function attachPlanCardEventListeners() {
             const planCards = document.querySelectorAll('.plan-card');
             const selectedPlanDisplay = document.getElementById('selected-plan-display');
@@ -2455,6 +2682,8 @@
             
             planCards.forEach(card => {
                 card.addEventListener('click', function() {
+                    console.log('Plan card clicked:', this.dataset);
+                    
                     // Remove active class from all cards
                     planCards.forEach(c => {
                         c.classList.remove('active');
@@ -2491,543 +2720,45 @@
             });
         }
         
-        // Initialize Event Listeners
-        function initEventListeners() {
-            // Mode switcher click handler
-            modeOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    // Remove active class from all options
-                    modeOptions.forEach(opt => {
-                        opt.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked option
-                    this.classList.add('active');
-                    
-                    // Move indicator
-                    setModeIndicatorPosition(this);
-                    
-                    // Show/hide content based on selected mode
-                    const mode = this.dataset.mode;
-                    if (mode === 'automatic') {
-                        automaticContent.classList.add('active');
-                        manualContent.classList.remove('active');
-                        requestsContent.classList.remove('active');
-                        showToast('success', 'Mode Changed', 'Switched to Automatic mode');
-                    } else if (mode === 'manual') {
-                        automaticContent.classList.remove('active');
-                        manualContent.classList.add('active');
-                        requestsContent.classList.remove('active');
-                        showToast('success', 'Mode Changed', 'Switched to Manual mode');
-                    } else if (mode === 'requests') {
-                        automaticContent.classList.remove('active');
-                        manualContent.classList.remove('active');
-                        requestsContent.classList.add('active');
-                        showToast('success', 'Mode Changed', 'Viewing your data requests');
-                    }
-                });
-            });
+        // Manual Fast Transfer Toggle
+        manualFastTransferToggle.addEventListener('change', function() {
+            manualFastTransferEnabled = this.checked;
             
-            // Plan Type Change
-            planTypeSelect.addEventListener('change', function() {
-                selectedPlanType = this.value;
-                updateDataPlanDropdown();
-            });
-            
-            // Data Plan Change
-            dataPlanSelect.addEventListener('change', function() {
-                selectedPlanId = this.value;
-            });
-            
-            // Fast Transfer Toggle
-            fastTransferToggle.addEventListener('change', function() {
-                fastTransferEnabled = this.checked;
-                
-                if (fastTransferEnabled) {
-                    fastTransferInfo.classList.add('show');
-                    showToast('success', 'Fast Transfer Enabled', 'Your data requests will be sent to WhatsApp');
-                } else {
-                    fastTransferInfo.classList.remove('show');
-                    showToast('info', 'Fast Transfer Disabled', 'Your data requests will be processed normally');
-                }
-            });
-            
-            // Manual Fast Transfer Toggle
-            manualFastTransferToggle.addEventListener('change', function() {
-                manualFastTransferEnabled = this.checked;
-                
-                if (manualFastTransferEnabled) {
-                    manualFastTransferInfo.classList.add('show');
-                    showToast('success', 'Fast Transfer Enabled', 'Your data requests will be sent to WhatsApp for faster processing');
-                } else {
-                    manualFastTransferInfo.classList.remove('show');
-                    showToast('info', 'Fast Transfer Disabled', 'Your data requests will be processed normally');
-                }
-            });
-            
-            // Navigation Bar
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    // Handle notifications panel
-                    if (this.dataset.page === 'account') {
-                        notificationsPanel.classList.toggle('show');
-                        return;
-                    }
-                    
-                    // Remove active class from all items
-                    navItems.forEach(navItem => {
-                        navItem.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked item
-                    this.classList.add('active');
-                    
-                    // Move indicator
-                    setNavIndicatorPosition(this);
-                    
-                    // Create ripple effect
-                    const navBar = document.querySelector('.nav-bar');
-                    const ripple = document.createElement('span');
-                    ripple.classList.add('ripple');
-                    
-                    const rect = navBar.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = e.clientX - rect.left - size / 2;
-                    const y = e.clientY - rect.top - size / 2;
-                    
-                    ripple.style.width = ripple.style.height = `${size}px`;
-                    ripple.style.left = `${x}px`;
-                    ripple.style.top = `${y}px`;
-                    
-                    navBar.appendChild(ripple);
-                    
-                    setTimeout(() => {
-                        ripple.remove();
-                    }, 800);
-                    
-                    // Navigate to the corresponding page
-                    if (this.dataset.page === 'home') {
-                        window.location.href = 'index.html';
-                    } else if (this.dataset.page === 'transactions') {
-                        window.location.href = 'transactions.html';
-                    } else if (this.dataset.page === 'services') {
-                        // Already on services page
-                    }
-                });
-            });
-            
-            // Close notifications panel
-            notificationsClose.addEventListener('click', function() {
-                notificationsPanel.classList.remove('show');
-            });
-            
-            // Plan Cards Selection
-            const planCards = document.querySelectorAll('.plan-card');
-            const selectedPlanDisplay = document.getElementById('selected-plan-display');
-            const placeOrderBtn = document.getElementById('place-order-btn');
-            let selectedPlan = null;
-            
-            planCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    // Remove active class from all cards
-                    planCards.forEach(c => {
-                        c.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked card
-                    this.classList.add('active');
-                    
-                    // Get plan details
-                    const planData = this.querySelector('.plan-data').textContent;
-                    const planValidity = this.querySelector('.plan-validity').textContent;
-                    const planPrice = this.querySelector('.price-new').textContent;
-                    
-                    // Update selected plan display
-                    selectedPlanDisplay.textContent = `${planData} - ${planValidity} - ${planPrice}`;
-                    selectedPlanDisplay.classList.add('active');
-                    
-                    // Enable order button
-                    placeOrderBtn.disabled = false;
-                    
-                    // Store selected plan
-                    selectedPlanDisplay.textContent = `${planData} - ${planValidity} - ${planPrice}`;
-                    selectedPlanDisplay.classList.add('active');
-                    
-                    // Enable order button
-                    placeOrderBtn.disabled = false;
-                    
-                    // Store selected plan
-                    selectedPlan = {
-                        id: this.dataset.id,
-                        data: planData,
-                        validity: planValidity,
-                        price: this.dataset.price,
-                        originalPrice: this.dataset.originalPrice,
-                        badge: this.dataset.badge || null,
-                        planId: this.dataset.planId
-                    };
-                    
-                    showToast('success', 'Plan Selected', `Selected ${planData} plan for ${planValidity}`);
-                });
-            });
-            
-            // Automatic Form Submission
-            const dataForm = document.getElementById('data-form');
-            const confirmationModal = document.getElementById('confirmation-modal');
-            const closeModal = document.getElementById('close-modal');
-            const cancelPurchase = document.getElementById('cancel-purchase');
-            const confirmPurchase = document.getElementById('confirm-purchase');
-            const confirmPlan = document.getElementById('confirm-plan');
-            const confirmNumber = document.getElementById('confirm-number');
-            const confirmAmount = document.getElementById('confirm-amount');
-            
-            dataForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Get form values
-                const planType = document.getElementById('plan-type').value;
-                const dataPlan = document.getElementById('data-plan');
-                const phoneNumber = document.getElementById('phone-number').value;
-                
-                if (!phoneNumber || phoneNumber.length !== 11) {
-                    showToast('error', 'Invalid Number', 'Please enter a valid 11-digit phone number');
-                    return;
-                }
-                
-                if (!dataPlan.value) {
-                    showToast('error', 'Invalid Plan', 'Please select a data plan');
-                    return;
-                }
-                
-                // Get selected plan text
-                const selectedPlanText = dataPlan.options[dataPlan.selectedIndex].text;
-                
-                // Update confirmation modal
-                confirmPlan.textContent = selectedPlanText.split(' - ')[0];
-                confirmNumber.textContent = phoneNumber;
-                confirmAmount.textContent = selectedPlanText.split(' - ')[1];
-                
-                // Show confirmation modal
-                confirmationModal.classList.add('show');
-            });
-            
-            // Manual Order Submission
-            placeOrderBtn.addEventListener('click', function() {
-                const phoneNumber = document.getElementById('manual-phone-number').value;
-                
-                if (!phoneNumber || phoneNumber.length !== 11) {
-                    showToast('error', 'Invalid Number', 'Please enter a valid 11-digit phone number');
-                    return;
-                }
-                
-                if (!selectedPlan) {
-                    showToast('error', 'No Plan Selected', 'Please select a data plan');
-                    return;
-                }
-                
-                // Update confirmation modal
-                confirmPlan.textContent = `${selectedPlan.data} - ${selectedPlan.validity}`;
-                confirmNumber.textContent = phoneNumber;
-                confirmAmount.textContent = `₦${parseInt(selectedPlan.price).toLocaleString()}`;
-                
-                // Show confirmation modal
-                confirmationModal.classList.add('show');
-            });
-            
-            // Close modal
-            closeModal.addEventListener('click', function() {
-                confirmationModal.classList.remove('show');
-            });
-            
-            cancelPurchase.addEventListener('click', function() {
-                confirmationModal.classList.remove('show');
-                showToast('info', 'Purchase Cancelled', 'Your data purchase has been cancelled');
-            });
-            
-            confirmPurchase.addEventListener('click', function() {
-                // Process the purchase
-                processDataPurchase();
-            });
-            
-            // Network card click handler
-            const networkCards = document.querySelectorAll('.network-card');
-            const networkIndicator = document.getElementById('network-indicator');
-            const networkSwitcher = document.getElementById('network-switcher');
-            
-            networkCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    // Update active network
-                    networkCards.forEach(c => c.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Update selected network
-                    selectedNetwork = parseInt(this.dataset.networkId);
-                    
-                    // Update network indicator
-                    const networkName = this.querySelector('.network-name').textContent;
-                    networkIndicator.innerHTML = `<i class="fas fa-signal"></i> ${networkName}`;
-                    
-                    showToast('success', 'Network Changed', `Switched to ${networkName} network`);
-                });
-            });
-            
-            // Network indicator click handler
-            networkIndicator.addEventListener('click', function() {
-                networkSwitcher.classList.toggle('show');
-            });
-            
-            // Close network switcher when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!networkIndicator.contains(e.target) && !networkSwitcher.contains(e.target)) {
-                    networkSwitcher.classList.remove('show');
-                }
-            });
-            
-            // Back button
-            document.getElementById('back-button').addEventListener('click', function() {
-                showToast('info', 'Navigation', 'Returning to dashboard...');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
-            });
-        }
-        
-        // Process Data Purchase
-        async function processDataPurchase() {
-            try {
-                // Disable confirm button and show loading
-                const confirmPurchase = document.getElementById('confirm-purchase');
-                confirmPurchase.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                confirmPurchase.disabled = true;
-                
-                // Get purchase details
-                const phoneNumber = document.getElementById('confirm-number').textContent;
-                const planText = document.getElementById('confirm-plan').textContent;
-                const amountText = document.getElementById('confirm-amount').textContent;
-                
-                // Determine if this is from automatic or manual mode
-                const isManual = document.querySelector('.mode-option.active').dataset.mode === 'manual';
-                const isFastTransfer = isManual ? manualFastTransferEnabled : fastTransferEnabled;
-                
-                // Get plan ID
-                let planId;
-                if (isManual) {
-                    planId = selectedPlan.planId;
-                } else {
-                    planId = selectedPlanId;
-                }
-                
-                // Generate a unique request ID
-                const requestId = `Data_${Date.now()}`;
-                
-                // Create API request payload
-                const payload = {
-                    network: selectedNetwork,
-                    phone: phoneNumber.replace(/^0/, '234'), // Convert to international format
-                    data_plan: parseInt(planId),
-                    bypass: false,
-                    'request-id': requestId
-                };
-                
-                console.log('Sending API request:', payload);
-                
-                // Create request data for Firestore
-                const requestData = {
-                    customerName: currentUser.displayName || 'User',
-                    userId: currentUser.uid,
-                    phoneNumber: phoneNumber,
-                    planName: planText,
-                    amount: parseInt(amountText.replace(/[^\d]/g, '')),
-                    status: 'pending',
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    fastTransfer: isFastTransfer,
-                    requestId: requestId
-                };
-                
-                // Add to dataRequests collection
-                await db.collection('dataRequests').add(requestData);
-                
-                // Create notification for user
-                await db.collection('users').doc(currentUser.uid)
-                    .collection('notifications')
-                    .add({
-                        title: 'Data Purchase Request',
-                        text: `Your request for ${planText} to ${phoneNumber} has been submitted and is being processed.`,
-                        type: 'info',
-                        read: false,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                
-                // Close modal
-                confirmationModal.classList.remove('show');
-                
-                // Show success toast
-                if (isFastTransfer) {
-                    showToast('success', 'Request Sent', 'Your data request has been sent to WhatsApp for faster processing');
-                    
-                    // Redirect to WhatsApp
-                    setTimeout(() => {
-                        const whatsappMessage = `Hello, I would like to purchase ${planText} data for ${phoneNumber}. My request ID is ${requestId}.`;
-                        const whatsappUrl = `https://wa.me/2347067479043?text=${encodeURIComponent(whatsappMessage)}`;
-                        window.open(whatsappUrl, '_blank');
-                    }, 1500);
-                } else {
-                    showToast('success', 'Request Submitted', 'Your data request has been submitted successfully');
-                }
-                
-                // Reset form
-                if (isManual) {
-                    // Reset manual selection
-                    document.querySelectorAll('.plan-card').forEach(c => {
-                        c.classList.remove('active');
-                    });
-                    document.getElementById('selected-plan-display').textContent = 'Select a plan above';
-                    document.getElementById('selected-plan-display').classList.remove('active');
-                    document.getElementById('place-order-btn').disabled = true;
-                    document.getElementById('manual-phone-number').value = '';
-                    selectedPlan = null;
-                } else {
-                    // Reset automatic form
-                    document.getElementById('data-form').reset();
-                    selectedPlanId = null;
-                    selectedPlanType = "";
-                    updateDataPlanDropdown();
-                }
-                
-                // Reset confirmation button
-                confirmPurchase.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-                confirmPurchase.disabled = false;
-                
-                // Refresh notifications and requests
-                fetchUserNotifications(currentUser.uid);
-                fetchUserRequests(currentUser.uid);
-                
-            } catch (error) {
-                console.error('Error processing data purchase:', error);
-                showToast('error', 'Purchase Failed', 'There was an error processing your request');
-                
-                // Reset confirmation button
-                const confirmPurchase = document.getElementById('confirm-purchase');
-                confirmPurchase.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-                confirmPurchase.disabled = false;
+            if (manualFastTransferEnabled) {
+                manualFastTransferInfo.classList.add('show');
+                showToast('success', 'Fast Transfer Enabled', 'Your data requests will be sent to WhatsApp for faster processing');
+            } else {
+                manualFastTransferInfo.classList.remove('show');
+                showToast('info', 'Fast Transfer Disabled', 'Your data requests will be processed normally');
             }
-        }
-        
-        // Set Mode Indicator Position
-        function setModeIndicatorPosition(item) {
-            const itemRect = item.getBoundingClientRect();
-            const switcherRect = document.querySelector('.mode-switcher').getBoundingClientRect();
-            
-            modeIndicator.style.width = `${itemRect.width}px`;
-            modeIndicator.style.left = `${itemRect.left - switcherRect.left}px`;
-        }
-        
-        // Set Nav Indicator Position
-        function setNavIndicatorPosition(item) {
-            const itemRect = item.getBoundingClientRect();
-            const navRect = document.querySelector('.nav-bar').getBoundingClientRect();
-            
-            const navIndicator = document.querySelector('.nav-indicator');
-            navIndicator.style.width = `${itemRect.width}px`;
-            navIndicator.style.left = `${itemRect.left - navRect.left}px`;
-        }
-        
-        // Toast Notification System
-        function showToast(type, title, message) {
-            const toastContainer = document.getElementById('toast-container');
-            
-            // Create toast element
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            // Set icon based on type
-            let icon = '';
-            switch (type) {
-                case 'success':
-                    icon = 'check-circle';
-                    break;
-                case 'error':
-                    icon = 'times-circle';
-                    break;
-                case 'warning':
-                    icon = 'exclamation-triangle';
-                    break;
-                default:
-                    icon = 'info-circle';
-            }
-            
-            // Set toast content
-            toast.innerHTML = `
-                <div class="toast-icon">
-                    <i class="fas fa-${icon}"></i>
-                </div>
-                <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-                <div class="toast-close">
-                    <i class="fas fa-times"></i>
-                </div>
-            `;
-            
-            // Add toast to container
-            toastContainer.appendChild(toast);
-            
-            // Add click event to close button
-            toast.querySelector('.toast-close').addEventListener('click', function() {
-                toast.remove();
-            });
-            
-            // Auto remove toast after animation completes
-            setTimeout(() => {
-                toast.remove();
-            }, 5500);
-        }
-        
-        // Window resize handler for indicators
-        window.addEventListener('resize', function() {
-            setNavIndicatorPosition(document.querySelector('.nav-item.active'));
-            setModeIndicatorPosition(document.querySelector('.mode-option.active'));
         });
         
-        // Show initial toast on page load
-        setTimeout(() => {
-            showToast('info', 'Welcome', 'Buy data at the best prices with VeltraWave');
-        }, 1000);
-
-        // Add this to the initEventListeners function, right after the network indicator click handler
-        // Network switcher item click handler
-        document.querySelectorAll('.network-switcher-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const networkId = this.dataset.networkId;
-                const networkName = this.querySelector('.network-switcher-name').textContent;
-                
-                // Update active network in switcher
-                document.querySelectorAll('.network-switcher-item').forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Update network cards
-                document.querySelectorAll('.network-card').forEach(card => {
-                    if (card.dataset.networkId === networkId) {
-                        card.classList.add('active');
-                    } else {
-                        card.classList.remove('active');
-                    }
-                });
-                
-                // Update selected network
-                selectedNetwork = networkId;
-                
-                // Update network indicator
-                document.getElementById('network-indicator').innerHTML = `<i class="fas fa-signal"></i> ${networkName}`;
-                
-                // Close network switcher
-                document.getElementById('network-switcher').classList.remove('show');
-                
-                showToast('success', 'Network Changed', `Switched to ${networkName} network`);
-            });
-        });
+        // Format Timestamp
+        function formatTimestamp(timestamp) {
+            const now = new Date();
+            const diff = now.getTime() - timestamp.getTime();
+            const minutes = Math.floor(diff / 60000);
+            
+            if (minutes < 60) {
+                return minutes === 0 ? 'Just now' : `${minutes} minutes ago`;
+            } else if (minutes < 1440) {
+                const hours = Math.floor(minutes / 60);
+                return `${hours} hours ago`;
+            } else if (timestamp.toDateString() === now.toDateString()) {
+                let hours = timestamp.getHours();
+                let ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                let minutes = timestamp.getMinutes();
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                return `Today, ${hours}:${minutes} ${ampm}`;
+            } else {
+                const day = timestamp.getDate();
+                const month = timestamp.toLocaleString('default', { month: 'long' });
+                const year = timestamp.getFullYear();
+                return `${month} ${day}, ${year}`;
+            }
+        }
     </script>
 </body>
 </html>
