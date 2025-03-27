@@ -1488,20 +1488,45 @@
         
         // Check Authentication State
         document.addEventListener('DOMContentLoaded', function() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    // User is signed in
-                    currentUser = user;
-                    console.log("User authenticated:", user.email);
-                    
-                    // Initialize the app
-                    initApp();
-                } else {
-                    // User is not signed in, redirect to login
-                    window.location.href = 'login.html';
-                }
+    // Initialize the app without requiring authentication
+    initApp();
+    
+    // Check if user is logged in (but don't redirect if not)
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // User is signed in
+            currentUser = user;
+            console.log("User authenticated:", user.email);
+            
+            // Show user-specific content
+            document.querySelectorAll('.user-only').forEach(el => {
+                el.style.display = 'block';
             });
-        });
+            
+            // Fetch user-specific data
+            fetchUserRequests();
+        } else {
+            // User is not signed in, but we still allow access to the page
+            console.log("No user authenticated, showing public content only");
+            
+            // Hide user-specific content
+            document.querySelectorAll('.user-only').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Show login prompt in requests tab
+            document.getElementById('requests-container').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-user-lock"></i>
+                    <p>Please log in to view your data purchase requests.</p>
+                    <button class="primary-btn" style="max-width: 200px; margin: 20px auto 0;" onclick="window.location.href='login.html'">
+                        Login Now
+                    </button>
+                </div>
+            `;
+        }
+    });
+});
         
         // Initialize App
         function initApp() {
@@ -1807,107 +1832,121 @@
         
         // Fetch User Requests
         function fetchUserRequests() {
-            if (!currentUser) return;
+    if (!currentUser) {
+        // User is not authenticated, show login prompt
+        document.getElementById('requests-container').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-user-lock"></i>
+                <p>Please log in to view your data purchase requests.</p>
+                <button class="primary-btn" style="max-width: 200px; margin: 20px auto 0;" onclick="window.location.href='login.html'">
+                    Login Now
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    // Rest of the function remains the same...
+    db.collection('dataRequests')
+        .where('userId', '==', currentUser.uid)
+        .orderBy('timestamp', 'desc')
+        .limit(10)
+        .get()
+        .then(snapshot => {
+            const requestsContainer = document.getElementById('requests-container');
+            const emptyRequests = document.getElementById('empty-requests');
             
-            db.collection('dataRequests')
-                .where('userId', '==', currentUser.uid)
-                .orderBy('timestamp', 'desc')
-                .limit(10)
-                .get()
-                .then(snapshot => {
-                    const requestsContainer = document.getElementById('requests-container');
-                    const emptyRequests = document.getElementById('empty-requests');
-                    
-                    if (snapshot.empty) {
-                        // Show empty state
-                        emptyRequests.style.display = 'block';
-                        requestsContainer.innerHTML = '';
-                        requestsContainer.appendChild(emptyRequests);
-                        return;
-                    }
-                    
-                    // Hide empty state and show requests
-                    emptyRequests.style.display = 'none';
-                    requestsContainer.innerHTML = '';
-                    
-                    snapshot.forEach(doc => {
-                        const request = doc.data();
-                        const timestamp = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
-                        const formattedTime = formatTimestamp(timestamp);
-                        
-                        const requestCard = document.createElement('div');
-                        requestCard.className = `request-card ${request.status || 'pending'}`;
-                        
-                        requestCard.innerHTML = `
-                            <div class="request-header">
-                                <div class="request-title">${request.planName || 'Data Plan'}</div>
-                                <div class="request-status ${request.status || 'pending'}">${(request.status || 'pending').charAt(0).toUpperCase() + (request.status || 'pending').slice(1)}</div>
-                            </div>
-                            <div class="request-detail">
-                                    <div class="request-detail-label">Phone Number</div>
-                                    <div class="request-detail-value">${request.phoneNumber || 'N/A'}</div>
-                                </div>
-                                <div class="request-detail">
-                                    <div class="request-detail-label">Amount</div>
-                                    <div class="request-detail-value">₦${request.amount ? request.amount.toLocaleString() : '0'}</div>
-                                </div>
-                                <div class="request-detail">
-                                    <div class="request-detail-label">Date</div>
-                                    <div class="request-detail-value">${formattedTime}</div>
-                                </div>
-                                <div class="request-detail">
-                                    <div class="request-detail-label">Request ID</div>
-                                    <div class="request-detail-value">${request.requestId || doc.id}</div>
-                                </div>
-                            </div>
-                            <div class="request-actions">
-                                ${request.status === 'pending' ? 
-                                    `<button class="request-btn cancel-btn" data-id="${doc.id}">Cancel</button>
-                                    <button class="request-btn primary track-btn" data-id="${doc.id}">Track</button>` : 
-                                    `<button class="request-btn receipt-btn" data-id="${doc.id}">Receipt</button>
-                                    <button class="request-btn primary buy-again-btn" data-id="${doc.id}" data-phone="${request.phoneNumber}" data-plan="${request.planName}">Buy Again</button>`
-                                }
-                            </div>
-                        `;
-                        
-                        requestsContainer.appendChild(requestCard);
-                    });
-                    
-                    // Add event listeners to buttons
-                    document.querySelectorAll('.cancel-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            cancelRequest(this.getAttribute('data-id'));
-                        });
-                    });
-                    
-                    document.querySelectorAll('.track-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            trackRequest(this.getAttribute('data-id'));
-                        });
-                    });
-                    
-                    document.querySelectorAll('.receipt-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            showReceipt(this.getAttribute('data-id'));
-                        });
-                    });
-                    
-                    document.querySelectorAll('.buy-again-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            buyAgain(
-                                this.getAttribute('data-id'),
-                                this.getAttribute('data-phone'),
-                                this.getAttribute('data-plan')
-                            );
-                        });
-                    });
-                })
-                .catch(error => {
-                    console.error("Error fetching requests:", error);
-                    showToast('error', 'Error', 'Failed to load your requests');
+            if (snapshot.empty) {
+                // Show empty state
+                emptyRequests.style.display = 'block';
+                requestsContainer.innerHTML = '';
+                requestsContainer.appendChild(emptyRequests);
+                return;
+            }
+            
+            // Hide empty state and show requests
+            emptyRequests.style.display = 'none';
+            requestsContainer.innerHTML = '';
+            
+            snapshot.forEach(doc => {
+                const request = doc.data();
+                const timestamp = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+                const formattedTime = formatTimestamp(timestamp);
+                
+                const requestCard = document.createElement('div');
+                requestCard.className = `request-card ${request.status || 'pending'}`;
+                
+                requestCard.innerHTML = `
+                    <div class="request-header">
+                        <div class="request-title">${request.planName || 'Data Plan'}</div>
+                        <div class="request-status ${request.status || 'pending'}">${(request.status || 'pending').charAt(0).toUpperCase() + (request.status || 'pending').slice(1)}</div>
+                    </div>
+                    <div class="request-details">
+                        <div class="request-detail">
+                            <div class="request-detail-label">Phone Number</div>
+                            <div class="request-detail-value">${request.phoneNumber || 'N/A'}</div>
+                        </div>
+                        <div class="request-detail">
+                            <div class="request-detail-label">Amount</div>
+                            <div class="request-detail-value">₦${request.amount ? request.amount.toLocaleString() : '0'}</div>
+                        </div>
+                        <div class="request-detail">
+                            <div class="request-detail-label">Date</div>
+                            <div class="request-detail-value">${formattedTime}</div>
+                        </div>
+                        <div class="request-detail">
+                            <div class="request-detail-label">Request ID</div>
+                            <div class="request-detail-value">${request.requestId || doc.id}</div>
+                        </div>
+                    </div>
+                    <div class="request-actions">
+                        ${request.status === 'pending' ? 
+                            `<button class="request-btn cancel-btn" data-id="${doc.id}">Cancel</button>
+                            <button class="request-btn primary track-btn" data-id="${doc.id}">Track</button>` : 
+                            `<button class="request-btn receipt-btn" data-id="${doc.id}">Receipt</button>
+                            <button class="request-btn primary buy-again-btn" data-id="${doc.id}" data-phone="${request.phoneNumber}" data-plan="${request.planName}">Buy Again</button>`
+                        }
+                    </div>
+                `;
+                
+                requestsContainer.appendChild(requestCard);
+            });
+            
+            // Add event listeners to buttons
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    cancelRequest(this.getAttribute('data-id'));
                 });
-        }
-        
+            });
+            
+            document.querySelectorAll('.track-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    trackRequest(this.getAttribute('data-id'));
+                });
+            });
+            
+            document.querySelectorAll('.receipt-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    showReceipt(this.getAttribute('data-id'));
+                });
+            });
+            
+            document.querySelectorAll('.buy-again-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    buyAgain(
+                        this.getAttribute('data-id'),
+                        this.getAttribute('data-phone'),
+                        this.getAttribute('data-plan')
+                    );
+                });
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching requests:", error);
+            showToast('error', 'Error', 'Failed to load your requests');
+        });
+}
+
         // Cancel Request
         function cancelRequest(requestId) {
             db.collection('dataRequests').doc(requestId).update({
@@ -2101,90 +2140,102 @@
         
         // Process Data Purchase
         function processDataPurchase() {
-            // Get purchase details
-            const networkName = document.getElementById('confirm-network').textContent;
-            const planName = document.getElementById('confirm-plan').textContent;
-            const phoneNumber = document.getElementById('confirm-number').textContent;
-            const amountText = document.getElementById('confirm-amount').textContent;
-            const amount = parseInt(amountText.replace(/[^\d]/g, ''));
+    // Check if user is logged in
+    if (!currentUser) {
+        // Redirect to login page with return URL
+        confirmationModal.classList.remove('show');
+        showToast('info', 'Login Required', 'Please log in to complete your purchase');
+        setTimeout(() => {
+            window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        }, 2000);
+        return;
+    }
+    
+    // Rest of the function remains the same...
+    // Get purchase details
+    const networkName = document.getElementById('confirm-network').textContent;
+    const planName = document.getElementById('confirm-plan').textContent;
+    const phoneNumber = document.getElementById('confirm-number').textContent;
+    const amountText = document.getElementById('confirm-amount').textContent;
+    const amount = parseInt(amountText.replace(/[^\d]/g, ''));
+    
+    // Determine if this is from automatic or manual mode
+    const isManual = document.querySelector('.mode-option.active').dataset.mode === 'manual';
+    
+    // Get plan ID
+    let planId;
+    if (isManual) {
+        planId = selectedPlan.id;
+    } else {
+        planId = document.getElementById('data-plan').value;
+    }
+    
+    // Generate request ID
+    const requestId = `Data_${Date.now()}`;
+    
+    // Disable confirm button and show loading
+    const confirmBtn = document.getElementById('confirm-purchase');
+    confirmBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
+    confirmBtn.disabled = true;
+    
+    // Create request data
+    const requestData = {
+        userId: currentUser.uid,
+        phoneNumber: phoneNumber,
+        planName: planName,
+        networkName: networkName,
+        networkId: selectedNetwork,
+        planId: planId,
+        amount: amount,
+        status: 'pending',
+        timestamp: firebase.firestore.Timestamp.now(),
+        requestId: requestId
+    };
+    
+    // Save to Firestore
+    db.collection('dataRequests').add(requestData)
+        .then(docRef => {
+            console.log("Request saved with ID:", docRef.id);
             
-            // Determine if this is from automatic or manual mode
-            const isManual = document.querySelector('.mode-option.active').dataset.mode === 'manual';
+            // Close modal
+            confirmationModal.classList.remove('show');
             
-            // Get plan ID
-            let planId;
+            // Show success toast
+            showToast('success', 'Request Submitted', 'Your data purchase request has been submitted successfully');
+            
+            // Reset form
             if (isManual) {
-                planId = selectedPlan.id;
+                document.getElementById('manual-phone-number').value = '';
+                document.querySelectorAll('.plan-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+                selectedPlanDisplay.textContent = 'Select a plan above';
+                selectedPlanDisplay.classList.remove('active');
+                placeOrderBtn.disabled = true;
+                selectedPlan = null;
             } else {
-                planId = document.getElementById('data-plan').value;
+                document.getElementById('data-form').reset();
+                document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
             }
             
-            // Generate request ID
-            const requestId = `Data_${Date.now()}`;
+            // Refresh requests
+            fetchUserRequests();
             
-            // Disable confirm button and show loading
-            const confirmBtn = document.getElementById('confirm-purchase');
-            confirmBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
-            confirmBtn.disabled = true;
-            
-            // Create request data
-            const requestData = {
-                userId: currentUser.uid,
-                phoneNumber: phoneNumber,
-                planName: planName,
-                networkName: networkName,
-                networkId: selectedNetwork,
-                planId: planId,
-                amount: amount,
-                status: 'pending',
-                timestamp: firebase.firestore.Timestamp.now(),
-                requestId: requestId
-            };
-            
-            // Save to Firestore
-            db.collection('dataRequests').add(requestData)
-                .then(docRef => {
-                    console.log("Request saved with ID:", docRef.id);
-                    
-                    // Close modal
-                    confirmationModal.classList.remove('show');
-                    
-                    // Show success toast
-                    showToast('success', 'Request Submitted', 'Your data purchase request has been submitted successfully');
-                    
-                    // Reset form
-                    if (isManual) {
-                        document.getElementById('manual-phone-number').value = '';
-                        document.querySelectorAll('.plan-card').forEach(card => {
-                            card.classList.remove('active');
-                        });
-                        selectedPlanDisplay.textContent = 'Select a plan above';
-                        selectedPlanDisplay.classList.remove('active');
-                        placeOrderBtn.disabled = true;
-                        selectedPlan = null;
-                    } else {
-                        document.getElementById('data-form').reset();
-                        document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
-                    }
-                    
-                    // Refresh requests
-                    fetchUserRequests();
-                    
-                    // Redirect to admin page for processing
-                    setTimeout(() => {
-                        window.open(`dataA.html?request=${docRef.id}`, '_blank');
-                    }, 1000);
-                })
-                .catch(error => {
-                    console.error("Error saving request:", error);
-                    showToast('error', 'Error', 'Failed to submit your request');
-                })
-                .finally(() => {
-                    // Reset confirm button
-                    confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-                    confirmBtn.disabled = false;
-                });
-        }
+            // Redirect to admin page for processing
+            setTimeout(() => {
+                window.open(`dataA.html?request=${docRef.id}`, '_blank');
+            }, 1000);
+        })
+        .catch(error => {
+            console.error("Error saving request:", error);
+            showToast('error', 'Error', 'Failed to submit your request');
+        })
+        .finally(() => {
+            // Reset confirm button
+            confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+            confirmBtn.disabled = false;
+        });
+}
         
         // Update Data Plan Dropdown
         function updateDataPlanDropdown() {
