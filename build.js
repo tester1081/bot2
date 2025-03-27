@@ -1,21 +1,26 @@
 const fs = require("fs")
 const path = require("path")
 
-// Define the directory containing HTML files and the output directory
-const htmlDir = "./public"
-const outputDir = "./.next/static"
+// Define the directory containing HTML files
+// This should be the root directory where your HTML files are located
+const htmlDir = "./"
 
-// Ensure the output directory exists
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true })
-}
+// List of HTML files to process
+const htmlFiles = [
+  "index.html",
+  "login.html",
+  "admin.html",
+  "data.html",
+  "cable.html",
+  "account.html",
+  "fund-wallet.html",
+]
 
-// Read all HTML files from the directory
-const htmlFiles = fs.readdirSync(htmlDir).filter((file) => file.endsWith(".html"))
+console.log(`Processing ${htmlFiles.length} HTML files`)
 
 // Process each HTML file
 htmlFiles.forEach((htmlFile) => {
-  const htmlPath = path.join(__dirname, "public", htmlFile)
+  const htmlPath = path.join(htmlDir, htmlFile)
 
   // Skip if file doesn't exist
   if (!fs.existsSync(htmlPath)) {
@@ -23,6 +28,7 @@ htmlFiles.forEach((htmlFile) => {
     return
   }
 
+  console.log(`Processing ${htmlFile}...`)
   let htmlContent = fs.readFileSync(htmlPath, "utf8")
 
   // Replace environment variable placeholders
@@ -47,8 +53,10 @@ htmlFiles.forEach((htmlFile) => {
     htmlContent = htmlContent.replace(regex, value)
   })
 
-  // Write the processed HTML to the output directory
-  fs.writeFileSync(path.join(outputDir, htmlFile), htmlContent)
+  // Write the processed HTML back to the same file
+  fs.writeFileSync(htmlPath, htmlContent)
   console.log(`Processed ${htmlFile} successfully!`)
 })
+
+console.log("All HTML files processed successfully!")
 
