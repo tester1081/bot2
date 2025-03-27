@@ -2,12 +2,12 @@ const fs = require('fs');
 const path = require('path');
 
 // Read the HTML files
-const htmlFiles = ["index.html", "fund-wallet.html", "data.html", "cable.html", "account.html", "admin.html", "login.html"]
+const htmlFiles = ["index.html", "fund-wallet.html", "data.html", "cable.html", "account.html", "admin.html", "login.html"];
 const outputDir = path.join(__dirname, 'public');
 
 // Create output directory if it doesn't exist
 if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir);
+  fs.mkdirSync(outputDir, { recursive: true });
 }
 
 // Process each HTML file
@@ -35,7 +35,9 @@ htmlFiles.forEach(htmlFile => {
 
   envVars.forEach(varName => {
     const value = process.env[varName] || '';
-    htmlContent = htmlContent.replace(`%${varName}%`, value);
+    // Use a regular expression to replace all occurrences
+    const regex = new RegExp(`%${varName}%`, 'g');
+    htmlContent = htmlContent.replace(regex, value);
   });
 
   // Write the processed HTML to the output directory
@@ -57,7 +59,7 @@ if (fs.existsSync(logoPath)) {
 // Create API directory and config.js
 const apiDir = path.join(outputDir, 'api');
 if (!fs.existsSync(apiDir)) {
-  fs.mkdirSync(apiDir);
+  fs.mkdirSync(apiDir, { recursive: true });
 }
 
 // Create config.js file
