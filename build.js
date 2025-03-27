@@ -13,7 +13,8 @@ const htmlFiles = [
   "data.html",
   "cable.html",
   "account.html",
-  "fund-wallet.html",
+  "fund-wallet.html"
+  "logo.png",
 ]
 
 console.log(`Processing ${htmlFiles.length} HTML files`)
