@@ -379,70 +379,6 @@
             opacity: 1;
         }
         
-        /* Navigation Bar */
-        .nav-container {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 500px;
-            z-index: 100;
-        }
-        
-        .nav-bar {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 12px;
-            display: flex;
-            justify-content: space-around;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px 16px;
-            border-radius: 16px;
-            cursor: pointer;
-            position: relative;
-            z-index: 2;
-            transition: color 0.3s ease;
-            text-decoration: none;
-        }
-        
-        .nav-item.active {
-            color: var(--primary);
-        }
-        
-        .nav-item:not(.active) {
-            color: var(--text-secondary);
-        }
-        
-        .nav-item i {
-            font-size: 1.2rem;
-            margin-bottom: 4px;
-        }
-        
-        .nav-item span {
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        .nav-indicator {
-            position: absolute;
-            height: calc(100% - 24px);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.1);
-            z-index: 1;
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
         /* Error Message */
         .error-message {
             color: var(--error);
@@ -452,17 +388,6 @@
             margin-top: 16px;
             text-align: center;
             display: none;
-        }
-        
-        /* Responsive Adjustments */
-        @media (max-width: 480px) {
-            .nav-item span {
-                display: none;
-            }
-            
-            .nav-item i {
-                margin-bottom: 0;
-            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -494,7 +419,7 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <img src="/logo.png" alt="VeltraWave" class="logo-image">
+            <img src="public/logo.png" alt="VeltraWave" class="logo-image">
             <span>VeltraWave</span>
         </div>
     </header>
@@ -539,29 +464,6 @@
         </div>
     </div>
     
-    <!-- Navigation Bar -->
-    <div class="nav-container">
-        <div class="nav-bar">
-            <div class="nav-indicator"></div>
-            <a href="index.html" class="nav-item" data-page="home">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
-            </a>
-            <a href="services.html" class="nav-item" data-page="services">
-                <i class="fas fa-th-large"></i>
-                <span>Services</span>
-            </a>
-            <a href="login.html" class="nav-item active" data-page="login">
-                <i class="fas fa-user-shield"></i>
-                <span>Admin</span>
-            </a>
-            <a href="contact.html" class="nav-item" data-page="contact">
-                <i class="fas fa-envelope"></i>
-                <span>Contact</span>
-            </a>
-        </div>
-    </div>
-    
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -599,8 +501,6 @@
         const loginButton = document.getElementById('login-button');
         const errorMessage = document.getElementById('error-message');
         const toastNotification = document.getElementById('toast-notification');
-        const navItems = document.querySelectorAll('.nav-item');
-        const navIndicator = document.querySelector('.nav-indicator');
         
         // Initialize the app
         document.addEventListener('DOMContentLoaded', async function() {
@@ -653,9 +553,6 @@
             
             // Set up event listeners
             setupEventListeners();
-            
-            // Set initial indicator position for navigation
-            setIndicatorPosition(document.querySelector('.nav-item.active'));
         }
         
         // Set up event listeners
@@ -718,13 +615,6 @@
                 }
             });
             
-            // Navigation items click
-            navItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    setIndicatorPosition(this);
-                });
-            });
-            
             debug("Event listeners set up");
         }
         
@@ -744,15 +634,6 @@
             setTimeout(() => {
                 toastNotification.classList.remove('show');
             }, 3000);
-        }
-        
-        // Set indicator position for navigation
-        function setIndicatorPosition(item) {
-            const itemRect = item.getBoundingClientRect();
-            const navRect = document.querySelector('.nav-bar').getBoundingClientRect();
-            
-            navIndicator.style.width = `${itemRect.width}px`;
-            navIndicator.style.left = `${itemRect.left - navRect.left}px`;
         }
     </script>
 </body>
