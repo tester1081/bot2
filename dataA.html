@@ -856,6 +856,87 @@
             background: rgba(255, 94, 125, 0.2);
             color: var(--error);
         }
+        
+        /* Special pricing display */
+        .price-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .original-price {
+            color: var(--text-secondary);
+            text-decoration: line-through;
+            font-size: 0.9rem;
+        }
+        
+        .discounted-price {
+            color: var(--success);
+            font-weight: 700;
+        }
+        
+        /* Special badges */
+        .special-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 5px;
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+        
+        .special-badge.hot {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+        
+        .special-badge.popular {
+            background: rgba(140, 82, 255, 0.2);
+            color: var(--secondary);
+        }
+        
+        .special-badge.value {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        /* Data Requests Table */
+        .requests-container {
+            margin-top: 30px;
+        }
+        
+        .requests-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .requests-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .request-status-pending {
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+        
+        .request-status-completed {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .request-status-rejected {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
     </style>
 </head>
 <body>
@@ -976,9 +1057,11 @@
         <div class="tabs">
             <div class="tab active" data-tab="all">All Plans</div>
             <div class="tab" data-tab="mtn">MTN</div>
+            <div class="tab" data-tab="manual">Manual Data</div>
             <div class="tab" data-tab="airtel">Airtel</div>
             <div class="tab" data-tab="glo">Glo</div>
             <div class="tab" data-tab="9mobile">9Mobile</div>
+            <div class="tab" data-tab="requests">Data Requests</div>
         </div>
         
         <!-- Tab Content -->
@@ -1015,6 +1098,51 @@
                 <div class="provider-category" data-category="mtn-gifting">
                     <h3 class="provider-category-title">MTN Gifting</h3>
                     <div class="plan-grid" id="mtn-gifting-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Manual Data Provider Card -->
+            <div class="provider-card" data-provider="manual">
+                <div class="provider-header">
+                    <h2 class="provider-title">VeltraWave Exclusive MTN Special Data</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-manual-plan">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 1-Day Offers Category -->
+                <div class="provider-category" data-category="manual-1day">
+                    <h3 class="provider-category-title">1-Day Offers (24 Hours Validity)</h3>
+                    <div class="plan-grid" id="manual-1day-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 7-Day Offers Category -->
+                <div class="provider-category" data-category="manual-7day">
+                    <h3 class="provider-category-title">7-Day Offers (1 Week Validity)</h3>
+                    <div class="plan-grid" id="manual-7day-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 14-Day Offers Category -->
+                <div class="provider-category" data-category="manual-14day">
+                    <h3 class="provider-category-title">14-Day Offers (2 Weeks Validity)</h3>
+                    <div class="plan-grid" id="manual-14day-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 30-Day Offers Category -->
+                <div class="provider-category" data-category="manual-30day">
+                    <h3 class="provider-category-title">30-Day Offers (1 Month Validity)</h3>
+                    <div class="plan-grid" id="manual-30day-plans">
                         <!-- Plans will be loaded dynamically -->
                     </div>
                 </div>
@@ -1156,6 +1284,54 @@
             </div>
         </div>
         
+        <!-- Manual Data Tab Content -->
+        <div class="tab-content" id="manual-tab">
+            <!-- Manual Data Provider Card -->
+            <div class="provider-card" data-provider="manual">
+                <div class="provider-header">
+                    <h2 class="provider-title">VeltraWave Exclusive MTN Special Data</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-manual-plan-tab">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 1-Day Offers Category -->
+                <div class="provider-category" data-category="manual-1day">
+                    <h3 class="provider-category-title">1-Day Offers (24 Hours Validity)</h3>
+                    <div class="plan-grid" id="manual-1day-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 7-Day Offers Category -->
+                <div class="provider-category" data-category="manual-7day">
+                    <h3 class="provider-category-title">7-Day Offers (1 Week Validity)</h3>
+                    <div class="plan-grid" id="manual-7day-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 14-Day Offers Category -->
+                <div class="provider-category" data-category="manual-14day">
+                    <h3 class="provider-category-title">14-Day Offers (2 Weeks Validity)</h3>
+                    <div class="plan-grid" id="manual-14day-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 30-Day Offers Category -->
+                <div class="provider-category" data-category="manual-30day">
+                    <h3 class="provider-category-title">30-Day Offers (1 Month Validity)</h3>
+                    <div class="plan-grid" id="manual-30day-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Airtel Tab Content -->
         <div class="tab-content" id="airtel-tab">
             <!-- Airtel Provider Card (Same as in All tab) -->
@@ -1259,6 +1435,38 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Data Requests Tab Content -->
+        <div class="tab-content" id="requests-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Data Purchase Requests</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-secondary" id="refresh-requests-btn">
+                            <i class="fas fa-sync"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+                <table class="table" id="requests-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Phone Number</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requests-table-body">
+                        <!-- Requests will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     
     <!-- Mobile Menu Toggle -->
@@ -1284,6 +1492,7 @@
                         <select id="plan-provider" class="form-select" required>
                             <option value="">Select Provider</option>
                             <option value="mtn">MTN</option>
+                            <option value="manual">Manual Data</option>
                             <option value="airtel">Airtel</option>
                             <option value="glo">Glo</option>
                             <option value="9mobile">9Mobile</option>
@@ -1308,6 +1517,11 @@
                         <input type="text" id="plan-data" class="form-input" placeholder="e.g. 1GB" required>
                     </div>
                     
+                    <div class="form-group manual-fields" style="display: none;">
+                        <label for="plan-original-price" class="form-label">Original Price (₦)</label>
+                        <input type="number" id="plan-original-price" class="form-input" placeholder="e.g. 600">
+                    </div>
+                    
                     <div class="form-group">
                         <label for="plan-price" class="form-label">Price (₦)</label>
                         <input type="number" id="plan-price" class="form-input" placeholder="e.g. 600" required>
@@ -1316,6 +1530,16 @@
                     <div class="form-group">
                         <label for="plan-validity" class="form-label">Validity</label>
                         <input type="text" id="plan-validity" class="form-input" placeholder="e.g. 30 Days" required>
+                    </div>
+                    
+                    <div class="form-group manual-fields" style="display: none;">
+                        <label for="plan-badge" class="form-label">Special Badge</label>
+                        <select id="plan-badge" class="form-select">
+                            <option value="">None</option>
+                            <option value="hot">HOT!</option>
+                            <option value="popular">MOST POPULAR</option>
+                            <option value="value">BEST VALUE</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
@@ -1381,6 +1605,40 @@
         </div>
     </div>
     
+    <!-- Process Request Modal -->
+    <div class="modal-overlay" id="request-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="request-modal-title">Process Data Request</h3>
+                <button class="modal-close" id="request-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="request-details">
+                    <!-- Request details will be loaded dynamically -->
+                </div>
+                <div class="form-group">
+                    <label for="request-status" class="form-label">Update Status</label>
+                    <select id="request-status" class="form-select" required>
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="request-notes" class="form-label">Admin Notes</label>
+                    <textarea id="request-notes" class="form-input" placeholder="Add notes about this request (optional)"></textarea>
+                </div>
+                <input type="hidden" id="request-id">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="request-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="request-modal-save">Update Request</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -1424,9 +1682,12 @@
         const planCategory = document.getElementById('plan-category');
         const planName = document.getElementById('plan-name');
         const planData = document.getElementById('plan-data');
+        const planOriginalPrice = document.getElementById('plan-original-price');
         const planPrice = document.getElementById('plan-price');
         const planValidity = document.getElementById('plan-validity');
+        const planBadge = document.getElementById('plan-badge');
         const planStatus = document.getElementById('plan-status');
+        const manualFields = document.querySelectorAll('.manual-fields');
         
         const importModalOverlay = document.getElementById('import-modal-overlay');
         const importModalClose = document.getElementById('import-modal-close');
@@ -1441,6 +1702,15 @@
         const deleteModalConfirm = document.getElementById('delete-modal-confirm');
         const deletePlanId = document.getElementById('delete-plan-id');
         
+        const requestModalOverlay = document.getElementById('request-modal-overlay');
+        const requestModalClose = document.getElementById('request-modal-close');
+        const requestModalCancel = document.getElementById('request-modal-cancel');
+        const requestModalSave = document.getElementById('request-modal-save');
+        const requestDetails = document.getElementById('request-details');
+        const requestStatus = document.getElementById('request-status');
+        const requestNotes = document.getElementById('request-notes');
+        const requestId = document.getElementById('request-id');
+        
         // Button Elements
         const addPlanBtn = document.getElementById('add-plan-btn');
         const importPlansBtn = document.getElementById('import-plans-btn');
@@ -1449,6 +1719,7 @@
         const activateAllBtn = document.getElementById('activate-all-btn');
         const deactivateAllBtn = document.getElementById('deactivate-all-btn');
         const deleteAllBtn = document.getElementById('delete-all-btn');
+        const refreshRequestsBtn = document.getElementById('refresh-requests-btn');
         
         // Default data plans
         const defaultDataPlans = [
@@ -1473,6 +1744,24 @@
             { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 3.2GB", data: "3.2GB", price: 1200, validity: "2 Days Awoof Data", status: true },
             { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 5GB", data: "5GB", price: 1700, validity: "7 Days Awoof Data", status: true },
             { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 15GB", data: "15GB", price: 3700, validity: "1 Month Awoof Data", status: true },
+            
+            // Manual Data - 1 Day Offers
+            { provider: "manual", category: "manual-1day", name: "500MB", data: "500MB", originalPrice: 150, price: 129, validity: "1 Day", status: true },
+            { provider: "manual", category: "manual-1day", name: "600MB", data: "600MB", originalPrice: 180, price: 159, validity: "1 Day", status: true },
+            { provider: "manual", category: "manual-1day", name: "2.5GB", data: "2.5GB", originalPrice: 600, price: 519, validity: "1 Day", badge: "hot", status: true },
+            { provider: "manual", category: "manual-1day", name: "4.5GB", data: "4.5GB", originalPrice: 1500, price: 1299, validity: "1 Day", status: true },
+            
+            // Manual Data - 7 Day Offers
+            { provider: "manual", category: "manual-7day", name: "13GB", data: "13GB", originalPrice: 3000, price: 2599, validity: "7 Days", status: true },
+            { provider: "manual", category: "manual-7day", name: "18GB", data: "18GB", originalPrice: 5200, price: 4549, validity: "7 Days", status: true },
+            { provider: "manual", category: "manual-7day", name: "22GB", data: "22GB", originalPrice: 6000, price: 5199, validity: "7 Days", badge: "popular", status: true },
+            
+            // Manual Data - 14 Day Offers
+            { provider: "manual", category: "manual-14day", name: "30GB", data: "30GB", originalPrice: 7500, price: 6499, validity: "14 Days", badge: "value", status: true },
+            
+            // Manual Data - 30 Day Offers
+            { provider: "manual", category: "manual-30day", name: "39GB", data: "39GB", originalPrice: 9000, price: 7799, validity: "30 Days", status: true },
+            { provider: "manual", category: "manual-30day", name: "53GB", data: "53GB", originalPrice: 15000, price: 12999, validity: "30 Days", status: true },
             
             // Airtel SME
             { provider: "airtel", category: "airtel-sme", name: "AIRTEL SME 500MB", data: "500MB", price: 230, validity: "14 Days", status: true },
@@ -1591,6 +1880,9 @@
                 // Load data plans
                 await loadDataPlans();
                 
+                // Load data requests
+                await loadDataRequests();
+                
                 hideLoading();
             } catch (error) {
                 console.error('Error initializing app:', error);
@@ -1649,6 +1941,10 @@
                 openAddPlanModal('mtn');
             });
             
+            document.getElementById('add-manual-plan').addEventListener('click', function() {
+                openAddPlanModal('manual');
+            });
+            
             document.getElementById('add-airtel-plan').addEventListener('click', function() {
                 openAddPlanModal('airtel');
             });
@@ -1664,6 +1960,10 @@
             // Tab-specific Add Plan Buttons
             document.getElementById('add-mtn-plan-tab').addEventListener('click', function() {
                 openAddPlanModal('mtn');
+            });
+            
+            document.getElementById('add-manual-plan-tab').addEventListener('click', function() {
+                openAddPlanModal('manual');
             });
             
             document.getElementById('add-airtel-plan-tab').addEventListener('click', function() {
@@ -1694,6 +1994,7 @@
             // Provider Change
             planProvider.addEventListener('change', function() {
                 updateCategoryOptions();
+                toggleManualFields();
             });
             
             // Import Plans Button
@@ -1732,6 +2033,24 @@
                 confirmDeletePlan();
             });
             
+            // Request Modal
+            requestModalClose.addEventListener('click', function() {
+                closeRequestModal();
+            });
+            
+            requestModalCancel.addEventListener('click', function() {
+                closeRequestModal();
+            });
+            
+            requestModalSave.addEventListener('click', function() {
+                updateRequest();
+            });
+            
+            // Refresh Requests Button
+            refreshRequestsBtn.addEventListener('click', function() {
+                loadDataRequests();
+            });
+            
             // Bulk Action Buttons
             syncPlansBtn.addEventListener('click', function() {
                 syncPlans();
@@ -1750,6 +2069,21 @@
                     deleteAllPlans();
                 }
             });
+        }
+        
+        // Toggle Manual Fields
+        function toggleManualFields() {
+            const provider = planProvider.value;
+            
+            if (provider === 'manual') {
+                manualFields.forEach(field => {
+                    field.style.display = 'block';
+                });
+            } else {
+                manualFields.forEach(field => {
+                    field.style.display = 'none';
+                });
+            }
         }
         
         // Load Data Plans
@@ -1784,6 +2118,33 @@
             } catch (error) {
                 console.error('Error loading data plans:', error);
                 showToast('Failed to load data plans', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Load Data Requests
+        async function loadDataRequests() {
+            try {
+                showLoading();
+                
+                // Get all data requests
+                const requestsSnapshot = await db.collection('dataRequests').orderBy('timestamp', 'desc').get();
+                const requests = [];
+                
+                requestsSnapshot.forEach(doc => {
+                    requests.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                // Render requests
+                renderRequests(requests);
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error loading data requests:', error);
+                showToast('Failed to load data requests', 'error');
                 hideLoading();
             }
         }
@@ -1868,9 +2229,38 @@
                 const statusClass = plan.status ? 'plan-status-active' : 'plan-status-inactive';
                 const statusText = plan.status ? 'Active' : 'Inactive';
                 
+                let priceHtml = '';
+                if (plan.provider === 'manual' && plan.originalPrice) {
+                    priceHtml = `
+                        <div class="price-container">
+                            <span class="original-price">₦${plan.originalPrice.toLocaleString()}</span>
+                            <span class="discounted-price">₦${plan.price.toLocaleString()}</span>
+                        </div>
+                    `;
+                } else {
+                    priceHtml = `<div class="plan-price">₦${plan.price.toLocaleString()}</div>`;
+                }
+                
+                let badgeHtml = '';
+                if (plan.provider === 'manual' && plan.badge) {
+                    let badgeClass = '';
+                    switch (plan.badge) {
+                        case 'hot':
+                            badgeClass = 'hot';
+                            break;
+                        case 'popular':
+                            badgeClass = 'popular';
+                            break;
+                        case 'value':
+                            badgeClass = 'value';
+                            break;
+                    }
+                    badgeHtml = `<span class="special-badge ${badgeClass}">${plan.badge.toUpperCase()}!</span>`;
+                }
+                
                 planCard.innerHTML = `
-                    <div class="plan-name">${plan.name} <span class="plan-status ${statusClass}">${statusText}</span></div>
-                    <div class="plan-price">₦${plan.price.toLocaleString()}</div>
+                    <div class="plan-name">${plan.name} ${badgeHtml} <span class="plan-status ${statusClass}">${statusText}</span></div>
+                    ${priceHtml}
                     <div class="plan-validity">${plan.validity}</div>
                     <div class="plan-actions">
                         <button class="action-btn edit" data-id="${plan.id}">
@@ -1900,6 +2290,57 @@
             });
         }
         
+        // Render Requests
+        function renderRequests(requests) {
+            const requestsTableBody = document.getElementById('requests-table-body');
+            requestsTableBody.innerHTML = '';
+            
+            if (requests.length === 0) {
+                requestsTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No data requests found</td></tr>';
+                return;
+            }
+            
+            requests.forEach(request => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+                const formattedDate = date.toLocaleString();
+                
+                // Status class
+                let statusClass = 'request-status-pending';
+                if (request.status === 'completed') {
+                    statusClass = 'request-status-completed';
+                } else if (request.status === 'rejected') {
+                    statusClass = 'request-status-rejected';
+                }
+                
+                row.innerHTML = `
+                    <td>${request.id.substring(0, 8)}...</td>
+                    <td>${formattedDate}</td>
+                    <td>${request.customerName || 'N/A'}</td>
+                    <td>${request.phoneNumber || 'N/A'}</td>
+                    <td>${request.planName || 'N/A'}</td>
+                    <td>₦${(request.amount || 0).toLocaleString()}</td>
+                    <td><span class="status ${statusClass}">${request.status || 'pending'}</span></td>
+                    <td>
+                        <button class="action-btn process" data-id="${request.id}">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </td>
+                `;
+                
+                requestsTableBody.appendChild(row);
+                
+                // Add event listener to process button
+                const processBtn = row.querySelector('.process');
+                processBtn.addEventListener('click', function() {
+                    const requestId = this.getAttribute('data-id');
+                    openRequestModal(requestId);
+                });
+            });
+        }
+        
         // Filter Plans
         function filterPlans(searchTerm) {
             const planCards = document.querySelectorAll('.plan-card');
@@ -1924,6 +2365,7 @@
             if (preselectedProvider) {
                 planProvider.value = preselectedProvider;
                 updateCategoryOptions();
+                toggleManualFields();
             }
             
             planModalOverlay.classList.add('active');
@@ -1948,11 +2390,22 @@
                 document.getElementById('plan-id').value = planId;
                 planProvider.value = plan.provider;
                 updateCategoryOptions();
+                toggleManualFields();
                 planCategory.value = plan.category;
                 planName.value = plan.name;
                 planData.value = plan.data;
+                
+                if (plan.provider === 'manual' && plan.originalPrice) {
+                    planOriginalPrice.value = plan.originalPrice;
+                }
+                
                 planPrice.value = plan.price;
                 planValidity.value = plan.validity;
+                
+                if (plan.provider === 'manual' && plan.badge) {
+                    planBadge.value = plan.badge;
+                }
+                
                 planStatus.checked = plan.status;
                 
                 planModalOverlay.classList.add('active');
@@ -1965,9 +2418,77 @@
             }
         }
         
+        // Open Request Modal
+        async function openRequestModal(requestId) {
+            try {
+                showLoading();
+                
+                const requestDoc = await db.collection('dataRequests').doc(requestId).get();
+                
+                if (!requestDoc.exists) {
+                    showToast('Request not found', 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                const request = requestDoc.data();
+                
+                // Format date
+                const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+                const formattedDate = date.toLocaleString();
+                
+                // Populate request details
+                requestDetails.innerHTML = `
+                    <div class="request-detail-item">
+                        <strong>Request ID:</strong> ${requestId}
+                    </div>
+                    <div class="request-detail-item">
+                        <strong>Date:</strong> ${formattedDate}
+                    </div>
+                    <div class="request-detail-item">
+                        <strong>Customer:</strong> ${request.customerName || 'N/A'}
+                    </div>
+                    <div class="request-detail-item">
+                        <strong>Phone Number:</strong> ${request.phoneNumber || 'N/A'}
+                    </div>
+                    <div class="request-detail-item">
+                        <strong>Plan:</strong> ${request.planName || 'N/A'}
+                    </div>
+                    <div class="request-detail-item">
+                        <strong>Amount:</strong> ₦${(request.amount || 0).toLocaleString()}
+                    </div>
+                    <div class="request-detail-item">
+                        <strong>Current Status:</strong> ${request.status || 'pending'}
+                    </div>
+                `;
+                
+                // Set current status
+                requestStatus.value = request.status || 'pending';
+                
+                // Set notes
+                requestNotes.value = request.adminNotes || '';
+                
+                // Set request ID
+                document.getElementById('request-id').value = requestId;
+                
+                requestModalOverlay.classList.add('active');
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error opening request modal:', error);
+                showToast('Failed to load request details', 'error');
+                hideLoading();
+            }
+        }
+        
         // Close Plan Modal
         function closePlanModal() {
             planModalOverlay.classList.remove('active');
+        }
+        
+        // Close Request Modal
+        function closeRequestModal() {
+            requestModalOverlay.classList.remove('active');
         }
         
         // Update Category Options
@@ -1982,6 +2503,12 @@
                     { value: 'mtn-sme', label: 'MTN SME' },
                     { value: 'mtn-cooperate', label: 'MTN Cooperate Gifting' },
                     { value: 'mtn-gifting', label: 'MTN Gifting' }
+                ],
+                manual: [
+                    { value: 'manual-1day', label: '1-Day Offers' },
+                    { value: 'manual-7day', label: '7-Day Offers' },
+                    { value: 'manual-14day', label: '14-Day Offers' },
+                    { value: 'manual-30day', label: '30-Day Offers' }
                 ],
                 airtel: [
                     { value: 'airtel-sme', label: 'Airtel SME' },
@@ -2027,6 +2554,17 @@
                     status: planStatus.checked
                 };
                 
+                // Add manual data specific fields
+                if (planProvider.value === 'manual') {
+                    if (planOriginalPrice.value) {
+                        planData.originalPrice = Number(planOriginalPrice.value);
+                    }
+                    
+                    if (planBadge.value) {
+                        planData.badge = planBadge.value;
+                    }
+                }
+                
                 const planIdValue = document.getElementById('plan-id').value;
                 
                 if (planIdValue) {
@@ -2049,6 +2587,38 @@
             } catch (error) {
                 console.error('Error saving plan:', error);
                 showToast('Failed to save plan', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Update Request
+        async function updateRequest() {
+            try {
+                showLoading();
+                
+                const requestIdValue = document.getElementById('request-id').value;
+                const status = requestStatus.value;
+                const notes = requestNotes.value;
+                
+                // Update request
+                await db.collection('dataRequests').doc(requestIdValue).update({
+                    status: status,
+                    adminNotes: notes,
+                    processedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Reload requests
+                await loadDataRequests();
+                
+                // Close modal
+                closeRequestModal();
+                
+                showToast('Request updated successfully', 'success');
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error updating request:', error);
+                showToast('Failed to update request', 'error');
                 hideLoading();
             }
         }
@@ -2094,7 +2664,7 @@
                 
                 plans.forEach(plan => {
                     const planRef = db.collection('dataPlans').doc();
-                    batch.set(planRef, {
+                    const planData = {
                         provider: plan.provider,
                         category: plan.category,
                         name: plan.name,
@@ -2102,7 +2672,20 @@
                         price: Number(plan.price),
                         validity: plan.validity,
                         status: Boolean(plan.status)
-                    });
+                    };
+                    
+                    // Add manual data specific fields
+                    if (plan.provider === 'manual') {
+                        if (plan.originalPrice) {
+                            planData.originalPrice = Number(plan.originalPrice);
+                        }
+                        
+                        if (plan.badge) {
+                            planData.badge = plan.badge;
+                        }
+                    }
+                    
+                    batch.set(planRef, planData);
                 });
                 
                 await batch.commit();
@@ -2133,7 +2716,7 @@
                 
                 plansSnapshot.forEach(doc => {
                     const data = doc.data();
-                    plans.push({
+                    const planData = {
                         provider: data.provider,
                         category: data.category,
                         name: data.name,
@@ -2141,7 +2724,20 @@
                         price: data.price,
                         validity: data.validity,
                         status: data.status
-                    });
+                    };
+                    
+                    // Add manual data specific fields
+                    if (data.provider === 'manual') {
+                        if (data.originalPrice) {
+                            planData.originalPrice = data.originalPrice;
+                        }
+                        
+                        if (data.badge) {
+                            planData.badge = data.badge;
+                        }
+                    }
+                    
+                    plans.push(planData);
                 });
                 
                 // Create JSON file
