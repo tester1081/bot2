@@ -2210,6 +2210,10 @@
         // Fetch Data Plans
         async function fetchDataPlans() {
             try {
+                // First fetch networks
+                await fetchNetworks();
+                
+                // Then fetch data plans
                 const plansSnapshot = await db.collection('dataPlans').get();
                 dataPlans = [];
                 
@@ -2223,316 +2227,268 @@
                 // Update data plan dropdowns
                 updateDataPlanDropdown();
                 
+                // Update manual plans display
+                updateManualPlansDisplay();
+                
                 console.log('Data plans loaded:', dataPlans);
             } catch (error) {
                 console.error('Error fetching data plans:', error);
                 showToast('error', 'Error', 'Failed to load data plans');
             }
         }
-        
-        // Fetch User Requests
-        async function fetchUserRequests(userId) {
+
+        // Add a new function to fetch networks from Firestore
+        async function fetchNetworks() {
             try {
-                const requestsSnapshot = await db.collection('dataRequests')
-                    .where('userId', '==', userId)
-                    .orderBy('timestamp', 'desc')
-                    .limit(10)
-                    .get();
+                const networksSnapshot = await db.collection('networks').get();
+                const networks = [];
                 
-                const requestsContainer = document.getElementById('requests-container');
-                requestsContainer.innerHTML = '';
-                
-                if (requestsSnapshot.empty) {
-                    requestsContainer.innerHTML = `
-                        <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
-                            <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
-                            <p>You haven't made any data purchase requests yet.</p>
-                            <button class="primary-btn" style="max-width: 200px; margin: 20px auto 0;" onclick="document.querySelector('.mode-option[data-mode=\'automatic\']').click()">
-                                Buy Data Now
-                            </button>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                requestsSnapshot.forEach(doc => {
-                    const request = doc.data();
-                    const timestamp = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
-                    const formattedTime = formatTimestamp(timestamp);
-                    
-                    const requestCard = document.createElement('div');
-                    requestCard.className = `request-card ${request.status}`;
-                    
-                    requestCard.innerHTML = `
-                        <div class="request-header">
-                            <div class="request-title">${request.planName}</div>
-                            <div class="request-status ${request.status}">${request.status.charAt(0).toUpperCase() + request.status.slice(1)}</div>
-                        </div>
-                        <div class="request-details">
-                            <div class="request-detail">
-                                <div class="request-detail-label">Phone Number</div>
-                                <div class="request-detail-value">${request.phoneNumber}</div>
-                            </div>
-                            <div class="request-detail">
-                                <div class="request-detail-label">Amount</div>
-                                <div class="request-detail-value">₦${request.amount.toLocaleString()}</div>
-                            </div>
-                            <div class="request-detail">
-                                <div class="request-detail-label">Date</div>
-                                <div class="request-detail-value">${formattedTime}</div>
-                            </div>
-                            <div class="request-detail">
-                                <div class="request-detail-label">Request ID</div>
-                                <div class="request-detail-value">${request.requestId || 'N/A'}</div>
-                            </div>
-                        </div>
-                        <div class="request-actions">
-                            ${request.status === 'pending' ? 
-                                `<button class="request-btn" data-id="${doc.id}" data-action="cancel">Cancel</button>
-                                <button class="request-btn primary" data-id="${doc.id}" data-action="track">Track</button>` : 
-                                `<button class="request-btn" data-id="${doc.id}" data-action="receipt">Receipt</button>
-                                <button class="request-btn primary" data-id="${doc.id}" data-action="buyAgain">Buy Again</button>`
-                            }
-                        </div>
-                    `;
-                    
-                    requestsContainer.appendChild(requestCard);
-                    
-                    // Add event listeners to buttons
-                    const buttons = requestCard.querySelectorAll('.request-btn');
-                    buttons.forEach(button => {
-                        button.addEventListener('click', function() {
-                            const action = this.dataset.action;
-                            const requestId = this.dataset.id;
-                            
-                            switch(action) {
-                                case 'cancel':
-                                    cancelRequest(requestId);
-                                    break;
-                                case 'track':
-                                    trackRequest(requestId);
-                                    break;
-                                case 'receipt':
-                                    showReceipt(requestId);
-                                    break;
-                                case 'buyAgain':
-                                    buyAgain(requestId);
-                                    break;
-                            }
-                        });
-                    });
-                });
-                
-            } catch (error) {
-                console.error('Error fetching user requests:', error);
-                showToast('error', 'Error', 'Failed to load your data purchase requests');
-            }
-        }
-        
-        // Cancel Request
-        function cancelRequest(requestId) {
-            // Implement cancel request functionality
-            showToast('info', 'Request Cancellation', 'Your cancellation request has been submitted');
-        }
-        
-        // Track Request
-        function trackRequest(requestId) {
-            // Implement track request functionality
-            showToast('info', 'Request Tracking', 'Tracking information will be sent to your email');
-        }
-        
-        // Show Receipt
-        function showReceipt(requestId) {
-            // Implement show receipt functionality
-            showToast('info', 'Receipt', 'Receipt has been sent to your email');
-        }
-        
-        // Buy Again
-        function buyAgain(requestId) {
-            // Implement buy again functionality
-            showToast('info', 'Buy Again', 'Preparing your previous order for purchase');
-            
-            // Switch to automatic mode
-            document.querySelector('.mode-option[data-mode="automatic"]').click();
-        }
-        
-        // Update Data Plan Dropdown
-        function updateDataPlanDropdown() {
-            // Clear existing options except the first one
-            while (dataPlanSelect.options.length > 1) {
-                dataPlanSelect.remove(1);
-            }
-            
-            // Get selected plan type
-            const planType = planTypeSelect.value;
-            
-            if (!planType) return;
-            
-            // Get plans for selected type
-            const plans = dataPlanMapping[planType] || [];
-            
-            // Add plans to dropdown
-            plans.forEach(plan => {
-                const option = document.createElement('option');
-                option.value = plan.id;
-                option.textContent = `${plan.name} - ₦${plan.price}`;
-                dataPlanSelect.appendChild(option);
-            });
-        }
-        
-        // Fetch User Notifications
-        async function fetchUserNotifications(userId) {
-            try {
-                const notificationsSnapshot = await db.collection('users').doc(userId)
-                    .collection('notifications')
-                    .orderBy('timestamp', 'desc')
-                    .get();
-                
-                userNotifications = [];
-                let unreadCount = 0;
-                
-                notificationsSnapshot.forEach(doc => {
-                    const notification = {
+                networksSnapshot.forEach(doc => {
+                    networks.push({
                         id: doc.id,
                         ...doc.data()
-                    };
-                    
-                    userNotifications.push(notification);
-                    
-                    if (!notification.read) {
-                        unreadCount++;
-                    }
+                    });
                 });
                 
-                // Update notification badge
-                if (unreadCount > 0) {
-                    notificationBadge.textContent = unreadCount;
-                    notificationBadge.style.display = 'flex';
-                } else {
-                    notificationBadge.style.display = 'none';
-                }
+                // Update networks display
+                updateNetworksDisplay(networks);
                 
-                // Render notifications in panel
-                renderNotifications();
-                
-                console.log('Notifications loaded:', userNotifications);
+                console.log('Networks loaded:', networks);
             } catch (error) {
-                console.error('Error fetching notifications:', error);
+                console.error('Error fetching networks:', error);
+                showToast('error', 'Error', 'Failed to load networks');
             }
         }
-        
-        // Render Notifications
-        function renderNotifications() {
-            notificationsContent.innerHTML = '';
+
+        // Add a function to update networks display
+        function updateNetworksDisplay(networks) {
+            const networksGrid = document.querySelector('.networks-grid');
+            const networkSwitcherGrid = document.querySelector('.network-switcher-grid');
             
-            if (userNotifications.length === 0) {
-                notificationsContent.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
-                        <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                        <p>No notifications yet</p>
+            // Don't clear if no networks were fetched (fallback to default)
+            if (!networks || networks.length === 0) return;
+            
+            // Clear existing networks
+            networksGrid.innerHTML = '';
+            networkSwitcherGrid.innerHTML = '';
+            
+            // Map network IDs to CSS classes and icons
+            const networkStyles = {
+                'MTN': { class: 'mtn', icon: 'fa-signal' },
+                'Airtel': { class: 'airtel', icon: 'fa-signal' },
+                'Glo': { class: 'glo', icon: 'fa-signal' },
+                '9mobile': { class: 'etisalat', icon: 'fa-signal' }
+            };
+            
+            // Add networks to grid
+            networks.forEach((network, index) => {
+                const networkName = network.name;
+                const networkId = network.id;
+                const isActive = index === 0; // First network is active by default
+                const networkStyle = networkStyles[networkName] || { class: '', icon: 'fa-signal' };
+                
+                // Add to main grid
+                const networkCard = document.createElement('div');
+                networkCard.className = `network-card ${isActive ? 'active' : ''}`;
+                networkCard.setAttribute('data-network', networkName.toLowerCase());
+                networkCard.setAttribute('data-network-id', networkId);
+                
+                networkCard.innerHTML = `
+                    <div class="network-logo ${networkStyle.class}">
+                        <i class="fas ${networkStyle.icon}"></i>
+                    </div>
+                    <div class="network-name">${networkName}</div>
+                `;
+                
+                networksGrid.appendChild(networkCard);
+                
+                // Add to switcher
+                const switcherItem = document.createElement('div');
+                switcherItem.className = `network-switcher-item ${isActive ? 'active' : ''}`;
+                switcherItem.setAttribute('data-network', networkName.toLowerCase());
+                switcherItem.setAttribute('data-network-id', networkId);
+                
+                switcherItem.innerHTML = `
+                    <div class="network-switcher-logo ${networkStyle.class}">
+                        <i class="fas ${networkStyle.icon}"></i>
+                    </div>
+                    <div class="network-switcher-info">
+                        <div class="network-switcher-name">${networkName}</div>
+                        <div class="network-switcher-status available">Available</div>
                     </div>
                 `;
-                return;
-            }
+                
+                networkSwitcherGrid.appendChild(switcherItem);
+            });
             
-            userNotifications.forEach(notification => {
-                const notificationItem = document.createElement('div');
-                notificationItem.className = `notification-item ${notification.read ? '' : 'unread'}`;
+            // Re-attach event listeners
+            attachNetworkEventListeners();
+        }
+
+        // Add a function to update manual plans display
+        function updateManualPlansDisplay() {
+            // Filter plans for manual display (provider === 'manual')
+            const manualPlans = dataPlans.filter(plan => plan.provider === 'manual');
+            
+            // Group by category
+            const groupedPlans = {};
+            manualPlans.forEach(plan => {
+                const category = plan.category || 'unknown';
+                if (!groupedPlans[category]) {
+                    groupedPlans[category] = [];
+                }
+                groupedPlans[category].push(plan);
+            });
+            
+            // Update each category
+            for (const category in groupedPlans) {
+                const plans = groupedPlans[category];
+                const categoryId = category.replace('manual-', '');
+                const plansGrid = document.querySelector(`.plan-category [data-category="manual-${categoryId}"] .plans-grid`);
                 
-                // Format timestamp
-                const timestamp = notification.timestamp ? new Date(notification.timestamp.toDate()) : new Date();
-                const formattedTime = formatTimestamp(timestamp);
-                
-                notificationItem.innerHTML = `
-                    <div class="notification-header">
-                        <div class="notification-title">${notification.title || 'Notification'}</div>
-                        <div class="notification-time">${formattedTime}</div>
-                    </div>
-                    <div class="notification-message">${notification.text}</div>
-                    ${!notification.read ? `
-                    <div class="notification-actions">
-                        <button class="notification-btn mark-read" data-id="${notification.id}">Mark as read</button>
-                    </div>
-                    ` : ''}
-                `;
-                
-                notificationsContent.appendChild(notificationItem);
-                
-                // Add event listener to mark as read button
-                const markReadBtn = notificationItem.querySelector('.mark-read');
-                if (markReadBtn) {
-                    markReadBtn.addEventListener('click', function() {
-                        markNotificationAsRead(notification.id);
+                if (plansGrid) {
+                    plansGrid.innerHTML = '';
+                    
+                    plans.forEach(plan => {
+                        const planCard = document.createElement('div');
+                        planCard.className = 'plan-card';
+                        planCard.setAttribute('data-plan', plan.name.toLowerCase().replace(/\s+/g, '-'));
+                        planCard.setAttribute('data-id', `manual-${categoryId}-${plan.name.toLowerCase().replace(/\s+/g, '-')}`);
+                        planCard.setAttribute('data-price', plan.price);
+                        if (plan.originalPrice) planCard.setAttribute('data-original-price', plan.originalPrice);
+                        if (plan.badge) planCard.setAttribute('data-badge', plan.badge);
+                        planCard.setAttribute('data-plan-id', plan.id);
+                        
+                        let badgeHtml = '';
+                        if (plan.badge) {
+                            badgeHtml = `<div class="badge ${plan.badge}">${plan.badge.toUpperCase()}!</div>`;
+                        }
+                        
+                        planCard.innerHTML = `
+                            ${badgeHtml}
+                            <div class="plan-data">${plan.data}</div>
+                            <div class="plan-validity">${plan.validity}</div>
+                            <div class="plan-price">
+                                ${plan.originalPrice ? `<div class="price-old">₦${plan.originalPrice.toLocaleString()}</div>` : ''}
+                                <div class="price-new">₦${plan.price.toLocaleString()}</div>
+                            </div>
+                        `;
+                        
+                        plansGrid.appendChild(planCard);
                     });
                 }
+            }
+            
+            // Re-attach event listeners to plan cards
+            attachPlanCardEventListeners();
+        }
+
+        // Add a function to attach event listeners to network cards and switcher items
+        function attachNetworkEventListeners() {
+            const networkCards = document.querySelectorAll('.network-card');
+            const networkSwitcherItems = document.querySelectorAll('.network-switcher-item');
+            const networkIndicator = document.getElementById('network-indicator');
+            
+            // Network card click handler
+            networkCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Update active network
+                    networkCards.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update selected network
+                    selectedNetwork = this.dataset.networkId;
+                    
+                    // Update network indicator
+                    const networkName = this.querySelector('.network-name').textContent;
+                    networkIndicator.innerHTML = `<i class="fas fa-signal"></i> ${networkName}`;
+                    
+                    // Update network switcher
+                    networkSwitcherItems.forEach(item => {
+                        if (item.dataset.networkId === selectedNetwork) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.remove('active');
+                        }
+                    });
+                    
+                    showToast('success', 'Network Changed', `Switched to ${networkName} network`);
+                });
+            });
+            
+            // Network switcher item click handler
+            networkSwitcherItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Update active network in switcher
+                    networkSwitcherItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update selected network
+                    selectedNetwork = this.dataset.networkId;
+                    
+                    // Update network cards
+                    networkCards.forEach(card => {
+                        if (card.dataset.networkId === selectedNetwork) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                    
+                    // Update network indicator
+                    const networkName = this.querySelector('.network-switcher-name').textContent;
+                    networkIndicator.innerHTML = `<i class="fas fa-signal"></i> ${networkName}`;
+                    
+                    // Close network switcher
+                    document.getElementById('network-switcher').classList.remove('show');
+                    
+                    showToast('success', 'Network Changed', `Switched to ${networkName} network`);
+                });
             });
         }
-        
-        // Mark Notification as Read
-        async function markNotificationAsRead(notificationId) {
-            try {
-                await db.collection('users').doc(currentUser.uid)
-                    .collection('notifications')
-                    .doc(notificationId)
-                    .update({
-                        read: true
+
+        // Add a function to attach event listeners to plan cards
+        function attachPlanCardEventListeners() {
+            const planCards = document.querySelectorAll('.plan-card');
+            const selectedPlanDisplay = document.getElementById('selected-plan-display');
+            const placeOrderBtn = document.getElementById('place-order-btn');
+            
+            planCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove active class from all cards
+                    planCards.forEach(c => {
+                        c.classList.remove('active');
                     });
-                
-                // Update local notifications
-                const index = userNotifications.findIndex(n => n.id === notificationId);
-                if (index !== -1) {
-                    userNotifications[index].read = true;
-                }
-                
-                // Re-render notifications
-                renderNotifications();
-                
-                // Update notification badge
-                const unreadCount = userNotifications.filter(n => !n.read).length;
-                if (unreadCount > 0) {
-                    notificationBadge.textContent = unreadCount;
-                    notificationBadge.style.display = 'flex';
-                } else {
-                    notificationBadge.style.display = 'none';
-                }
-                
-                showToast('success', 'Success', 'Notification marked as read');
-            } catch (error) {
-                console.error('Error marking notification as read:', error);
-                showToast('error', 'Error', 'Failed to update notification');
-            }
-        }
-        
-        // Format Timestamp
-        function formatTimestamp(timestamp) {
-            const now = new Date();
-            const diff = now - timestamp;
-            
-            // Less than a minute
-            if (diff < 60000) {
-                return 'Just now';
-            }
-            
-            // Less than an hour
-            if (diff < 3600000) {
-                const minutes = Math.floor(diff / 60000);
-                return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
-            }
-            
-            // Less than a day
-            if (diff < 86400000) {
-                const hours = Math.floor(diff / 3600000);
-                return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
-            }
-            
-            // Less than a week
-            if (diff < 604800000) {
-                const days = Math.floor(diff / 86400000);
-                return `${days} ${days === 1 ? 'day' : 'days'} ago`;
-            }
-            
-            // Format as date
-            return timestamp.toLocaleDateString();
+                    
+                    // Add active class to clicked card
+                    this.classList.add('active');
+                    
+                    // Get plan details
+                    const planData = this.querySelector('.plan-data').textContent;
+                    const planValidity = this.querySelector('.plan-validity').textContent;
+                    const planPrice = this.querySelector('.price-new').textContent;
+                    
+                    // Update selected plan display
+                    selectedPlanDisplay.textContent = `${planData} - ${planValidity} - ${planPrice}`;
+                    selectedPlanDisplay.classList.add('active');
+                    
+                    // Enable order button
+                    placeOrderBtn.disabled = false;
+                    
+                    // Store selected plan
+                    selectedPlan = {
+                        id: this.dataset.id,
+                        data: planData,
+                        validity: planValidity,
+                        price: this.dataset.price,
+                        originalPrice: this.dataset.originalPrice,
+                        badge: this.dataset.badge || null,
+                        planId: this.dataset.planId
+                    };
+                    
+                    showToast('success', 'Plan Selected', `Selected ${planData} plan for ${planValidity}`);
+                });
+            });
         }
         
         // Initialize Event Listeners
@@ -2598,8 +2554,6 @@
             
             // Manual Fast Transfer Toggle
             manualFastTransferToggle.addEventListener('change', function() {
-                manualFastTransferEnabled = this.checked;
-                  function() {
                 manualFastTransferEnabled = this.checked;
                 
                 if (manualFastTransferEnabled) {
@@ -3041,6 +2995,39 @@
         setTimeout(() => {
             showToast('info', 'Welcome', 'Buy data at the best prices with VeltraWave');
         }, 1000);
+
+        // Add this to the initEventListeners function, right after the network indicator click handler
+        // Network switcher item click handler
+        document.querySelectorAll('.network-switcher-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const networkId = this.dataset.networkId;
+                const networkName = this.querySelector('.network-switcher-name').textContent;
+                
+                // Update active network in switcher
+                document.querySelectorAll('.network-switcher-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update network cards
+                document.querySelectorAll('.network-card').forEach(card => {
+                    if (card.dataset.networkId === networkId) {
+                        card.classList.add('active');
+                    } else {
+                        card.classList.remove('active');
+                    }
+                });
+                
+                // Update selected network
+                selectedNetwork = networkId;
+                
+                // Update network indicator
+                document.getElementById('network-indicator').innerHTML = `<i class="fas fa-signal"></i> ${networkName}`;
+                
+                // Close network switcher
+                document.getElementById('network-switcher').classList.remove('show');
+                
+                showToast('success', 'Network Changed', `Switched to ${networkName} network`);
+            });
+        });
     </script>
 </body>
 </html>
