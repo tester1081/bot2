@@ -55,6 +55,7 @@
             z-index: 100;
             transition: all 0.3s ease;
             overflow-y: auto;
+            transform: translateX(0);
         }
         
         .sidebar.collapsed {
@@ -173,31 +174,143 @@
             -webkit-text-fill-color: transparent;
         }
         
-        .header-actions {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .header-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text);
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 50px;
             transition: all 0.3s ease;
         }
         
-        .header-btn:hover {
+        .welcome-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+        
+        .welcome-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.15);
             transform: translateY(-2px);
         }
         
-        .header-btn i {
-            font-size: 1rem;
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-users {
+            background: rgba(45, 127, 249, 0.1);
+            color: var(--primary);
+        }
+        
+        .stat-revenue {
+            background: rgba(0, 225, 160, 0.1);
+            color: var(--success);
+        }
+        
+        .stat-requests {
+            background: rgba(255, 181, 71, 0.1);
+            color: var(--warning);
+        }
+        
+        .stat-plans {
+            background: rgba(140, 82, 255, 0.1);
+            color: var(--secondary);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
         
         /* Cards */
@@ -626,10 +739,6 @@
         }
         
         @media (max-width: 768px) {
-            .card-grid {
-                grid-template-columns: 1fr;
-            }
-            
             .sidebar {
                 transform: translateX(-100%);
                 width: 250px;
@@ -654,7 +763,11 @@
             }
             
             .mobile-menu-toggle {
-                display: block;
+                display: flex;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -674,6 +787,8 @@
             cursor: pointer;
             z-index: 99;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            align-items: center;
+            justify-content: center;
         }
         
         @media (max-width: 768px) {
@@ -1007,39 +1122,39 @@
         </div>
         <div class="sidebar-menu">
             <div class="menu-label">Main</div>
-            <a href="#" class="menu-item active" data-page="dashboard">
-                <i class="fas fa-tachometer-alt"></i>
+            <a href="admin.html" class="menu-item active">
+                <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="#" class="menu-item" data-page="overview">
+            <a href="overviewA.html" class="menu-item">
                 <i class="fas fa-chart-line"></i>
                 <span>Overview</span>
             </a>
-            <a href="#" class="menu-item" data-page="users">
+            <a href="usersA.html" class="menu-item">
                 <i class="fas fa-users"></i>
                 <span>Users</span>
             </a>
             
             <div class="menu-label">Management</div>
-            <a href="#" class="menu-item" data-page="data-management">
+            <a href="dataA.html" class="menu-item">
                 <i class="fas fa-wifi"></i>
-                <span>Data Management</span>
+                <span>Data</span>
             </a>
-            <a href="#" class="menu-item" data-page="store">
+            <a href="storeA.html" class="menu-item">
                 <i class="fas fa-store"></i>
                 <span>Store</span>
             </a>
-            <a href="#" class="menu-item" data-page="requests">
+            <a href="requestsA.html" class="menu-item">
                 <i class="fas fa-clipboard-list"></i>
                 <span>Requests</span>
             </a>
-            <a href="#" class="menu-item" data-page="reviews">
+            <a href="reviewsA.html" class="menu-item">
                 <i class="fas fa-star"></i>
                 <span>Reviews</span>
             </a>
             
             <div class="menu-label">Settings</div>
-            <a href="#" class="menu-item" data-page="settings">
+            <a href="settingsA.html" class="menu-item">
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
             </a>
@@ -1052,340 +1167,63 @@
     
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Dashboard Page -->
-        <div class="page active" id="dashboard-page">
-            <div class="page-header">
-                <h1 class="page-title">Dashboard</h1>
-                <div class="header-actions">
-                    <button class="header-btn">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Refresh</span>
-                    </button>
-                </div>
+        <div class="page-header">
+            <h1 class="page-title">Admin Dashboard</h1>
+        </div>
+        
+        <div class="welcome-card">
+            <div class="welcome-icon">
+                <i class="fas fa-user-shield"></i>
             </div>
-            
-            <div class="card-grid">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Total Users</div>
-                        <div class="card-icon" style="background: rgba(45, 127, 249, 0.1); color: var(--primary);">
-                            <i class="fas fa-users"></i>
-                        </div>
-                    </div>
-                    <div class="card-value">0</div>
-                    <div class="card-label">Active users in the system</div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Total Revenue</div>
-                        <div class="card-icon" style="background: rgba(0, 225, 160, 0.1); color: var(--success);">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
-                    </div>
-                    <div class="card-value">₦0.00</div>
-                    <div class="card-label">Total revenue generated</div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Pending Requests</div>
-                        <div class="card-icon" style="background: rgba(255, 181, 71, 0.1); color: var(--warning);">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                    </div>
-                    <div class="card-value">0</div>
-                    <div class="card-label">Requests awaiting approval</div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Active Plans</div>
-                        <div class="card-icon" style="background: rgba(140, 82, 255, 0.1); color: var(--secondary);">
-                            <i class="fas fa-wifi"></i>
-                        </div>
-                    </div>
-                    <div class="card-value">0</div>
-                    <div class="card-label">Data plans currently active</div>
-                </div>
-            </div>
-            
-            <div class="table-container">
-                <div class="table-header">
-                    <div class="table-title">Recent Transactions</div>
-                    <div class="table-actions">
-                        <button class="header-btn">
-                            <i class="fas fa-download"></i>
-                            <span>Export</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>User</th>
-                            <th>Plan</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recent-transactions">
-                        <tr>
-                            <td colspan="6" style="text-align: center;">No transactions found</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <h2 class="welcome-title">Welcome to VeltraWave Admin</h2>
+            <p class="welcome-subtitle">Manage your VTU platform, users, and data plans from this dashboard.</p>
+            <div class="welcome-actions">
+                <a href="dataA.html" class="btn btn-primary">
+                    <i class="fas fa-wifi"></i>
+                    <span>Manage Data Plans</span>
+                </a>
+                <a href="usersA.html" class="btn btn-secondary">
+                    <i class="fas fa-users"></i>
+                    <span>View Users</span>
+                </a>
+                <a href="requestsA.html" class="btn btn-secondary">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Pending Requests</span>
+                </a>
             </div>
         </div>
         
-        <!-- Data Management Page -->
-        <div class="page" id="data-management-page">
-            <div class="page-header">
-                <h1 class="page-title">Data Management</h1>
-                <div class="header-actions">
-                    <button class="header-btn" id="add-network-btn">
-                        <i class="fas fa-plus"></i>
-                        <span>Add Network</span>
-                    </button>
-                    <button class="header-btn" id="add-plan-type-btn">
-                        <i class="fas fa-plus"></i>
-                        <span>Add Plan Type</span>
-                    </button>
-                    <button class="header-btn" id="add-data-plan-btn">
-                        <i class="fas fa-plus"></i>
-                        <span>Add Data Plan</span>
-                    </button>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon stat-users">
+                    <i class="fas fa-users"></i>
                 </div>
+                <div class="stat-value" id="total-users">0</div>
+                <div class="stat-label">Total Users</div>
             </div>
             
-            <div class="tabs">
-                <div class="tab active" data-tab="networks">Networks</div>
-                <div class="tab" data-tab="plan-types">Plan Types</div>
-                <div class="tab" data-tab="data-plans">Data Plans</div>
-                <div class="tab" data-tab="special-plans">Special Plans</div>
+            <div class="stat-card">
+                <div class="stat-icon stat-revenue">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-value" id="total-revenue">₦0.00</div>
+                <div class="stat-label">Total Revenue</div>
             </div>
             
-            <!-- Networks Tab -->
-            <div class="tab-content active" id="networks-tab">
-                <div class="table-container">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" placeholder="Search networks...">
-                    </div>
-                    
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Network</th>
-                                <th>Status</th>
-                                <th>Plan Types</th>
-                                <th>Total Plans</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="networks-table">
-                            <tr>
-                                <td colspan="5" style="text-align: center;">Loading networks...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="stat-card">
+                <div class="stat-icon stat-requests">
+                    <i class="fas fa-clock"></i>
                 </div>
+                <div class="stat-value" id="pending-requests">0</div>
+                <div class="stat-label">Pending Requests</div>
             </div>
             
-            <!-- Plan Types Tab -->
-            <div class="tab-content" id="plan-types-tab">
-                <div class="table-container">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" placeholder="Search plan types...">
-                    </div>
-                    
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Plan Type</th>
-                                <th>Network</th>
-                                <th>Status</th>
-                                <th>Total Plans</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="plan-types-table">
-                            <tr>
-                                <td colspan="5" style="text-align: center;">Loading plan types...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="stat-card">
+                <div class="stat-icon stat-plans">
+                    <i class="fas fa-wifi"></i>
                 </div>
-            </div>
-            
-            <!-- Data Plans Tab -->
-            <div class="tab-content" id="data-plans-tab">
-                <div class="table-container">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" placeholder="Search data plans...">
-                    </div>
-                    
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Plan Name</th>
-                                <th>Network</th>
-                                <th>Type</th>
-                                <th>Size</th>
-                                <th>Price</th>
-                                <th>Validity</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="data-plans-table">
-                            <tr>
-                                <td colspan="8" style="text-align: center;">Loading data plans...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Special Plans Tab -->
-            <div class="tab-content" id="special-plans-tab">
-                <div class="table-container">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" placeholder="Search special plans...">
-                    </div>
-                    
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Plan Name</th>
-                                <th>Category</th>
-                                <th>Size</th>
-                                <th>Original Price</th>
-                                <th>Discounted Price</th>
-                                <th>Validity</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="special-plans-table">
-                            <tr>
-                                <td colspan="8" style="text-align: center;">Loading special plans...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Requests Page -->
-        <div class="page" id="requests-page">
-            <div class="page-header">
-                <h1 class="page-title">Data Requests</h1>
-                <div class="header-actions">
-                    <button class="header-btn">
-                        <i class="fas fa-download"></i>
-                        <span>Export</span>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="tabs">
-                <div class="tab active" data-tab="pending-requests">Pending</div>
-                <div class="tab" data-tab="approved-requests">Approved</div>
-                <div class="tab" data-tab="rejected-requests">Rejected</div>
-            </div>
-            
-            <!-- Pending Requests Tab -->
-            <div class="tab-content active" id="pending-requests-tab">
-                <div class="table-container">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" placeholder="Search requests...">
-                    </div>
-                    
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Request ID</th>
-                                <th>User</th>
-                                <th>Phone Number</th>
-                                <th>Plan</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pending-requests-table">
-                            <tr>
-                                <td colspan="7" style="text-align: center;">No pending requests</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Approved Requests Tab -->
-            <div class="tab-content" id="approved-requests-tab">
-                <div class="table-container">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" placeholder="Search approved requests...">
-                    </div>
-                    
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Request ID</th>
-                                <th>User</th>
-                                <th>Phone Number</th>
-                                <th>Plan</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Approved By</th>
-                            </tr>
-                        </thead>
-                        <tbody id="approved-requests-table">
-                            <tr>
-                                <td colspan="7" style="text-align: center;">No approved requests</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Rejected Requests Tab -->
-            <div class="tab-content" id="rejected-requests-tab">
-                <div class="table-container">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" placeholder="Search rejected requests...">
-                    </div>
-                    
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Request ID</th>
-                                <th>User</th>
-                                <th>Phone Number</th>
-                                <th>Plan</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Reason</th>
-                            </tr>
-                        </thead>
-                        <tbody id="rejected-requests-table">
-                            <tr>
-                                <td colspan="7" style="text-align: center;">No rejected requests</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div class="stat-value" id="active-plans">0</div>
+                <div class="stat-label">Active Plans</div>
             </div>
         </div>
     </div>
@@ -1394,229 +1232,6 @@
     <button class="mobile-menu-toggle">
         <i class="fas fa-bars"></i>
     </button>
-    
-    <!-- Add Network Modal -->
-    <div class="modal-overlay" id="add-network-modal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Add Network</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="add-network-form">
-                    <div class="form-group">
-                        <label class="form-label">Network Name</label>
-                        <input type="text" class="form-input" name="networkName" placeholder="e.g. MTN" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="network-status" class="checkbox-input" name="status" checked>
-                            <label for="network-status" class="checkbox-label">Active</label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary modal-close-btn">Cancel</button>
-                <button class="btn btn-primary" id="save-network-btn">Save Network</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Plan Type Modal -->
-    <div class="modal-overlay" id="add-plan-type-modal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Add Plan Type</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="add-plan-type-form">
-                    <div class="form-group">
-                        <label class="form-label">Plan Type Name</label>
-                        <input type="text" class="form-input" name="planTypeName" placeholder="e.g. SME" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Network</label>
-                        <select class="form-select" name="network" required>
-                            <option value="">Select Network</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="plan-type-status" class="checkbox-input" name="status" checked>
-                            <label for="plan-type-status" class="checkbox-label">Active</label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary modal-close-btn">Cancel</button>
-                <button class="btn btn-primary" id="save-plan-type-btn">Save Plan Type</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Data Plan Modal -->
-    <div class="modal-overlay" id="add-data-plan-modal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Add Data Plan</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="add-data-plan-form">
-                    <div class="form-group">
-                        <label class="form-label">Plan Name</label>
-                        <input type="text" class="form-input" name="planName" placeholder="e.g. MTN SME 1GB" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Network</label>
-                        <select class="form-select" name="network" id="plan-network-select" required>
-                            <option value="">Select Network</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Plan Type</label>
-                        <select class="form-select" name="planType" id="plan-type-select" required>
-                            <option value="">Select Plan Type</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Data Size</label>
-                        <input type="text" class="form-input" name="dataSize" placeholder="e.g. 1GB" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Price (₦)</label>
-                        <input type="number" class="form-input" name="price" placeholder="e.g. 600" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Validity</label>
-                        <input type="text" class="form-input" name="validity" placeholder="e.g. 30 Days" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="data-plan-status" class="checkbox-input" name="status" checked>
-                            <label for="data-plan-status" class="checkbox-label">Active</label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary modal-close-btn">Cancel</button>
-                <button class="btn btn-primary" id="save-data-plan-btn">Save Data Plan</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Special Plan Modal -->
-    <div class="modal-overlay" id="add-special-plan-modal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Add Special Plan</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="add-special-plan-form">
-                    <div class="form-group">
-                        <label class="form-label">Plan Name</label>
-                        <input type="text" class="form-input" name="planName" placeholder="e.g. MTN 1-Day 500MB" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Category</label>
-                        <select class="form-select" name="category" required>
-                            <option value="">Select Category</option>
-                            <option value="1-Day Offers">1-Day Offers</option>
-                            <option value="7-Day Offers">7-Day Offers</option>
-                            <option value="14-Day Offers">14-Day Offers</option>
-                            <option value="30-Day Offers">30-Day Offers</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Data Size</label>
-                        <input type="text" class="form-input" name="dataSize" placeholder="e.g. 500MB" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Original Price (₦)</label>
-                        <input type="number" class="form-input" name="originalPrice" placeholder="e.g. 150" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Discounted Price (₦)</label>
-                        <input type="number" class="form-input" name="discountedPrice" placeholder="e.g. 129" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Validity</label>
-                        <input type="text" class="form-input" name="validity" placeholder="e.g. 1 Day" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Badge (Optional)</label>
-                        <select class="form-select" name="badge">
-                            <option value="">No Badge</option>
-                            <option value="HOT!">HOT!</option>
-                            <option value="BEST VALUE">BEST VALUE</option>
-                            <option value="MOST POPULAR">MOST POPULAR</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="special-plan-status" class="checkbox-input" name="status" checked>
-                            <label for="special-plan-status" class="checkbox-label">Active</label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary modal-close-btn">Cancel</button>
-                <button class="btn btn-primary" id="save-special-plan-btn">Save Special Plan</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- View Request Modal -->
-    <div class="modal-overlay" id="view-request-modal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Request Details</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="request-details">
-                    <!-- Request details will be loaded here -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary modal-close-btn">Close</button>
-                <button class="btn btn-danger" id="reject-request-btn">Reject</button>
-                <button class="btn btn-primary" id="approve-request-btn">Approve</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Reject Request Modal -->
-    <div class="modal-overlay" id="reject-request-modal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Reject Request</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="reject-request-form">
-                    <div class="form-group">
-                        <label class="form-label">Reason for Rejection</label>
-                        <textarea class="form-textarea" name="rejectReason" placeholder="Please provide a reason for rejecting this request" required></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary modal-close-btn">Cancel</button>
-                <button class="btn btn-danger" id="confirm-reject-btn">Confirm Rejection</button>
-            </div>
-        </div>
-    </div>
     
     <script>
         // Firebase Configuration
@@ -1638,6 +1253,19 @@
         // Flag to prevent auth state change loop
         let isCheckingAdmin = false;
         let isSigningOut = false;
+        
+        // DOM Elements
+        const sidebar = document.querySelector('.sidebar');
+        const toggleSidebarBtn = document.querySelector('.toggle-sidebar');
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mainContent = document.querySelector('.main-content');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        // Stats Elements
+        const totalUsersEl = document.getElementById('total-users');
+        const totalRevenueEl = document.getElementById('total-revenue');
+        const pendingRequestsEl = document.getElementById('pending-requests');
+        const activePlansEl = document.getElementById('active-plans');
         
         // Check if user is logged in
         document.addEventListener('DOMContentLoaded', function() {
@@ -1691,68 +1319,24 @@
             });
         });
         
-        // DOM Elements
-        const sidebar = document.querySelector('.sidebar');
-        const toggleSidebarBtn = document.querySelector('.toggle-sidebar');
-        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-        const mainContent = document.querySelector('.main-content');
-        const menuItems = document.querySelectorAll('.menu-item');
-        const pages = document.querySelectorAll('.page');
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const modalOverlays = document.querySelectorAll('.modal-overlay');
-        const modalCloseBtns = document.querySelectorAll('.modal-close, .modal-close-btn');
+        // Initialize App
+        async function initApp() {
+            try {
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Load dashboard stats
+                await loadDashboardStats();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                showToast('Failed to initialize the app', 'error');
+                hideLoading();
+            }
+        }
         
-        // Add Network Modal
-        const addNetworkBtn = document.getElementById('add-network-btn');
-        const addNetworkModal = document.getElementById('add-network-modal');
-        const saveNetworkBtn = document.getElementById('save-network-btn');
-        const addNetworkForm = document.getElementById('add-network-form');
-        
-        // Add Plan Type Modal
-        const addPlanTypeBtn = document.getElementById('add-plan-type-btn');
-        const addPlanTypeModal = document.getElementById('add-plan-type-modal');
-        const savePlanTypeBtn = document.getElementById('save-plan-type-btn');
-        const addPlanTypeForm = document.getElementById('add-plan-type-form');
-        
-        // Add Data Plan Modal
-        const addDataPlanBtn = document.getElementById('add-data-plan-btn');
-        const addDataPlanModal = document.getElementById('add-data-plan-modal');
-        const saveDataPlanBtn = document.getElementById('save-data-plan-btn');
-        const addDataPlanForm = document.getElementById('add-data-plan-form');
-        
-        // Add Special Plan Modal
-        const addSpecialPlanModal = document.getElementById('add-special-plan-modal');
-        const saveSpecialPlanBtn = document.getElementById('save-special-plan-btn');
-        const addSpecialPlanForm = document.getElementById('add-special-plan-form');
-        
-        // View Request Modal
-        const viewRequestModal = document.getElementById('view-request-modal');
-        const approveRequestBtn = document.getElementById('approve-request-btn');
-        const rejectRequestBtn = document.getElementById('reject-request-btn');
-        
-        // Reject Request Modal
-        const rejectRequestModal = document.getElementById('reject-request-modal');
-        const confirmRejectBtn = document.getElementById('confirm-reject-btn');
-        const rejectRequestForm = document.getElementById('reject-request-form');
-        
-        // Tables
-        const networksTable = document.getElementById('networks-table');
-        const planTypesTable = document.getElementById('plan-types-table');
-        const dataPlansTable = document.getElementById('data-plans-table');
-        const specialPlansTable = document.getElementById('special-plans-table');
-        const pendingRequestsTable = document.getElementById('pending-requests-table');
-        const approvedRequestsTable = document.getElementById('approved-requests-table');
-        const rejectedRequestsTable = document.getElementById('rejected-requests-table');
-        
-        // Global Variables
-        let currentRequestId = null;
-        let networks = [];
-        let planTypes = [];
-        let dataPlans = [];
-        let specialPlans = [];
-        
-        // Event Listeners
+        // Setup Event Listeners
         function setupEventListeners() {
             // Toggle Sidebar
             toggleSidebarBtn.addEventListener('click', function() {
@@ -1765,1745 +1349,66 @@
                 sidebar.classList.toggle('mobile-active');
             });
             
-            // Menu Items Click
-            menuItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    if (this.id === 'logout-btn') {
-                        logout();
-                        return;
-                    }
-                    
-                    const pageId = this.getAttribute('data-page');
-                    
-                    // Remove active class from all menu items
-                    menuItems.forEach(menuItem => {
-                        menuItem.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked menu item
-                    this.classList.add('active');
-                    
-                    // Hide all pages
-                    pages.forEach(page => {
-                        page.classList.remove('active');
-                    });
-                    
-                    // Show the selected page
-                    document.getElementById(`${pageId}-page`).classList.add('active');
-                    
-                    // Close mobile sidebar
-                    sidebar.classList.remove('mobile-active');
-                });
+            // Logout Button
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
             });
-            
-            // Tabs Click
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
-                    const tabsContainer = this.parentElement;
-                    const tabContents = tabsContainer.nextElementSibling.parentElement.querySelectorAll('.tab-content');
-                    
-                    // Remove active class from all tabs in this container
-                    tabsContainer.querySelectorAll('.tab').forEach(t => {
-                        t.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked tab
-                    this.classList.add('active');
-                    
-                    // Hide all tab contents
-                    tabContents.forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    
-                    // Show the selected tab content
-                    document.getElementById(`${tabId}-tab`).classList.add('active');
-                });
-            });
-            
-            // Modal Close Buttons
-            modalCloseBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const modal = this.closest('.modal-overlay');
-                    closeModal(modal);
-                });
-            });
-            
-            // Close Modal When Clicking Outside
-            modalOverlays.forEach(overlay => {
-                overlay.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        closeModal(this);
+        }
+        
+        // Load Dashboard Stats
+        async function loadDashboardStats() {
+            try {
+                // Get total users
+                const usersSnapshot = await db.collection('users').get();
+                totalUsersEl.textContent = usersSnapshot.size;
+                
+                // Get total revenue
+                const transactionsSnapshot = await db.collection('transactions').get();
+                let totalRevenue = 0;
+                
+                transactionsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.amount && data.status === 'completed') {
+                        totalRevenue += data.amount;
                     }
                 });
-            });
-            
-            // Add Network Button
-            addNetworkBtn.addEventListener('click', function() {
-                openModal(addNetworkModal);
-            });
-            
-            // Save Network Button
-            saveNetworkBtn.addEventListener('click', function() {
-                saveNetwork();
-            });
-            
-            // Add Plan Type Button
-            addPlanTypeBtn.addEventListener('click', function() {
-                populateNetworkSelect();
-                openModal(addPlanTypeModal);
-            });
-            
-            // Save Plan Type Button
-            savePlanTypeBtn.addEventListener('click', function() {
-                savePlanType();
-            });
-            
-            // Add Data Plan Button
-            addDataPlanBtn.addEventListener('click', function() {
-                populateNetworkSelect();
-                openModal(addDataPlanModal);
-            });
-            
-            // Network Select Change (for Data Plan)
-            document.getElementById('plan-network-select').addEventListener('change', function() {
-                populatePlanTypeSelect(this.value);
-            });
-            
-            // Save Data Plan Button
-            saveDataPlanBtn.addEventListener('click', function() {
-                saveDataPlan();
-            });
-            
-            // Add Special Plan Button (in the tab)
-            document.querySelector('.tab[data-tab="special-plans"]').addEventListener('click', function() {
-                loadSpecialPlans();
-            });
-            
-            // Approve Request Button
-            approveRequestBtn.addEventListener('click', function() {
-                approveRequest(currentRequestId);
-            });
-            
-            // Reject Request Button
-            rejectRequestBtn.addEventListener('click', function() {
-                openModal(rejectRequestModal);
-            });
-            
-            // Confirm Reject Button
-            confirmRejectBtn.addEventListener('click', function() {
-                const reason = document.querySelector('#reject-request-form textarea[name="rejectReason"]').value;
-                if (!reason) {
-                    showToast('Please provide a reason for rejection', 'error');
-                    return;
-                }
                 
-                rejectRequest(currentRequestId, reason);
-            });
-        }
-        
-        // Initialize App
-        async function initApp() {
-            showLoading();
-            
-            try {
-                // Check if default data exists, if not, seed the database
-                const networksSnapshot = await db.collection('networks').get();
+                totalRevenueEl.textContent = `₦${totalRevenue.toLocaleString()}`;
                 
-                if (networksSnapshot.empty) {
-                    await seedDatabase();
-                }
-                
-                // Load data
-                loadNetworks();
-                loadPlanTypes();
-                loadDataPlans();
-                loadPendingRequests();
-                
-                // Setup event listeners
-                setupEventListeners();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error initializing app:', error);
-                showToast('Failed to initialize the app', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Seed Database with Default Data
-        async function seedDatabase() {
-            try {
-                showLoading();
-                
-                // Add Networks
-                const networks = [
-                    { name: 'MTN', status: true },
-                    { name: 'Airtel', status: true },
-                    { name: 'Glo', status: true },
-                    { name: '9Mobile', status: true }
-                ];
-                
-                for (const network of networks) {
-                    await db.collection('networks').add({
-                        name: network.name,
-                        status: network.status,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-                
-                // Get network IDs
-                const networksSnapshot = await db.collection('networks').get();
-                const networkDocs = {};
-                
-                networksSnapshot.forEach(doc => {
-                    networkDocs[doc.data().name] = doc.id;
-                });
-                
-                // Add Plan Types
-                const planTypes = [
-                    { name: 'SME', networkId: networkDocs['MTN'], status: true },
-                    { name: 'Cooperate Gifting', networkId: networkDocs['MTN'], status: true },
-                    { name: 'Gifting', networkId: networkDocs['MTN'], status: true },
-                    { name: 'SME', networkId: networkDocs['Airtel'], status: true },
-                    { name: 'Cooperate Gifting', networkId: networkDocs['Airtel'], status: true },
-                    { name: 'Gifting', networkId: networkDocs['Airtel'], status: true },
-                    { name: 'Cooperate Gifting', networkId: networkDocs['Glo'], status: true },
-                    { name: 'Gifting', networkId: networkDocs['Glo'], status: true },
-                    { name: 'Cooperate Gifting', networkId: networkDocs['9Mobile'], status: true },
-                    { name: 'Gifting', networkId: networkDocs['9Mobile'], status: true }
-                ];
-                
-                for (const planType of planTypes) {
-                    await db.collection('planTypes').add({
-                        name: planType.name,
-                        networkId: planType.networkId,
-                        status: planType.status,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-                
-                // Get plan type IDs
-                const planTypesSnapshot = await db.collection('planTypes').get();
-                const planTypeDocs = {};
-                
-                planTypesSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    const key = `${data.networkId}_${data.name}`;
-                    planTypeDocs[key] = doc.id;
-                });
-                
-                // Add Data Plans
-                const dataPlans = [
-                    // MTN SME
-                    {
-                        name: 'MTN SME 500MB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_SME`],
-                        dataSize: '500MB',
-                        price: 300,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    {
-                        name: 'MTN SME 1GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_SME`],
-                        dataSize: '1GB',
-                        price: 600,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    {
-                        name: 'MTN SME 2GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_SME`],
-                        dataSize: '2GB',
-                        price: 1200,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    {
-                        name: 'MTN SME 3GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_SME`],
-                        dataSize: '3GB',
-                        price: 1800,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    {
-                        name: 'MTN SME 10GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_SME`],
-                        dataSize: '10GB',
-                        price: 6000,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    
-                    // MTN Cooperate Gifting
-                    {
-                        name: 'MTN COOPERATE GIFTING 500MB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Cooperate Gifting`],
-                        dataSize: '500MB',
-                        price: 130,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    {
-                        name: 'MTN COOPERATE GIFTING 1GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Cooperate Gifting`],
-                        dataSize: '1GB',
-                        price: 260,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    {
-                        name: 'MTN COOPERATE GIFTING 2GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Cooperate Gifting`],
-                        dataSize: '2GB',
-                        price: 520,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    {
-                        name: 'MTN COOPERATE GIFTING 3GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Cooperate Gifting`],
-                        dataSize: '3GB',
-                        price: 780,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    {
-                        name: 'MTN COOPERATE GIFTING 5GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Cooperate Gifting`],
-                        dataSize: '5GB',
-                        price: 1300,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    {
-                        name: 'MTN COOPERATE GIFTING 10GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Cooperate Gifting`],
-                        dataSize: '10GB',
-                        price: 2600,
-                        validity: '1 Month',
-                        status: true
-                    },
-                    
-                    // MTN Gifting
-                    {
-                        name: 'MTN GIFTING 1GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Gifting`],
-                        dataSize: '1GB',
-                        price: 400,
-                        validity: '1 Day Awoof Data',
-                        status: true
-                    },
-                    {
-                        name: 'MTN GIFTING 1.5GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Gifting`],
-                        dataSize: '1.5GB',
-                        price: 500,
-                        validity: '1 Day Awoof Data',
-                        status: true
-                    },
-                    {
-                        name: 'MTN GIFTING 3.2GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Gifting`],
-                        dataSize: '3.2GB',
-                        price: 1200,
-                        validity: '2 Days Awoof Data',
-                        status: true
-                    },
-                    {
-                        name: 'MTN GIFTING 5GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Gifting`],
-                        dataSize: '5GB',
-                        price: 1700,
-                        validity: '7 Days Awoof Data',
-                        status: true
-                    },
-                    {
-                        name: 'MTN GIFTING 15GB',
-                        networkId: networkDocs['MTN'],
-                        planTypeId: planTypeDocs[`${networkDocs['MTN']}_Gifting`],
-                        dataSize: '15GB',
-                        price: 3700,
-                        validity: '1 Month Awoof Data',
-                        status: true
-                    },
-                    
-                    // Airtel SME
-                    {
-                        name: 'AIRTEL SME 500MB',
-                        networkId: networkDocs['Airtel'],
-                        planTypeId: planTypeDocs[`${networkDocs['Airtel']}_SME`],
-                        dataSize: '500MB',
-                        price: 230,
-                        validity: '14 Days',
-                        status: true
-                    },
-                    {
-                        name: 'AIRTEL SME 1GB',
-                        networkId: networkDocs['Airtel'],
-                        planTypeId: planTypeDocs[`${networkDocs['Airtel']}_SME`],
-                        dataSize: '1GB',
-                        price: 350,
-                        validity: '7 Days',
-                        status: true
-                    },
-                    {
-                        name: 'AIRTEL SME 1.5GB',
-                        networkId: networkDocs['Airtel'],
-                        planTypeId: planTypeDocs[`${networkDocs['Airtel']}_SME`],
-                        dataSize: '1.5GB',
-                        price: 450,
-                        validity: '7 Days',
-                        status: true
-                    },
-                    {
-                        name: 'AIRTEL SME 2GB',
-                        networkId: networkDocs['Airtel'],
-                        planTypeId: planTypeDocs[`${networkDocs['Airtel']}_SME`],
-                        dataSize: '2GB',
-                        price: 650,
-                        validity: '14 Days',
-                        status: true
-                    },
-                    {
-                        name: 'AIRTEL SME 5GB',
-                        networkId: networkDocs['Airtel'],
-                        planTypeId: planTypeDocs[`${networkDocs['Airtel']}_SME`],
-                        dataSize: '5GB',
-                        price: 1400,
-                        validity: '14 Days',
-                        status: true
-                    },
-                    {
-                        name: 'AIRTEL SME 20GB',
-                        networkId: networkDocs['Airtel'],
-                        planTypeId: planTypeDocs[`${networkDocs['Airtel']}_SME`],
-                        dataSize: '20GB',
-                        price: 4200,
-                        validity: '30 Days',
-                        status: true
-                    },
-                    
-                    // Add more data plans here...
-                ];
-                
-                for (const plan of dataPlans) {
-                    await db.collection('dataPlans').add({
-                        name: plan.name,
-                        networkId: plan.networkId,
-                        planTypeId: plan.planTypeId,
-                        dataSize: plan.dataSize,
-                        price: plan.price,
-                        validity: plan.validity,
-                        status: plan.status,
-                        isSpecial: false,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-                
-                // Add Special Plans
-                const specialPlans = [
-                    {
-                        name: 'MTN 500MB',
-                        category: '1-Day Offers',
-                        dataSize: '500MB',
-                        originalPrice: 150,
-                        discountedPrice: 129,
-                        validity: '1 Day',
-                        badge: '',
-                        status: true
-                    },
-                    {
-                        name: 'MTN 600MB',
-                        category: '1-Day Offers',
-                        dataSize: '600MB',
-                        originalPrice: 180,
-                        discountedPrice: 159,
-                        validity: '1 Day',
-                        badge: '',
-                        status: true
-                    },
-                    {
-                        name: 'MTN 2.5GB',
-                        category: '1-Day Offers',
-                        dataSize: '2.5GB',
-                        originalPrice: 600,
-                        discountedPrice: 519,
-                        validity: '1 Day',
-                        badge: 'HOT!',
-                        status: true
-                    },
-                    {
-                        name: 'MTN 4.5GB',
-                        category: '1-Day Offers',
-                        dataSize: '4.5GB',
-                        originalPrice: 1500,
-                        discountedPrice: 1299,
-                        validity: '1 Day',
-                        badge: '',
-                        status: true
-                    },
-                    {
-                        name: 'MTN 13GB',
-                        category: '7-Day Offers',
-                        dataSize: '13GB',
-                        originalPrice: 3000,
-                        discountedPrice: 2599,
-                        validity: '7 Days',
-                        badge: '',
-                        status: true
-                    },
-                    {
-                        name: 'MTN 18GB',
-                        category: '7-Day Offers',
-                        dataSize: '18GB',
-                        originalPrice: 5200,
-                        discountedPrice: 4549,
-                        validity: '7 Days',
-                        badge: '',
-                        status: true
-                    },
-                    {
-                        name: 'MTN 22GB',
-                        category: '7-Day Offers',
-                        dataSize: '22GB',
-                        originalPrice: 6000,
-                        discountedPrice: 5199,
-                        validity: '7 Days',
-                        badge: 'MOST POPULAR',
-                        status: true
-                    },
-                    {
-                        name: 'MTN 30GB',
-                        category: '14-Day Offers',
-                        dataSize: '30GB',
-                        originalPrice: 7500,
-                        discountedPrice: 6499,
-                        validity: '14 Days',
-                        badge: 'BEST VALUE',
-                        status: true
-                    },
-                    {
-                        name: 'MTN 39GB',
-                        category: '30-Day Offers',
-                        dataSize: '39GB',
-                        originalPrice: 9000,
-                        discountedPrice: 7799,
-                        validity: '30 Days',
-                        badge: '',
-                        status: true
-                    },
-                    {
-                        name: 'MTN 53GB',
-                        category: '30-Day Offers',
-                        dataSize: '53GB',
-                        originalPrice: 15000,
-                        discountedPrice: 12999,
-                        validity: '30 Days',
-                        badge: '',
-                        status: true
-                    }
-                ];
-                
-                for (const plan of specialPlans) {
-                    await db.collection('specialPlans').add({
-                        name: plan.name,
-                        category: plan.category,
-                        dataSize: plan.dataSize,
-                        originalPrice: plan.originalPrice,
-                        discountedPrice: plan.discountedPrice,
-                        validity: plan.validity,
-                        badge: plan.badge,
-                        status: plan.status,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-                
-                showToast('Database seeded successfully', 'success');
-                hideLoading();
-            } catch (error) {
-                console.error('Error seeding database:', error);
-                showToast('Failed to seed database', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Load Networks
-        async function loadNetworks() {
-            try {
-                const snapshot = await db.collection('networks').orderBy('name').get();
-                
-                if (snapshot.empty) {
-                    networksTable.innerHTML = '<tr><td colspan="5" style="text-align: center;">No networks found</td></tr>';
-                    return;
-                }
-                
-                networks = [];
-                let html = '';
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    networks.push({
-                        id: doc.id,
-                        ...data
-                    });
-                    
-                    html += `
-                        <tr>
-                            <td>${data.name}</td>
-                            <td>
-                                <span class="status ${data.status ? 'status-active' : 'status-inactive'}">
-                                    ${data.status ? 'Active' : 'Inactive'}
-                                </span>
-                            </td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>
-                                <button class="action-btn edit" onclick="editNetwork('${doc.id}')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn delete" onclick="deleteNetwork('${doc.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                <button class="action-btn" onclick="toggleNetworkStatus('${doc.id}', ${!data.status})">
-                                    <i class="fas fa-${data.status ? 'ban' : 'check'}"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                networksTable.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading networks:', error);
-                showToast('Failed to load networks', 'error');
-            }
-        }
-        
-        // Load Plan Types
-        async function loadPlanTypes() {
-            try {
-                const snapshot = await db.collection('planTypes').orderBy('name').get();
-                
-                if (snapshot.empty) {
-                    planTypesTable.innerHTML = '<tr><td colspan="5" style="text-align: center;">No plan types found</td></tr>';
-                    return;
-                }
-                
-                planTypes = [];
-                let html = '';
-                
-                for (const doc of snapshot.docs) {
-                    const data = doc.data();
-                    
-                    // Get network name
-                    const networkDoc = await db.collection('networks').doc(data.networkId).get();
-                    const networkName = networkDoc.exists ? networkDoc.data().name : 'Unknown';
-                    
-                    planTypes.push({
-                        id: doc.id,
-                        networkName,
-                        ...data
-                    });
-                    
-                    html += `
-                        <tr>
-                            <td>${data.name}</td>
-                            <td>${networkName}</td>
-                            <td>
-                                <span class="status ${data.status ? 'status-active' : 'status-inactive'}">
-                                    ${data.status ? 'Active' : 'Inactive'}
-                                </span>
-                            </td>
-                            <td>0</td>
-                            <td>
-                                <button class="action-btn edit" onclick="editPlanType('${doc.id}')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn delete" onclick="deletePlanType('${doc.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                <button class="action-btn" onclick="togglePlanTypeStatus('${doc.id}', ${!data.status})">
-                                    <i class="fas fa-${data.status ? 'ban' : 'check'}"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }
-                
-                planTypesTable.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading plan types:', error);
-                showToast('Failed to load plan types', 'error');
-            }
-        }
-        
-        // Load Data Plans
-        async function loadDataPlans() {
-            try {
-                const snapshot = await db.collection('dataPlans')
-                    .where('isSpecial', '==', false)
-                    .orderBy('name')
-                    .get();
-                
-                if (snapshot.empty) {
-                    dataPlansTable.innerHTML = '<tr><td colspan="8" style="text-align: center;">No data plans found</td></tr>';
-                    return;
-                }
-                
-                dataPlans = [];
-                let html = '';
-                
-                for (const doc of snapshot.docs) {
-                    const data = doc.data();
-                    
-                    // Get network name
-                    const networkDoc = await db.collection('networks').doc(data.networkId).get();
-                    const networkName = networkDoc.exists ? networkDoc.data().name : 'Unknown';
-                    
-                    // Get plan type name
-                    const planTypeDoc = await db.collection('planTypes').doc(data.planTypeId).get();
-                    const planTypeName = planTypeDoc.exists ? planTypeDoc.data().name : 'Unknown';
-                    
-                    dataPlans.push({
-                        id: doc.id,
-                        networkName,
-                        planTypeName,
-                        ...data
-                    });
-                    
-                    html += `
-                        <tr>
-                            <td>${data.name}</td>
-                            <td>${networkName}</td>
-                            <td>${planTypeName}</td>
-                            <td>${data.dataSize}</td>
-                            <td>₦${data.price.toLocaleString()}</td>
-                            <td>${data.validity}</td>
-                            <td>
-                                <span class="status ${data.status ? 'status-active' : 'status-inactive'}">
-                                    ${data.status ? 'Active' : 'Inactive'}
-                                </span>
-                            </td>
-                            <td>
-                                <button class="action-btn edit" onclick="editDataPlan('${doc.id}')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn delete" onclick="deleteDataPlan('${doc.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                <button class="action-btn" onclick="toggleDataPlanStatus('${doc.id}', ${!data.status})">
-                                    <i class="fas fa-${data.status ? 'ban' : 'check'}"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }
-                
-                dataPlansTable.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading data plans:', error);
-                showToast('Failed to load data plans', 'error');
-            }
-        }
-        
-        // Load Special Plans
-        async function loadSpecialPlans() {
-            try {
-                const snapshot = await db.collection('specialPlans').orderBy('category').get();
-                
-                if (snapshot.empty) {
-                    specialPlansTable.innerHTML = '<tr><td colspan="8" style="text-align: center;">No special plans found</td></tr>';
-                    return;
-                }
-                
-                specialPlans = [];
-                let html = '';
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    specialPlans.push({
-                        id: doc.id,
-                        ...data
-                    });
-                    
-                    html += `
-                        <tr>
-                            <td>${data.name} ${data.badge ? `<span class="badge badge-primary">${data.badge}</span>` : ''}</td>
-                            <td>${data.category}</td>
-                            <td>${data.dataSize}</td>
-                            <td>₦${data.originalPrice.toLocaleString()}</td>
-                            <td>₦${data.discountedPrice.toLocaleString()}</td>
-                            <td>${data.validity}</td>
-                            <td>
-                                <span class="status ${data.status ? 'status-active' : 'status-inactive'}">
-                                    ${data.status ? 'Active' : 'Inactive'}
-                                </span>
-                            </td>
-                            <td>
-                                <button class="action-btn edit" onclick="editSpecialPlan('${doc.id}')">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn delete" onclick="deleteSpecialPlan('${doc.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                <button class="action-btn" onclick="toggleSpecialPlanStatus('${doc.id}', ${!data.status})">
-                                    <i class="fas fa-${data.status ? 'ban' : 'check'}"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                specialPlansTable.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading special plans:', error);
-                showToast('Failed to load special plans', 'error');
-            }
-        }
-        
-        // Load Pending Requests
-        async function loadPendingRequests() {
-            try {
-                const snapshot = await db.collection('dataRequests')
+                // Get pending requests
+                const pendingRequestsSnapshot = await db.collection('dataRequests')
                     .where('status', '==', 'pending')
-                    .orderBy('createdAt', 'desc')
                     .get();
                 
-                if (snapshot.empty) {
-                    pendingRequestsTable.innerHTML = '<tr><td colspan="7" style="text-align: center;">No pending requests</td></tr>';
-                    return;
-                }
+                pendingRequestsEl.textContent = pendingRequestsSnapshot.size;
                 
-                let html = '';
-                
-                for (const doc of snapshot.docs) {
-                    const data = doc.data();
-                    
-                    // Get user data
-                    const userDoc = await db.collection('users').doc(data.userId).get();
-                    const userData = userDoc.exists ? userDoc.data() : { name: 'Unknown' };
-                    
-                    html += `
-                        <tr>
-                            <td>${doc.id.substring(0, 8)}...</td>
-                            <td>${userData.name || 'Unknown'}</td>
-                            <td>${data.phoneNumber}</td>
-                            <td>${data.planName}</td>
-                            <td>₦${data.amount.toLocaleString()}</td>
-                            <td>${new Date(data.createdAt.toDate()).toLocaleString()}</td>
-                            <td>
-                                <button class="action-btn" onclick="viewRequest('${doc.id}')">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="action-btn edit" onclick="approveRequest('${doc.id}')">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button class="action-btn delete" onclick="showRejectRequestModal('${doc.id}')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }
-                
-                pendingRequestsTable.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading pending requests:', error);
-                showToast('Failed to load pending requests', 'error');
-            }
-        }
-        
-        // Populate Network Select
-        function populateNetworkSelect() {
-            const networkSelects = document.querySelectorAll('select[name="network"]');
-            
-            networkSelects.forEach(select => {
-                // Clear existing options except the first one
-                while (select.options.length > 1) {
-                    select.remove(1);
-                }
-                
-                // Add network options
-                networks.forEach(network => {
-                    if (network.status) {
-                        const option = document.createElement('option');
-                        option.value = network.id;
-                        option.textContent = network.name;
-                        select.appendChild(option);
-                    }
-                });
-            });
-        }
-        
-        // Populate Plan Type Select
-        function populatePlanTypeSelect(networkId) {
-            const planTypeSelect = document.getElementById('plan-type-select');
-            
-            // Clear existing options except the first one
-            while (planTypeSelect.options.length > 1) {
-                planTypeSelect.remove(1);
-            }
-            
-            // Add plan type options
-            planTypes.forEach(planType => {
-                if (planType.networkId === networkId && planType.status) {
-                    const option = document.createElement('option');
-                    option.value = planType.id;
-                    option.textContent = planType.name;
-                    planTypeSelect.appendChild(option);
-                }
-            });
-        }
-        
-        // Save Network
-        async function saveNetwork() {
-            const form = document.getElementById('add-network-form');
-            const networkName = form.elements['networkName'].value;
-            const status = form.elements['status'].checked;
-            
-            if (!networkName) {
-                showToast('Please enter a network name', 'error');
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('networks').add({
-                    name: networkName,
-                    status: status,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                showToast('Network added successfully', 'success');
-                closeModal(addNetworkModal);
-                form.reset();
-                loadNetworks();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error adding network:', error);
-                showToast('Failed to add network', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Save Plan Type
-        async function savePlanType() {
-            const form = document.getElementById('add-plan-type-form');
-            const planTypeName = form.elements['planTypeName'].value;
-            const networkId = form.elements['network'].value;
-            const status = form.elements['status'].checked;
-            
-            if (!planTypeName) {
-                showToast('Please enter a plan type name', 'error');
-                return;
-            }
-            
-            if (!networkId) {
-                showToast('Please select a network', 'error');
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('planTypes').add({
-                    name: planTypeName,
-                    networkId: networkId,
-                    status: status,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                showToast('Plan type added successfully', 'success');
-                closeModal(addPlanTypeModal);
-                form.reset();
-                loadPlanTypes();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error adding plan type:', error);
-                showToast('Failed to add plan type', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Save Data Plan
-        async function saveDataPlan() {
-            const form = document.getElementById('add-data-plan-form');
-            const planName = form.elements['planName'].value;
-            const networkId = form.elements['network'].value;
-            const planTypeId = form.elements['planType'].value;
-            const dataSize = form.elements['dataSize'].value;
-            const price = parseFloat(form.elements['price'].value);
-            const validity = form.elements['validity'].value;
-            const status = form.elements['status'].checked;
-            
-            if (!planName || !networkId || !planTypeId || !dataSize || isNaN(price) || !validity) {
-                showToast('Please fill in all fields', 'error');
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('dataPlans').add({
-                    name: planName,
-                    networkId: networkId,
-                    planTypeId: planTypeId,
-                    dataSize: dataSize,
-                    price: price,
-                    validity: validity,
-                    status: status,
-                    isSpecial: false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                showToast('Data plan added successfully', 'success');
-                closeModal(addDataPlanModal);
-                form.reset();
-                loadDataPlans();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error adding data plan:', error);
-                showToast('Failed to add data plan', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Save Special Plan
-        async function saveSpecialPlan() {
-            const form = document.getElementById('add-special-plan-form');
-            const planName = form.elements['planName'].value;
-            const category = form.elements['category'].value;
-            const dataSize = form.elements['dataSize'].value;
-            const originalPrice = parseFloat(form.elements['originalPrice'].value);
-            const discountedPrice = parseFloat(form.elements['discountedPrice'].value);
-            const validity = form.elements['validity'].value;
-            const badge = form.elements['badge'].value;
-            const status = form.elements['status'].checked;
-            
-            if (!planName || !category || !dataSize || isNaN(originalPrice) || isNaN(discountedPrice) || !validity) {
-                showToast('Please fill in all required fields', 'error');
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('specialPlans').add({
-                    name: planName,
-                    category: category,
-                    dataSize: dataSize,
-                    originalPrice: originalPrice,
-                    discountedPrice: discountedPrice,
-                    validity: validity,
-                    badge: badge,
-                    status: status,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                showToast('Special plan added successfully', 'success');
-                closeModal(addSpecialPlanModal);
-                form.reset();
-                loadSpecialPlans();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error adding special plan:', error);
-                showToast('Failed to add special plan', 'error');
-                hideLoading();
-            }
-        }
-        
-        // View Request
-        async function viewRequest(requestId) {
-            try {
-                showLoading();
-                
-                const doc = await db.collection('dataRequests').doc(requestId).get();
-                
-                if (!doc.exists) {
-                    showToast('Request not found', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                const data = doc.data();
-                
-                // Get user data
-                const userDoc = await db.collection('users').doc(data.userId).get();
-                const userData = userDoc.exists ? userDoc.data() : { name: 'Unknown' };
-                
-                const requestDetails = document.getElementById('request-details');
-                requestDetails.innerHTML = `
-                    <div class="form-group">
-                        <label class="form-label">Request ID</label>
-                        <div>${requestId}</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">User</label>
-                        <div>${userData.name || 'Unknown'} (ID: ${data.userId})</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <div>${data.phoneNumber}</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Plan</label>
-                        <div>${data.planName}</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Amount</label>
-                        <div>₦${data.amount.toLocaleString()}</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Date</label>
-                        <div>${new Date(data.createdAt.toDate()).toLocaleString()}</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Comment</label>
-                        <div>${data.comment || 'No comment'}</div>
-                    </div>
-                `;
-                
-                currentRequestId = requestId;
-                openModal(viewRequestModal);
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error viewing request:', error);
-                showToast('Failed to view request', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Approve Request
-        async function approveRequest(requestId) {
-            try {
-                showLoading();
-                
-                await db.collection('dataRequests').doc(requestId).update({
-                    status: 'approved',
-                    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    approvedBy: 'Admin' // Replace with actual admin ID or name
-                });
-                
-                showToast('Request approved successfully', 'success');
-                closeModal(viewRequestModal);
-                loadPendingRequests();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error approving request:', error);
-                showToast('Failed to approve request', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Show Reject Request Modal
-        function showRejectRequestModal(requestId) {
-            currentRequestId = requestId;
-            openModal(rejectRequestModal);
-        }
-        
-        // Reject Request
-        async function rejectRequest(requestId, reason) {
-            try {
-                showLoading();
-                
-                await db.collection('dataRequests').doc(requestId).update({
-                    status: 'rejected',
-                    rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    rejectedBy: 'Admin', // Replace with actual admin ID or name
-                    rejectionReason: reason
-                });
-                
-                showToast('Request rejected successfully', 'success');
-                closeModal(rejectRequestModal);
-                closeModal(viewRequestModal);
-                loadPendingRequests();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error rejecting request:', error);
-                showToast('Failed to reject request', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Toggle Network Status
-        async function toggleNetworkStatus(networkId, newStatus) {
-            try {
-                showLoading();
-                
-                await db.collection('networks').doc(networkId).update({
-                    status: newStatus
-                });
-                
-                showToast(`Network ${newStatus ? 'activated' : 'deactivated'} successfully`, 'success');
-                loadNetworks();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error toggling network status:', error);
-                showToast('Failed to toggle network status', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Toggle Plan Type Status
-        async function togglePlanTypeStatus(planTypeId, newStatus) {
-            try {
-                showLoading();
-                
-                await db.collection('planTypes').doc(planTypeId).update({
-                    status: newStatus
-                });
-                
-                showToast(`Plan type ${newStatus ? 'activated' : 'deactivated'} successfully`, 'success');
-                loadPlanTypes();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error toggling plan type status:', error);
-                showToast('Failed to toggle plan type status', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Toggle Data Plan Status
-        async function toggleDataPlanStatus(planId, newStatus) {
-            try {
-                showLoading();
-                
-                await db.collection('dataPlans').doc(planId).update({
-                    status: newStatus
-                });
-                
-                showToast(`Data plan ${newStatus ? 'activated' : 'deactivated'} successfully`, 'success');
-                loadDataPlans();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error toggling data plan status:', error);
-                showToast('Failed to toggle data plan status', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Toggle Special Plan Status
-        async function toggleSpecialPlanStatus(planId, newStatus) {
-            try {
-                showLoading();
-                
-                await db.collection('specialPlans').doc(planId).update({
-                    status: newStatus
-                });
-                
-                showToast(`Special plan ${newStatus ? 'activated' : 'deactivated'} successfully`, 'success');
-                loadSpecialPlans();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error toggling special plan status:', error);
-                showToast('Failed to toggle special plan status', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Edit Network
-        async function editNetwork(networkId) {
-            try {
-                showLoading();
-                
-                const doc = await db.collection('networks').doc(networkId).get();
-                
-                if (!doc.exists) {
-                    showToast('Network not found', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                const data = doc.data();
-                
-                // Populate form
-                const form = document.getElementById('add-network-form');
-                form.elements['networkName'].value = data.name;
-                form.elements['status'].checked = data.status;
-                
-                // Change save button text and action
-                const saveBtn = document.getElementById('save-network-btn');
-                saveBtn.textContent = 'Update Network';
-                saveBtn.onclick = function() {
-                    updateNetwork(networkId);
-                };
-                
-                openModal(addNetworkModal);
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error editing network:', error);
-                showToast('Failed to edit network', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Update Network
-        async function updateNetwork(networkId) {
-            const form = document.getElementById('add-network-form');
-            const networkName = form.elements['networkName'].value;
-            const status = form.elements['status'].checked;
-            
-            if (!networkName) {
-                showToast('Please enter a network name', 'error');
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('networks').doc(networkId).update({
-                    name: networkName,
-                    status: status
-                });
-                
-                showToast('Network updated successfully', 'success');
-                closeModal(addNetworkModal);
-                
-                // Reset form and button
-                form.reset();
-                const saveBtn = document.getElementById('save-network-btn');
-                saveBtn.textContent = 'Save Network';
-                saveBtn.onclick = saveNetwork;
-                
-                loadNetworks();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error updating network:', error);
-                showToast('Failed to update network', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Delete Network
-        async function deleteNetwork(networkId) {
-            if (!confirm('Are you sure you want to delete this network? This action cannot be undone.')) {
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                // Check if there are any plan types associated with this network
-                const planTypesSnapshot = await db.collection('planTypes')
-                    .where('networkId', '==', networkId)
+                // Get active plans
+                const activePlansSnapshot = await db.collection('dataPlans')
+                    .where('status', '==', true)
                     .get();
                 
-                if (!planTypesSnapshot.empty) {
-                    showToast('Cannot delete network with associated plan types', 'error');
-                    hideLoading();
-                    return;
-                }
+                activePlansEl.textContent = activePlansSnapshot.size;
                 
-                await db.collection('networks').doc(networkId).delete();
-                
-                showToast('Network deleted successfully', 'success');
-                loadNetworks();
-                
-                hideLoading();
             } catch (error) {
-                console.error('Error deleting network:', error);
-                showToast('Failed to delete network', 'error');
-                hideLoading();
+                console.error('Error loading dashboard stats:', error);
+                showToast('Failed to load dashboard stats', 'error');
             }
         }
         
-        // Edit Plan Type
-        async function editPlanType(planTypeId) {
-            try {
-                showLoading();
-                
-                const doc = await db.collection('planTypes').doc(planTypeId).get();
-                
-                if (!doc.exists) {
-                    showToast('Plan type not found', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                const data = doc.data();
-                
-                // Populate network select
-                populateNetworkSelect();
-                
-                // Populate form
-                const form = document.getElementById('add-plan-type-form');
-                form.elements['planTypeName'].value = data.name;
-                form.elements['network'].value = data.networkId;
-                form.elements['status'].checked = data.status;
-                
-                // Change save button text and action
-                const saveBtn = document.getElementById('save-plan-type-btn');
-                saveBtn.textContent = 'Update Plan Type';
-                saveBtn.onclick = function() {
-                    updatePlanType(planTypeId);
-                };
-                
-                openModal(addPlanTypeModal);
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error editing plan type:', error);
-                showToast('Failed to edit plan type', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Update Plan Type
-        async function updatePlanType(planTypeId) {
-            const form = document.getElementById('add-plan-type-form');
-            const planTypeName = form.elements['planTypeName'].value;
-            const networkId = form.elements['network'].value;
-            const status = form.elements['status'].checked;
-            
-            if (!planTypeName) {
-                showToast('Please enter a plan type name', 'error');
-                return;
-            }
-            
-            if (!networkId) {
-                showToast('Please select a network', 'error');
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('planTypes').doc(planTypeId).update({
-                    name: planTypeName,
-                    networkId: networkId,
-                    status: status
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                isSigningOut = true;
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    console.error('Error signing out:', error);
+                    showToast('Failed to logout', 'error');
+                }).finally(() => {
+                    isSigningOut = false;
                 });
-                
-                showToast('Plan type updated successfully', 'success');
-                closeModal(addPlanTypeModal);
-                
-                // Reset form and button
-                form.reset();
-                const saveBtn = document.getElementById('save-plan-type-btn');
-                saveBtn.textContent = 'Save Plan Type';
-                saveBtn.onclick = savePlanType;
-                
-                loadPlanTypes();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error updating plan type:', error);
-                showToast('Failed to update plan type', 'error');
-                hideLoading();
             }
-        }
-        
-        // Delete Plan Type
-        async function deletePlanType(planTypeId) {
-            if (!confirm('Are you sure you want to delete this plan type? This action cannot be undone.')) {
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                // Check if there are any data plans associated with this plan type
-                const dataPlansSnapshot = await db.collection('dataPlans')
-                    .where('planTypeId', '==', planTypeId)
-                    .get();
-                
-                if (!dataPlansSnapshot.empty) {
-                    showToast('Cannot delete plan type with associated data plans', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                await db.collection('planTypes').doc(planTypeId).delete();
-                
-                showToast('Plan type deleted successfully', 'success');
-                loadPlanTypes();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error deleting plan type:', error);
-                showToast('Failed to delete plan type', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Edit Data Plan
-        async function editDataPlan(planId) {
-            try {
-                showLoading();
-                
-                const doc = await db.collection('dataPlans').doc(planId).get();
-                
-                if (!doc.exists) {
-                    showToast('Data plan not found', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                const data = doc.data();
-                
-                // Populate network select
-                populateNetworkSelect();
-                
-                // Populate form
-                const form = document.getElementById('add-data-plan-form');
-                form.elements['planName'].value = data.name;
-                form.elements['network'].value = data.networkId;
-                
-                // Populate plan type select based on network
-                populatePlanTypeSelect(data.networkId);
-                
-                // Set plan type value
-                form.elements['planType'].value = data.planTypeId;
-                
-                form.elements['dataSize'].value = data.dataSize;
-                form.elements['price'].value = data.price;
-                form.elements['validity'].value = data.validity;
-                form.elements['status'].checked = data.status;
-                
-                // Change save button text and action
-                const saveBtn = document.getElementById('save-data-plan-btn');
-                saveBtn.textContent = 'Update Data Plan';
-                saveBtn.onclick = function() {
-                    updateDataPlan(planId);
-                };
-                
-                openModal(addDataPlanModal);
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error editing data plan:', error);
-                showToast('Failed to edit data plan', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Update Data Plan
-        async function updateDataPlan(planId) {
-            const form = document.getElementById('add-data-plan-form');
-            const planName = form.elements['planName'].value;
-            const networkId = form.elements['network'].value;
-            const planTypeId = form.elements['planType'].value;
-            const dataSize = form.elements['dataSize'].value;
-            const price = parseFloat(form.elements['price'].value);
-            const validity = form.elements['validity'].value;
-            const status = form.elements['status'].checked;
-            
-            if (!planName || !networkId || !planTypeId || !dataSize || isNaN(price) || !validity) {
-                showToast('Please fill in all fields', 'error');
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('dataPlans').doc(planId).update({
-                    name: planName,
-                    networkId: networkId,
-                    planTypeId: planTypeId,
-                    dataSize: dataSize,
-                    price: price,
-                    validity: validity,
-                    status: status
-                });
-                
-                showToast('Data plan updated successfully', 'success');
-                closeModal(addDataPlanModal);
-                
-                // Reset form and button
-                form.reset();
-                const saveBtn = document.getElementById('save-data-plan-btn');
-                saveBtn.textContent = 'Save Data Plan';
-                saveBtn.onclick = saveDataPlan;
-                
-                loadDataPlans();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error updating data plan:', error);
-                showToast('Failed to update data plan', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Delete Data Plan
-        async function deleteDataPlan(planId) {
-            if (!confirm('Are you sure you want to delete this data plan? This action cannot be undone.')) {
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('dataPlans').doc(planId).delete();
-                
-                showToast('Data plan deleted successfully', 'success');
-                loadDataPlans();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error deleting data plan:', error);
-                showToast('Failed to delete data plan', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Edit Special Plan
-        async function editSpecialPlan(planId) {
-            try {
-                showLoading();
-                
-                const doc = await db.collection('specialPlans').doc(planId).get();
-                
-                if (!doc.exists) {
-                    showToast('Special plan not found', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                const data = doc.data();
-                
-                // Populate form
-                const form = document.getElementById('add-special-plan-form');
-                form.elements['planName'].value = data.name;
-                form.elements['category'].value = data.category;
-                form.elements['dataSize'].value = data.dataSize;
-                form.elements['originalPrice'].value = data.originalPrice;
-                form.elements['discountedPrice'].value = data.discountedPrice;
-                form.elements['validity'].value = data.validity;
-                form.elements['badge'].value = data.badge || '';
-                form.elements['status'].checked = data.status;
-                
-                // Change save button text and action
-                const saveBtn = document.getElementById('save-special-plan-btn');
-                saveBtn.textContent = 'Update Special Plan';
-                saveBtn.onclick = function() {
-                    updateSpecialPlan(planId);
-                };
-                
-                openModal(addSpecialPlanModal);
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error editing special plan:', error);
-                showToast('Failed to edit special plan', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Update Special Plan
-        async function updateSpecialPlan(planId) {
-            const form = document.getElementById('add-special-plan-form');
-            const planName = form.elements['planName'].value;
-            const category = form.elements['category'].value;
-            const dataSize = form.elements['dataSize'].value;
-            const originalPrice = parseFloat(form.elements['originalPrice'].value);
-            const discountedPrice = parseFloat(form.elements['discountedPrice'].value);
-            const validity = form.elements['validity'].value;
-            const badge = form.elements['badge'].value;
-            const status = form.elements['status'].checked;
-            
-            if (!planName || !category || !dataSize || isNaN(originalPrice) || isNaN(discountedPrice) || !validity) {
-                showToast('Please fill in all required fields', 'error');
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('specialPlans').doc(planId).update({
-                    name: planName,
-                    category: category,
-                    dataSize: dataSize,
-                    originalPrice: originalPrice,
-                    discountedPrice: discountedPrice,
-                    validity: validity,
-                    badge: badge,
-                    status: status
-                });
-                
-                showToast('Special plan updated successfully', 'success');
-                closeModal(addSpecialPlanModal);
-                
-                // Reset form and button
-                form.reset();
-                const saveBtn = document.getElementById('save-special-plan-btn');
-                saveBtn.textContent = 'Save Special Plan';
-                saveBtn.onclick = saveSpecialPlan;
-                
-                loadSpecialPlans();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error updating special plan:', error);
-                showToast('Failed to update special plan', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Delete Special Plan
-        async function deleteSpecialPlan(planId) {
-            if (!confirm('Are you sure you want to delete this special plan? This action cannot be undone.')) {
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                await db.collection('specialPlans').doc(planId).delete();
-                
-                showToast('Special plan deleted successfully', 'success');
-                loadSpecialPlans();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error deleting special plan:', error);
-                showToast('Failed to delete special plan', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Utility Functions
-        
-        // Open Modal
-        function openModal(modal) {
-            modal.classList.add('active');
-        }
-        
-        // Close Modal
-        function closeModal(modal) {
-            modal.classList.remove('active');
         }
         
         // Show Toast Notification
@@ -3558,38 +1463,6 @@
             const loadingOverlay = document.querySelector('.loading-overlay');
             loadingOverlay.style.display = 'none';
         }
-        
-        // Logout
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                isSigningOut = true;
-                auth.signOut().then(() => {
-                    window.location.href = 'login.html';
-                }).catch((error) => {
-                    console.error('Error signing out:', error);
-                    showToast('Failed to logout', 'error');
-                }).finally(() => {
-                    isSigningOut = false;
-                });
-            }
-        }
-        
-        // Make functions available globally
-        window.editNetwork = editNetwork;
-        window.deleteNetwork = deleteNetwork;
-        window.toggleNetworkStatus = toggleNetworkStatus;
-        window.editPlanType = editPlanType;
-        window.deletePlanType = deletePlanType;
-        window.togglePlanTypeStatus = togglePlanTypeStatus;
-        window.editDataPlan = editDataPlan;
-        window.deleteDataPlan = deleteDataPlan;
-        window.toggleDataPlanStatus = toggleDataPlanStatus;
-        window.editSpecialPlan = editSpecialPlan;
-        window.deleteSpecialPlan = deleteSpecialPlan;
-        window.toggleSpecialPlanStatus = toggleSpecialPlanStatus;
-        window.viewRequest = viewRequest;
-        window.approveRequest = approveRequest;
-        window.showRejectRequestModal = showRejectRequestModal;
     </script>
 </body>
 </html>
