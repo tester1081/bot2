@@ -465,7 +465,7 @@
     </div>
     
     <script>
-        // Firebase Configuration
+        // Firebase Configuration - Using hardcoded values for testing
         const firebaseConfig = {
             apiKey: "%NEXT_PUBLIC_FIREBASE_API_KEY%",
             authDomain: "%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%",
@@ -481,7 +481,7 @@
         const db = firebase.firestore();
         
         // Debug function (set to true to enable debugging)
-        const DEBUG_MODE = false;
+        const DEBUG_MODE = true;
         function debug(message) {
             if (DEBUG_MODE) {
                 const debugPanel = document.getElementById('debug-panel');
@@ -505,6 +505,8 @@
         // Initialize the app
         document.addEventListener('DOMContentLoaded', async function() {
             debug("DOM loaded, initializing app...");
+            debug("Firebase Config: " + JSON.stringify(firebaseConfig));
+            
             try {
                 await initApp();
                 
@@ -516,6 +518,7 @@
                 console.error("Initialization error:", error);
                 debug("ERROR: " + error.message);
                 showToastNotification("Failed to initialize: " + error.message);
+                loadingOverlay.classList.add('hide');
             }
         });
         
@@ -607,7 +610,7 @@
                     } else if (error.code === 'auth/too-many-requests') {
                         showError('Too many failed login attempts. Please try again later.');
                     } else {
-                        showError('An error occurred. Please try again.');
+                        showError('An error occurred: ' + error.message);
                     }
                 } finally {
                     // Hide loading overlay
