@@ -1634,6 +1634,36 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    // User is not logged in, redirect to login page
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Check if user is an admin
+                db.collection('admins').doc(user.uid).get()
+                    .then(doc => {
+                        if (!doc.exists) {
+                            // User is not an admin, redirect to login page
+                            auth.signOut();
+                            window.location.href = 'login.html';
+                        } else {
+                            // User is an admin, initialize the app
+                            initApp();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking admin status:', error);
+                        // Redirect to login page on error
+                        auth.signOut();
+                        window.location.href = 'login.html';
+                    });
+            });
+        });
+        
         // DOM Elements
         const sidebar = document.querySelector('.sidebar');
         const toggleSidebarBtn = document.querySelector('.toggle-sidebar');
@@ -1696,10 +1726,7 @@
         let specialPlans = [];
         
         // Event Listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the app
-            initApp();
-            
+        function setupEventListeners() {
             // Toggle Sidebar
             toggleSidebarBtn.addEventListener('click', function() {
                 sidebar.classList.toggle('collapsed');
@@ -1846,7 +1873,7 @@
                 
                 rejectRequest(currentRequestId, reason);
             });
-        });
+        }
         
         // Initialize App
         async function initApp() {
