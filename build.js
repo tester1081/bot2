@@ -14,7 +14,6 @@ const htmlFiles = [
   "cable.html",
   "account.html",
   "fund-wallet.html"
-  "logo.png",
 ]
 
 console.log(`Processing ${htmlFiles.length} HTML files`)
@@ -40,6 +39,7 @@ htmlFiles.forEach((htmlFile) => {
     "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET",
     "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
     "NEXT_PUBLIC_FIREBASE_APP_ID",
+    "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID",
     "NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY",
   ]
 
@@ -60,4 +60,3 @@ htmlFiles.forEach((htmlFile) => {
 })
 
 console.log("All HTML files processed successfully!")
-
