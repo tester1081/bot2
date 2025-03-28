@@ -2026,51 +2026,71 @@ function fetchUserRequests() {
     
     // Query by telegramId or userId
     let query;
-    if (currentUser.telegramId) {
-        query = db.collection('dataRequests').where('telegramId', '==', currentUser.telegramId);
-    } else if (currentUser.user_id) {
-        query = db.collection('dataRequests').where('telegramId', '==', currentUser.user_id);
-    } else {
-        query = db.collection('dataRequests').where('userId', '==', currentUser.uid);
-    }
-    
-    query.orderBy('timestamp', 'desc')
-        .limit(10)
-        .get()
-        .then(snapshot => {
-            const requestsContainer = document.getElementById('requests-container');
-            const emptyRequests = document.getElementById('empty-requests');
-            
-            console.log("Requests found:", snapshot.size);
-            
-            if (snapshot.empty) {
-                // Show empty state
-                if (emptyRequests) {
-                    emptyRequests.style.display = 'block';
-                    requestsContainer.innerHTML = '';
-                    requestsContainer.appendChild(emptyRequests);
-                } else {
-                    requestsContainer.innerHTML = `
-                        <div class="empty-state" id="empty-requests">
-                            <i class="fas fa-history"></i>
-                            <p>You haven't made any data purchase requests yet.</p>
-                            <button class="primary-btn" style="max-width: 200px; margin: 20px auto 0;" onclick="document.querySelector('.mode-option[data-mode=\\'automatic\\']').click()">
-                                Buy Data Now
-                            </button>
-                        </div>
-                    `;
-                }
-                return;
-            }
-            
-            // Hide empty state and show requests
+if (currentUser.telegramId) {
+    query = db.collection('dataRequests').where('telegramId', '==', currentUser.telegramId);
+}
+else if (currentUser.user_id) {
+    query = db.collection('dataRequests').where('telegramId', '==', currentUser.user_id);
+} else {
+    query = db.collection('dataRequests').where('userId', '==', currentUser.uid);
+}
+
+// Get all documents, then sort in memory instead of using orderBy (to avoid index requirements)
+query.get()
+    .then(snapshot => {
+        const requestsContainer = document.getElementById('requests-container');
+        const emptyRequests = document.getElementById('empty-requests');
+        
+        console.log("Requests found:", snapshot.size);
+        
+        if (snapshot.empty) {
+            // Show empty state
             if (emptyRequests) {
-                emptyRequests.style.display = 'none';
+                emptyRequests.style.display = 'block';
+                requestsContainer.innerHTML = '';
+                requestsContainer.appendChild(emptyRequests);
+            } else {
+                requestsContainer.innerHTML = `
+                    <div class="empty-state" id="empty-requests">
+                        <i class="fas fa-history"></i>
+                        <p>You haven't made any data purchase requests yet.</p>
+                        <button class="primary-btn" style="max-width: 200px; margin: 20px auto 0;" onclick="document.querySelector('.mode-option[data-mode=\\'automatic\\']').click()">
+                            Buy Data Now
+                        </button>
+                    </div>
+                `;
             }
-            requestsContainer.innerHTML = '';
-            
-            snapshot.forEach(doc => {
-                const request = doc.data();
+            return;
+        }
+        
+        // Hide empty state and show requests
+        if (emptyRequests) {
+            emptyRequests.style.display = 'none';
+        }
+        
+        // Convert to array, sort by timestamp
+        const requests = [];
+        snapshot.forEach(doc => {
+            requests.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        // Sort by timestamp descending
+        requests.sort((a, b) => {
+            if (!a.timestamp) return 1;
+            if (!b.timestamp) return -1;
+            return b.timestamp.toDate() - a.timestamp.toDate();
+        });
+        
+        // Limit to 10 requests
+        const limitedRequests = requests.slice(0, 10);
+        
+        requestsContainer.innerHTML = '';
+
+            limitedRequests.forEach(doc => {
+                const request = doc;
                 console.log("Request data:", request);
                 
                 const timestamp = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
@@ -2479,7 +2499,7 @@ function processDataPurchase() {
         planId: planId,
         amount: amount,
         status: 'pending',
-        timestamp: firebase.firestore.FieldValue.now(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         requestId: requestId
     };
     
@@ -2541,55 +2561,43 @@ function processDataPurchase() {
             
             console.log("Making API call with plan ID:", dataPlanId);
             
-            // Create payload for API
-            const payload = {
-                network: networkId,
-                phone: phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
-                data_plan: dataPlanId,
-                bypass: false,
-                'request-id': requestId
-            };
-            
-            console.log("API Payload:", payload);
-            
-            // Make API call through our proxy
-            fetch('/api/data-proxy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("API Response:", data);
-                
-                // Update request status in Firestore
-                return db.collection('dataRequests').doc(docRef.id).update({
-                    status: data.status === 'success' ? 'completed' : 'failed',
-                    apiResponse: data,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            })
-            .then(() => {
-                // Close modal
-                confirmationModal.classList.remove('show');
-                
-                // Show success toast
-                showToast('success', 'Purchase Successful', 'Your data purchase has been processed successfully');
-                
-                // Reset form
-                document.getElementById('data-form').reset();
-                document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
-                
-                // Refresh requests
-                fetchUserRequests();
-            })
+// Create payload for API
+const payload = {
+    network: networkId,
+    phone: phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
+    data_plan: dataPlanId,
+    bypass: false,
+    'request-id': requestId
+};
+
+console.log("API Payload:", payload);
+
+// Make direct API call to N3tdata (using our proxy to handle CORS)
+fetch('/api/data-proxy', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+})
+.then(response => {
+    console.log("API Response status:", response.status);
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+})
+.then(data => {
+    console.log("API Response data:", data);
+    
+    // Update request status in Firestore
+    return db.collection('dataRequests').doc(docRef.id).update({
+        status: data.status === 'success' ? 'completed' : 'failed',
+        apiResponse: data,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+})
+
             .catch(error => {
                 console.error("API Error:", error);
                 
