@@ -1,67 +1,56 @@
 // Data Plan Filter - Filters data plans based on active plan types
-class DataPlanFilter {
-  constructor() {
-    this.planTypeManager = new PlanTypeManager()
-  }
 
-  // Initialize the filter
-  async initialize() {
-    try {
-      await this.planTypeManager.initPlanTypes()
-    } catch (error) {
-      console.error("Error initializing data plan filter:", error)
-    }
-  }
+// Initialize Firebase (assuming Firebase is already loaded)
+const firebase = window.firebase // Assuming Firebase is loaded globally
+const db = firebase.firestore()
 
-  // Filter plans based on active plan types
-  async filterPlans(plans) {
-    try {
-      const activePlanTypes = await this.planTypeManager.getActivePlanTypes()
-      const activePlanTypeIds = activePlanTypes.map((type) => type.id)
+// Filter data plans based on active plan types
+async function filterDataPlansByActiveTypes() {
+  try {
+    // Get all data plans
+    const plansSnapshot = await db.collection("dataPlans").get()
+    const allPlans = []
 
-      // Filter plans based on category
-      return plans.filter((plan) => {
-        const category = plan.category.toLowerCase()
-
-        // Check if the plan's category contains any active plan type
-        return activePlanTypeIds.some((typeId) => category.includes(typeId))
+    plansSnapshot.forEach((doc) => {
+      allPlans.push({
+        id: doc.id,
+        ...doc.data(),
       })
-    } catch (error) {
-      console.error("Error filtering plans:", error)
-      return plans // Return all plans on error
-    }
-  }
+    })
 
-  // Check if a specific category is active
-  async isCategoryActive(category) {
-    try {
-      const categoryLower = category.toLowerCase()
+    // Get all plan types
+    const planTypes = await window.PlanTypeManager.getAllPlanTypes()
+    const activeTypeIds = planTypes.filter((type) => type.status).map((type) => type.id)
 
-      // Check which plan type this category belongs to
-      let planTypeId = null
+    // Filter plans by active types
+    const filteredPlans = allPlans.filter((plan) => {
+      return activeTypeIds.includes(plan.category)
+    })
 
-      if (categoryLower.includes("sme")) {
-        planTypeId = "sme"
-      } else if (categoryLower.includes("gifting")) {
-        planTypeId = "gifting"
-      } else if (categoryLower.includes("cooperate")) {
-        planTypeId = "cooperate"
-      } else if (categoryLower.includes("manual")) {
-        planTypeId = "manual"
-      }
-
-      if (planTypeId) {
-        return await this.planTypeManager.isPlanTypeActive(planTypeId)
-      }
-
-      return true // Default to active if category doesn't match any plan type
-    } catch (error) {
-      console.error("Error checking category status:", error)
-      return true // Default to active on error
-    }
+    return filteredPlans
+  } catch (error) {
+    console.error("Error filtering data plans:", error)
+    return []
   }
 }
 
-// Export the class
-window.DataPlanFilter = DataPlanFilter
+// Get active plan types for dropdown
+async function getActivePlanTypesForDropdown() {
+  try {
+    // Get all plan types
+    const planTypes = await window.PlanTypeManager.getAllPlanTypes()
+
+    // Filter active types
+    return planTypes.filter((type) => type.status)
+  } catch (error) {
+    console.error("Error getting active plan types:", error)
+    return []
+  }
+}
+
+// Export functions
+window.DataPlanFilter = {
+  filterDataPlansByActiveTypes,
+  getActivePlanTypesForDropdown,
+}
 
