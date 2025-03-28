@@ -2503,30 +2503,42 @@ function processDataPurchase() {
         requestId: requestId
     };
     
-    // Deduct amount from user's balance
-    const newBalance = currentUser.balance - amount;
-    
-    // Update user's balance in Firestore
-    db.collection('users').doc(currentUser.uid).update({
-        balance: newBalance,
-        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-        // Update local user object
-        currentUser.balance = newBalance;
-        
-        // Update balance display
-        updateBalanceDisplay();
-        
-        // Save request to Firestore
-        return db.collection('dataRequests').add(requestData);
-    })
-    .then(docRef => {
-        console.log("Request saved with ID:", docRef.id);
-        
-        if (isManual) {
-            // For manual data, just save to Firestore and show success
+    if (isManual) {
+        // For manual data, just save to Firestore and deduct balance
+        saveManualRequest(requestData, amount);
+    } else {
+        // For automatic data, make API call first, then update balance only on success
+        processAutomaticRequest(requestData, amount);
+    }
+}
+
+// Process manual data request
+function saveManualRequest(requestData, amount) {
+    // Save request to Firestore first
+    db.collection('dataRequests').add(requestData)
+        .then(docRef => {
+            console.log("Manual request saved with ID:", docRef.id);
+            
+            // Deduct amount from user's balance
+            const newBalance = currentUser.balance - amount;
+            
+            // Update user's balance in Firestore
+            return db.collection('users').doc(currentUser.uid).update({
+                balance: newBalance,
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => {
+            // Update local user object
+            currentUser.balance -= amount;
+            
+            // Update balance display
+            updateBalanceDisplay();
+            
+            // Close modal
             confirmationModal.classList.remove('show');
+            
+            // Show success toast
             showToast('success', 'Order Placed', 'Your data purchase request has been submitted and will be processed by admin');
             
             // Reset form
@@ -2541,15 +2553,32 @@ function processDataPurchase() {
             
             // Refresh requests
             fetchUserRequests();
+        })
+        .catch(error => {
+            console.error("Error saving manual request:", error);
             
             // Reset confirm button
-            confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-            confirmBtn.disabled = false;
-        } else {
-            // For automatic data, make direct API call to N3tdata
+            document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+            document.getElementById('confirm-purchase').disabled = false;
+            
+            // Close modal
+            confirmationModal.classList.remove('show');
+            
+            // Show error toast
+            showToast('error', 'Failed', 'Failed to process your request. Please try again.');
+        });
+}
+
+// Process automatic data request
+function processAutomaticRequest(requestData, amount) {
+    // First save the request to Firestore
+    db.collection('dataRequests').add(requestData)
+        .then(docRef => {
+            console.log("Automatic request saved with ID:", docRef.id);
             
             // Determine data plan ID for API based on the selected plan
             let dataPlanId = 1; // Default
+            const planName = requestData.planName;
             
             // Try to extract plan ID from the plan name
             if (planName.includes('500MB')) dataPlanId = 1;
@@ -2561,99 +2590,122 @@ function processDataPurchase() {
             
             console.log("Making API call with plan ID:", dataPlanId);
             
-// Create payload for API
-const payload = {
-    network: networkId,
-    phone: phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
-    data_plan: dataPlanId,
-    bypass: false,
-    'request-id': requestId
-};
-
-console.log("API Payload:", payload);
-
-// Make direct API call to N3tdata (using our proxy to handle CORS)
-fetch('/api/data-proxy', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-})
-.then(response => {
-    console.log("API Response status:", response.status);
-    if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    return response.json();
-})
-.then(data => {
-    console.log("API Response data:", data);
-    
-    // Update request status in Firestore
-    return db.collection('dataRequests').doc(docRef.id).update({
-        status: data.status === 'success' ? 'completed' : 'failed',
-        apiResponse: data,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-})
-
+            // Create payload for API
+            const payload = {
+                network: parseInt(requestData.networkId),
+                phone: requestData.phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
+                data_plan: dataPlanId,
+                bypass: false,
+                'request-id': requestData.requestId
+            };
+            
+            console.log("API Payload:", payload);
+            
+            // Make API call through our proxy
+            return fetch('/api/data-proxy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                console.log("API Response status:", response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("API Response data:", data);
+                
+                // Check if the API call was successful
+                if (data.status === 'success') {
+                    // Deduct amount from user's balance
+                    const newBalance = currentUser.balance - amount;
+                    
+                    // Update user's balance in Firestore
+                    return db.collection('users').doc(currentUser.uid).update({
+                        balance: newBalance,
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    })
+                    .then(() => {
+                        // Update local user object
+                        currentUser.balance = newBalance;
+                        
+                        // Update balance display
+                        updateBalanceDisplay();
+                        
+                        // Update request status in Firestore
+                        return db.collection('dataRequests').doc(docRef.id).update({
+                            status: 'completed',
+                            apiResponse: data,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    })
+                    .then(() => {
+                        // Close modal
+                        confirmationModal.classList.remove('show');
+                        
+                        // Show success toast
+                        showToast('success', 'Purchase Successful', 'Your data purchase has been processed successfully');
+                        
+                        // Reset form
+                        document.getElementById('data-form').reset();
+                        document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
+                        
+                        // Refresh requests
+                        fetchUserRequests();
+                    });
+                } else {
+                    // API call failed
+                    throw new Error(data.message || 'API call failed');
+                }
+            })
             .catch(error => {
                 console.error("API Error:", error);
                 
                 // Update request status in Firestore
-                db.collection('dataRequests').doc(docRef.id).update({
+                return db.collection('dataRequests').doc(docRef.id).update({
                     status: 'failed',
                     error: error.message,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    // Close modal
+                    confirmationModal.classList.remove('show');
+                    
+                    // Check if error is due to insufficient funds or admin-related
+                    if (error.message && (
+                        error.message.toLowerCase().includes('insufficient') || 
+                        error.message.toLowerCase().includes('balance') ||
+                        error.message.toLowerCase().includes('wallet')
+                    )) {
+                        showToast('error', 'Error 404', 'Contact admin for assistance');
+                    } else {
+                        showToast('error', 'Failed', 'Failed to process your data purchase. Please try again.');
+                    }
                 });
-                
-                // Close modal
-                confirmationModal.classList.remove('show');
-                
-                // Check if error is due to insufficient funds
-                if (error.message && error.message.toLowerCase().includes('insufficient')) {
-                    showToast('error', 'Error 404', 'Contact admin for assistance');
-                } else {
-                    showToast('error', 'Failed', 'Failed to process your data purchase. Please try again.');
-                }
-            })
-            .finally(() => {
-                // Reset confirm button
-                confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-                confirmBtn.disabled = false;
             });
-        }
-    })
-    .catch(error => {
-        console.error("Error processing purchase:", error);
-        
-        // Refund the user's balance since the transaction failed
-        db.collection('users').doc(currentUser.uid).update({
-            balance: firebase.firestore.FieldValue.increment(amount),
-            updated_at: firebase.firestore.FieldValue.serverTimestamp()
         })
-        .then(() => {
-            // Update local user object
-            currentUser.balance += amount;
+        .catch(error => {
+            console.error("Error saving automatic request:", error);
             
-            // Update balance display
-            updateBalanceDisplay();
+            // Reset confirm button
+            document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+            document.getElementById('confirm-purchase').disabled = false;
+            
+            // Close modal
+            confirmationModal.classList.remove('show');
             
             // Show error toast
-            showToast('error', 'Failed', 'Failed to process your request. Your balance has been refunded.');
+            showToast('error', 'Failed', 'Failed to process your request. Please try again.');
         })
-        .catch(refundError => {
-            console.error("Error refunding balance:", refundError);
+        .finally(() => {
+            // Reset confirm button
+            document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+            document.getElementById('confirm-purchase').disabled = false;
         });
-        
-        // Reset confirm button
-        confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-        confirmBtn.disabled = false;
-        
-        // Close modal
-        confirmationModal.classList.remove('show');
-    });
 }
         // Update Data Plan Dropdown
         function updateDataPlanDropdown() {
