@@ -1487,46 +1487,101 @@
         const confirmAmount = document.getElementById('confirm-amount');
         
         // Check Authentication State
-        document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Initialize the app without requiring authentication
     initApp();
     
-    // Check if user is logged in (but don't redirect if not)
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            // User is signed in
-            currentUser = user;
-            console.log("User authenticated:", user.email);
+    // Get Telegram user ID if available
+    let telegramUserId = null;
+    
+    if (window.Telegram && window.Telegram.WebApp) {
+        const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+        if (tgUser) {
+            telegramUserId = tgUser.id.toString();
+            console.log("Telegram user ID detected:", telegramUserId);
+            
+            // Load user data directly using Telegram ID
+            loadUserDataByTelegramId(telegramUserId);
+        } else {
+            console.log("No Telegram user data available");
+            // For testing only - use a default user ID
+            telegramUserId = '5966603094';
+            console.log("Using test Telegram ID:", telegramUserId);
+            loadUserDataByTelegramId(telegramUserId);
+        }
+    } else {
+        console.log("Not in Telegram WebApp - using test mode");
+        // For testing only - use a default user ID
+        telegramUserId = '5966603094';
+        console.log("Using test Telegram ID:", telegramUserId);
+        loadUserDataByTelegramId(telegramUserId);
+    }
+});
+
+// Load user data by Telegram ID
+function loadUserDataByTelegramId(telegramId) {
+    db.collection("users").where("user_id", "==", telegramId).get()
+        .then((querySnapshot) => {
+            if (!querySnapshot.empty) {
+                // User found
+                const userDoc = querySnapshot.docs[0];
+                currentUser = {
+                    uid: userDoc.id,
+                    telegramId: telegramId,
+                    ...userDoc.data()
+                };
+                console.log("User data loaded:", currentUser);
+                
+                // Show user-specific content
+                document.querySelectorAll('.user-only').forEach(el => {
+                    el.style.display = 'block';
+                });
+                
+                // Fetch user-specific data
+                fetchUserRequests();
+            } else {
+                console.log("No user document found for Telegram ID:", telegramId);
+                // Create a new user
+                createNewUser(telegramId);
+            }
+        })
+        .catch((error) => {
+            console.error("Error loading user data:", error);
+            showToast('error', 'Error', 'Failed to load user data');
+        });
+}
+
+// Create a new user
+function createNewUser(telegramId) {
+    const userData = {
+        user_id: telegramId,
+        balance: 0,
+        role: "user",
+        vtu_id: telegramId.substring(0, 6),
+        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    db.collection("users").add(userData)
+        .then((docRef) => {
+            console.log("New user created with ID:", docRef.id);
+            currentUser = {
+                uid: docRef.id,
+                telegramId: telegramId,
+                ...userData
+            };
             
             // Show user-specific content
             document.querySelectorAll('.user-only').forEach(el => {
                 el.style.display = 'block';
             });
             
-            // Fetch user-specific data
-            fetchUserRequests();
-        } else {
-            // User is not signed in, but we still allow access to the page
-            console.log("No user authenticated, showing public content only");
-            
-            // Hide user-specific content
-            document.querySelectorAll('.user-only').forEach(el => {
-                el.style.display = 'none';
-            });
-            
-            // Show login prompt in requests tab
-            document.getElementById('requests-container').innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-user-lock"></i>
-                    <p>Please log in to view your data purchase requests.</p>
-                    <button class="primary-btn" style="max-width: 200px; margin: 20px auto 0;" onclick="window.location.href='login.html'">
-                        Login Now
-                    </button>
-                </div>
-            `;
-        }
-    });
-});
+            showToast('success', 'Welcome', 'Your account has been created');
+        })
+        .catch((error) => {
+            console.error("Error creating new user:", error);
+            showToast('error', 'Error', 'Failed to create user account');
+        });
+}
         
         // Initialize App
         function initApp() {
@@ -1831,25 +1886,27 @@
         }
         
         // Fetch User Requests
-        function fetchUserRequests() {
+function fetchUserRequests() {
     if (!currentUser) {
-        // User is not authenticated, show login prompt
+        // User is not authenticated, show a message but don't redirect
         document.getElementById('requests-container').innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-user-lock"></i>
-                <p>Please log in to view your data purchase requests.</p>
-                <button class="primary-btn" style="max-width: 200px; margin: 20px auto 0;" onclick="window.location.href='login.html'">
-                    Login Now
-                </button>
+                <p>Please restart the app to view your data purchase requests.</p>
             </div>
         `;
         return;
     }
     
-    // Rest of the function remains the same...
-    db.collection('dataRequests')
-        .where('userId', '==', currentUser.uid)
-        .orderBy('timestamp', 'desc')
+    // Query by telegramId or userId
+    let query;
+    if (currentUser.telegramId) {
+        query = db.collection('dataRequests').where('telegramId', '==', currentUser.telegramId);
+    } else {
+        query = db.collection('dataRequests').where('userId', '==', currentUser.uid);
+    }
+    
+    query.orderBy('timestamp', 'desc')
         .limit(10)
         .get()
         .then(snapshot => {
@@ -1896,15 +1953,14 @@
                         </div>
                         <div class="request-detail">
                             <div class="request-detail-label">Request ID</div>
-                            <div class="request-detail-value">${request.requestId || doc.id}</div>
+                            <div class="request-detail-value">${request.requestId || doc.id.substring(0, 8)}</div>
                         </div>
                     </div>
                     <div class="request-actions">
                         ${request.status === 'pending' ? 
                             `<button class="request-btn cancel-btn" data-id="${doc.id}">Cancel</button>
-                            <button class="request-btn primary track-btn" data-id="${doc.id}">Track</button>` : 
-                            `<button class="request-btn receipt-btn" data-id="${doc.id}">Receipt</button>
-                            <button class="request-btn primary buy-again-btn" data-id="${doc.id}" data-phone="${request.phoneNumber}" data-plan="${request.planName}">Buy Again</button>`
+                            <button class="request-btn primary track-btn" data-id="${doc.id}">Status</button>` : 
+                            `<button class="request-btn primary buy-again-btn" data-id="${doc.id}" data-phone="${request.phoneNumber}" data-plan="${request.planName}">Buy Again</button>`
                         }
                     </div>
                 `;
@@ -1921,13 +1977,8 @@
             
             document.querySelectorAll('.track-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    trackRequest(this.getAttribute('data-id'));
-                });
-            });
-            
-            document.querySelectorAll('.receipt-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    showReceipt(this.getAttribute('data-id'));
+                    // Show status instead of redirecting to admin page
+                    showToast('info', 'Request Status', 'Your request is being processed');
                 });
             });
             
@@ -1964,10 +2015,28 @@
         }
         
         // Track Request
-        function trackRequest(requestId) {
-            // Redirect to admin page with tracking parameter
-            window.location.href = `dataA.html?track=${requestId}`;
-        }
+function trackRequest(requestId) {
+    // Show status instead of redirecting to admin page
+    showToast('info', 'Request Status', 'Your request is being processed');
+    
+    // Fetch the latest status
+    db.collection('dataRequests').doc(requestId).get()
+        .then(doc => {
+            if (doc.exists) {
+                const request = doc.data();
+                const status = request.status || 'pending';
+                const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+                
+                showToast('info', 'Request Status', `Status: ${statusText}`);
+            } else {
+                showToast('error', 'Not Found', 'Request not found');
+            }
+        })
+        .catch(error => {
+            console.error("Error tracking request:", error);
+            showToast('error', 'Error', 'Failed to track request');
+        });
+}
         
         // Show Receipt
         function showReceipt(requestId) {
@@ -2139,19 +2208,29 @@
         }
         
         // Process Data Purchase
-        function processDataPurchase() {
-    // Check if user is logged in
+function processDataPurchase() {
+    // Check if user is authenticated
     if (!currentUser) {
-        // Redirect to login page with return URL
+        // Try to authenticate with Telegram
+        let telegramUserId = null;
+        
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+            if (tgUser) {
+                telegramUserId = tgUser.id.toString();
+                loadUserDataByTelegramId(telegramUserId);
+                showToast('info', 'Processing', 'Please try again in a moment');
+                confirmationModal.classList.remove('show');
+                return;
+            }
+        }
+        
+        // If still not authenticated, show a message but don't redirect to admin login
         confirmationModal.classList.remove('show');
-        showToast('info', 'Login Required', 'Please log in to complete your purchase');
-        setTimeout(() => {
-            window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
-        }, 2000);
+        showToast('error', 'Authentication Required', 'Please restart the app to authenticate');
         return;
     }
     
-    // Rest of the function remains the same...
     // Get purchase details
     const networkName = document.getElementById('confirm-network').textContent;
     const planName = document.getElementById('confirm-plan').textContent;
@@ -2181,6 +2260,7 @@
     // Create request data
     const requestData = {
         userId: currentUser.uid,
+        telegramId: currentUser.telegramId || currentUser.user_id,
         phoneNumber: phoneNumber,
         planName: planName,
         networkName: networkName,
@@ -2221,10 +2301,8 @@
             // Refresh requests
             fetchUserRequests();
             
-            // Redirect to admin page for processing
-            setTimeout(() => {
-                window.open(`dataA.html?request=${docRef.id}`, '_blank');
-            }, 1000);
+            // Don't redirect to admin page
+            showToast('info', 'Processing', 'Your request is being processed');
         })
         .catch(error => {
             console.error("Error saving request:", error);
