@@ -1,158 +1,174 @@
-// This file serves as a proxy for the N3tdata API to avoid CORS issues
-const https = require("https")
+// API proxy for data purchases
+// This file handles forwarding requests to the n3tdata.com API
 
-exports.handler = async (event, context) => {
+export default async function handler(req, res) {
   // Only allow POST requests
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: "Method Not Allowed" }),
-    }
+  if (req.method !== "POST") {
+    return res.status(405).json({ status: "error", message: "Method not allowed" })
+  }
+
+  // Basic security check - verify the request is coming from your domain
+  // This helps prevent direct access to your API endpoint
+  const referer = req.headers.referer || ""
+  const allowedDomains = ["veltrawave-vtu.vercel.app", "v0-bot2-five.vercel.app", "localhost"]
+  const isAllowedDomain = allowedDomains.some((domain) => referer.includes(domain))
+
+  if (!isAllowedDomain && process.env.NODE_ENV === "production") {
+    return res.status(403).json({
+      status: "error",
+      message: "Unauthorized access",
+    })
   }
 
   try {
-    // Parse the request body
-    const requestBody = JSON.parse(event.body)
-    console.log("Proxy received request:", JSON.stringify(requestBody))
+    const { network, phone, data_plan, bypass, "request-id": requestId } = req.body
 
-    // Validate the request body
-    if (!requestBody.network || !requestBody.phone || !requestBody.data_plan) {
-      console.error("Invalid request body:", JSON.stringify(requestBody))
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          error: "Bad Request",
-          message: "Missing required fields: network, phone, or data_plan",
-          status: "failed",
-        }),
-      }
+    // Validate required parameters
+    if (!phone || !data_plan) {
+      return res.status(400).json({
+        status: "error",
+        message: "Missing required parameters",
+      })
     }
 
-    // Format the phone number correctly (ensure it starts with 234)
-    if (typeof requestBody.phone === "string" && !requestBody.phone.startsWith("234")) {
-      requestBody.phone = requestBody.phone.replace(/^0/, "234")
+    // Ensure network is a valid number (default to 1 if invalid)
+    const networkId = isNaN(Number.parseInt(network)) ? 1 : Number.parseInt(network)
+
+    // Format phone number (ensure it starts with 234 instead of 0)
+    const formattedPhone = phone.toString().replace(/^0/, "234")
+
+    // Create the payload for the API
+    const payload = {
+      network: networkId,
+      phone: formattedPhone,
+      data_plan: Number.parseInt(data_plan),
+      bypass: bypass || false,
+      "request-id": requestId,
     }
 
-    // Create the request options for the N3tdata API
-    const options = {
-      hostname: "n3tdata.com",
-      path: "/api/data",
+    console.log("Forwarding request to n3tdata API:", payload)
+
+    // Obfuscate the API token to make it slightly harder to extract
+    // This is not truly secure but adds a small layer of obfuscation
+    const tokenParts = ["3cfedead", "e5a3a753", "42ce1324", "5ac4de9e", "9b3ca0aa", "f86a05a5", "aa1447c1", "2d7d"]
+    const apiToken = tokenParts.join("")
+
+    // Make the API call to n3tdata.com
+    const response = await fetch("https://n3tdata.com/api/data", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Token 3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d",
+        Authorization: `Token ${apiToken}`,
       },
-    }
-
-    console.log("Making request to N3tdata API with options:", JSON.stringify(options))
-    console.log("Request payload:", JSON.stringify(requestBody))
-
-    // Make the request to the N3tdata API
-    const response = await new Promise((resolve, reject) => {
-      const req = https.request(options, (res) => {
-        let data = ""
-
-        res.on("data", (chunk) => {
-          data += chunk
-        })
-
-        res.on("end", () => {
-          console.log("N3tdata API response status:", res.statusCode)
-          console.log("N3tdata API response body:", data)
-
-          try {
-            // Try to parse the response as JSON
-            const jsonData = JSON.parse(data)
-            resolve({
-              statusCode: res.statusCode,
-              headers: res.headers,
-              body: data,
-            })
-          } catch (e) {
-            console.error("Error parsing API response:", e)
-            console.error("Raw response:", data)
-            resolve({
-              statusCode: res.statusCode,
-              headers: res.headers,
-              body: JSON.stringify({
-                status: "failed",
-                message: "Invalid response from API",
-                raw: data,
-              }),
-            })
-          }
-        })
-      })
-
-      req.on("error", (error) => {
-        console.error("Request error:", error)
-        reject(error)
-      })
-
-      // Set a timeout for the request (15 seconds)
-      req.setTimeout(15000, () => {
-        req.abort()
-        reject(new Error("Request to N3tdata API timed out"))
-      })
-
-      req.write(JSON.stringify(requestBody))
-      req.end()
+      body: JSON.stringify(payload),
     })
 
-    console.log("Returning response to client")
+    // Get the response data
+    const data = await response.json()
 
-    // Check if the response is a success or failure
-    try {
-      const responseData = JSON.parse(response.body)
-      if (responseData.status !== "success") {
-        console.log("API returned failure:", responseData)
-        // If the error is related to insufficient funds or admin issues, format it specially
-        if (
-          responseData.message &&
-          (responseData.message.toLowerCase().includes("insufficient") ||
-            responseData.message.toLowerCase().includes("balance") ||
-            responseData.message.toLowerCase().includes("wallet"))
-        ) {
-          return {
-            statusCode: 400,
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              status: "failed",
-              message: "Error 404: Contact admin for assistance",
-              originalMessage: responseData.message,
-              adminError: true,
-            }),
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Error processing response:", e)
+    // Log success but don't include sensitive details
+    if (data.status === "success") {
+      console.log(`Data purchase successful for ${formattedPhone}`)
+    } else {
+      console.error("Data purchase failed:", data.message)
     }
 
-    // Return the response from the N3tdata API
-    return {
-      statusCode: response.statusCode,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: response.body,
-    }
+    // Return the response to the client
+    return res.status(response.status).json(data)
   } catch (error) {
-    console.error("Error in proxy:", error)
+    console.error("API proxy error:", error)
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to process data purchase request",
+      error: error.message,
+    })
+  }
+}
 
-    return {
-      statusCode: 500,
+// API proxy for data purchases
+// This file handles forwarding requests to the n3tdata.com API
+
+export default async function handler(req, res) {
+  // Only allow POST requests
+  if (req.method !== "POST") {
+    return res.status(405).json({ status: "error", message: "Method not allowed" })
+  }
+
+  // Basic security check - verify the request is coming from your domain
+  // This helps prevent direct access to your API endpoint
+  const referer = req.headers.referer || ""
+  const allowedDomains = ["veltrawave-vtu.vercel.app", "v0-bot2-five.vercel.app", "localhost"]
+  const isAllowedDomain = allowedDomains.some((domain) => referer.includes(domain))
+
+  if (!isAllowedDomain && process.env.NODE_ENV === "production") {
+    return res.status(403).json({
+      status: "error",
+      message: "Unauthorized access",
+    })
+  }
+
+  try {
+    const { network, phone, data_plan, bypass, "request-id": requestId } = req.body
+
+    // Validate required parameters
+    if (!phone || !data_plan) {
+      return res.status(400).json({
+        status: "error",
+        message: "Missing required parameters",
+      })
+    }
+
+    // Ensure network is a valid number (default to 1 if invalid)
+    const networkId = isNaN(Number.parseInt(network)) ? 1 : Number.parseInt(network)
+
+    // Format phone number (ensure it starts with 234 instead of 0)
+    const formattedPhone = phone.toString().replace(/^0/, "234")
+
+    // Create the payload for the API
+    const payload = {
+      network: networkId,
+      phone: formattedPhone,
+      data_plan: Number.parseInt(data_plan),
+      bypass: bypass || false,
+      "request-id": requestId,
+    }
+
+    console.log("Forwarding request to n3tdata API:", payload)
+
+    // Obfuscate the API token to make it slightly harder to extract
+    // This is not truly secure but adds a small layer of obfuscation
+    const tokenParts = ["3cfedead", "e5a3a753", "42ce1324", "5ac4de9e", "9b3ca0aa", "f86a05a5", "aa1447c1", "2d7d"]
+    const apiToken = tokenParts.join("")
+
+    // Make the API call to n3tdata.com
+    const response = await fetch("https://n3tdata.com/api/data", {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Token ${apiToken}`,
       },
-      body: JSON.stringify({
-        error: "Internal Server Error",
-        message: error.message,
-        status: "failed",
-      }),
+      body: JSON.stringify(payload),
+    })
+
+    // Get the response data
+    const data = await response.json()
+
+    // Log success but don't include sensitive details
+    if (data.status === "success") {
+      console.log(`Data purchase successful for ${formattedPhone}`)
+    } else {
+      console.error("Data purchase failed:", data.message)
     }
+
+    // Return the response to the client
+    return res.status(response.status).json(data)
+  } catch (error) {
+    console.error("API proxy error:", error)
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to process data purchase request",
+      error: error.message,
+    })
   }
 }
 
