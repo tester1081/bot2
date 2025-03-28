@@ -1,69 +1,98 @@
 // This code fixes the network parameter issue in the processAutomaticRequest function
-// Replace the existing function with this updated version
+// and adds plan ID mapping to ensure correct data plans are used
 
-// Assuming these variables are defined elsewhere in your project
-// For demonstration purposes, I'm adding placeholder declarations.
-// Replace these with your actual implementations or imports.
-const db = {
-  collection: (collectionName) => {
-    return {
-      add: (data) => {
-        return new Promise((resolve) => {
-          console.log(`Simulating adding to ${collectionName}:`, data)
-          resolve({ id: "fakeDocId" })
-        })
-      },
-      doc: (docId) => {
-        return {
-          update: (data) => {
-            return new Promise((resolve) => {
-              console.log(`Simulating updating doc ${docId}:`, data)
-              resolve()
-            })
-          },
-        }
-      },
-    }
-  },
+// Map of plan names to their correct API IDs
+const PLAN_ID_MAP = {
+  // MTN SME
+  "MTN SME 750MB": 1,
+  "MTN SME 1GB": 2,
+  "MTN SME 1.5GB": 3,
+  "MTN SME 1.2GB": 4,
+  "MTN SME 2GB": 5,
+  "MTN SME 10GB": 6,
+
+  // 9MOBILE GIFTING
+  "9MOBILE GIFTING 1.5GB": 36,
+  "9MOBILE GIFTING 2GB": 37,
+  "9MOBILE GIFTING 3GB": 38,
+  "9MOBILE GIFTING 4.5GB": 39,
+
+  // AIRTEL COOPERATE GIFTING
+  "AIRTEL COOPERATE GIFTING 500MB": 46,
+  "AIRTEL COOPERATE GIFTING 1GB": 47,
+  "AIRTEL COOPERATE GIFTING 2GB": 48,
+  "AIRTEL COOPERATE GIFTING 5GB": 49,
+
+  // MTN COOPERATE GIFTING
+  "MTN COOPERATE GIFTING 500MB": 50,
+  "MTN COOPERATE GIFTING 1GB": 51,
+  "MTN COOPERATE GIFTING 2GB": 52,
+  "MTN COOPERATE GIFTING 3GB": 53,
+  "MTN COOPERATE GIFTING 5GB": 54,
+  "MTN COOPERATE GIFTING 10GB": 55,
+
+  // AIRTEL COOPERATE GIFTING
+  "AIRTEL COOPERATE GIFTING 10GB": 56,
+
+  // GLO COOPERATE GIFTING
+  "GLO COOPERATE GIFTING 200MB": 57,
+  "GLO COOPERATE GIFTING 500MB": 58,
+  "GLO COOPERATE GIFTING 1GB": 59,
+  "GLO COOPERATE GIFTING 2GB": 60,
+  "GLO COOPERATE GIFTING 3GB": 61,
+  "GLO COOPERATE GIFTING 5GB": 62,
+  "GLO COOPERATE GIFTING 10GB": 63,
+
+  // AIRTEL COOPERATE GIFTING
+  "AIRTEL COOPERATE GIFTING 300MB": 70,
+  "AIRTEL COOPERATE GIFTING 100MB": 71,
+
+  // 9MOBILE COOPERATE GIFTING
+  "9MOBILE COOPERATE GIFTING 500MB": 72,
+  "9MOBILE COOPERATE GIFTING 1GB": 73,
+  "9MOBILE COOPERATE GIFTING 2GB": 74,
+  "9MOBILE COOPERATE GIFTING 3GB": 75,
+  "9MOBILE COOPERATE GIFTING 5GB": 76,
+  "9MOBILE COOPERATE GIFTING 10GB": 77,
+
+  // AIRTEL GIFTING
+  "AIRTEL GIFTING 300MB": 83,
+  "AIRTEL GIFTING 600MB": 84,
+  "AIRTEL GIFTING 1GB": 85,
+  "AIRTEL GIFTING 2GB": 86,
+  "AIRTEL GIFTING 3GB": 87,
+  "AIRTEL GIFTING 7GB": 88,
+  "AIRTEL GIFTING 10GB": 89,
+
+  // GLO GIFTING
+  "GLO GIFTING 1GB": 90,
+  "GLO GIFTING 2GB": 91,
+  "GLO GIFTING 3.5GB": 92,
+  "GLO GIFTING 15GB": 93,
+
+  // MTN GIFTING
+  "MTN GIFTING 10GB": 103,
+  "MTN GIFTING 3GB": 104,
 }
 
-const currentUser = {
-  uid: "fakeUserId",
-  balance: 1000,
-}
+// Assuming these are initialized elsewhere in your project
+// For example, if you're using Firebase:
+// import { db, auth, firebase } from './firebaseConfig'; // Or however you've configured it
+// Or if they are globally available:
+// const db = window.db;
+// const currentUser = window.currentUser;
+// const firebase = window.firebase;
+// const updateBalanceDisplay = window.updateBalanceDisplay;
+// const confirmationModal = document.getElementById('confirmationModal'); // Or however you get it
 
-const firebase = {
-  firestore: {
-    FieldValue: {
-      serverTimestamp: () => {
-        return new Date()
-      },
-    },
-  },
-}
-
-function updateBalanceDisplay() {
-  console.log("Simulating updating balance display")
-}
-
-const confirmationModal = {
-  classList: {
-    remove: (className) => {
-      console.log(`Simulating removing class ${className} from confirmationModal`)
-    },
-    add: (className) => {
-      console.log(`Simulating adding class ${className} to confirmationModal`)
-    },
-  },
-}
-
-function showToast(type, title, message) {
-  console.log(`Simulating showing toast: Type=${type}, Title=${title}, Message=${message}`)
-}
-
-function fetchUserRequests() {
-  console.log("Simulating fetching user requests")
-}
+// Declare variables if they are not globally available or imported
+let db
+let currentUser
+let firebase
+let updateBalanceDisplay
+let confirmationModal
+let showToast
+let fetchUserRequests
 
 // Process automatic data request
 function processAutomaticRequest(requestData, amount) {
@@ -77,13 +106,20 @@ function processAutomaticRequest(requestData, amount) {
       let dataPlanId = 1 // Default
       const planName = requestData.planName
 
-      // Try to extract plan ID from the plan name
-      if (planName.includes("500MB")) dataPlanId = 1
-      else if (planName.includes("1GB")) dataPlanId = 2
-      else if (planName.includes("2GB")) dataPlanId = 3
-      else if (planName.includes("3GB")) dataPlanId = 4
-      else if (planName.includes("5GB")) dataPlanId = 5
-      else if (planName.includes("10GB")) dataPlanId = 6
+      // Use the plan ID map to get the correct API plan ID
+      if (PLAN_ID_MAP[planName]) {
+        dataPlanId = PLAN_ID_MAP[planName]
+        console.log(`Found plan ID ${dataPlanId} for plan "${planName}"`)
+      } else {
+        // Fallback to the old method if plan not found in map
+        if (planName.includes("500MB")) dataPlanId = 1
+        else if (planName.includes("1GB")) dataPlanId = 2
+        else if (planName.includes("2GB")) dataPlanId = 3
+        else if (planName.includes("3GB")) dataPlanId = 4
+        else if (planName.includes("5GB")) dataPlanId = 5
+        else if (planName.includes("10GB")) dataPlanId = 6
+        console.log(`Using fallback plan ID ${dataPlanId} for plan "${planName}"`)
+      }
 
       console.log("Making API call with plan ID:", dataPlanId)
 
@@ -215,105 +251,13 @@ function processAutomaticRequest(requestData, amount) {
     })
 }
 
-// This script fixes the data purchase functionality by ensuring the network parameter is valid
-// and adding a fallback mechanism for API calls
-
-// Fix the network parameter issue
-function fixNetworkParameter() {
-  // Get the original processDataPurchase function
-  const originalProcessDataPurchase = window.processDataPurchase
-
-  if (originalProcessDataPurchase) {
-    // Override the function to fix the network parameter
-    window.processDataPurchase = (planId, planName, amount) => {
-      try {
-        // Get the selected network
-        const networkSelect = document.getElementById("network-select")
-        let networkId = networkSelect ? networkSelect.value : null
-        const networkName = networkSelect ? networkSelect.options[networkSelect.selectedIndex].text : "MTN"
-
-        // Ensure networkId is a valid number
-        networkId = Number.parseInt(networkId)
-        if (isNaN(networkId)) {
-          // Try to determine network ID from plan name or network name
-          if (planName.includes("MTN") || networkName.includes("MTN")) {
-            networkId = 1
-          } else if (planName.includes("AIRTEL") || networkName.includes("Airtel")) {
-            networkId = 2
-          } else if (planName.includes("GLO") || networkName.includes("Glo")) {
-            networkId = 3
-          } else if (planName.includes("9MOBILE") || networkName.includes("9mobile")) {
-            networkId = 4
-          } else {
-            // Default to MTN if we can't determine
-            networkId = 1
-          }
-        }
-
-        // Call the original function with the fixed network ID
-        return originalProcessDataPurchase(planId, planName, amount, networkId, networkName)
-      } catch (error) {
-        console.error("Error in processDataPurchase:", error)
-        alert("An error occurred while processing your request. Please try again.")
-        return false
-      }
+// Override the original processAutomaticRequest function
+if (typeof window !== "undefined") {
+  window.addEventListener("DOMContentLoaded", () => {
+    if (typeof window.processAutomaticRequest === "function") {
+      console.log("Overriding processAutomaticRequest function with fixed version")
+      window.processAutomaticRequest = processAutomaticRequest
     }
-  }
+  })
 }
-
-// Add fallback mechanism for API calls
-function addApiFallback() {
-  // Get the original makeApiCall function
-  const originalMakeApiCall = window.makeApiCall
-
-  if (originalMakeApiCall) {
-    // Override the function to add fallback
-    window.makeApiCall = async (planId, phoneNumber, networkId, requestId) => {
-      try {
-        // Try the proxy endpoint first
-        const result = await originalMakeApiCall(planId, phoneNumber, networkId, requestId)
-        return result
-      } catch (error) {
-        console.error("Proxy API call failed, trying direct API:", error)
-
-        // If proxy fails, try direct API call
-        try {
-          // Format phone number
-          const formattedPhone = phoneNumber.startsWith("234") ? phoneNumber : `234${phoneNumber.replace(/^0+/, "")}`
-
-          // Make direct API call to n3tdata.com
-          const response = await fetch("https://api.n3tdata.com/api/v1/data/purchase", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer n3data_1234567890apikey",
-            },
-            body: JSON.stringify({
-              network: isNaN(Number.parseInt(networkId)) ? 1 : Number.parseInt(networkId),
-              mobile_number: formattedPhone,
-              plan: planId,
-              request_id: requestId || `Data_${Date.now()}`,
-            }),
-          })
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`)
-          }
-
-          return await response.json()
-        } catch (directError) {
-          console.error("Direct API call also failed:", directError)
-          throw directError
-        }
-      }
-    }
-  }
-}
-
-// Initialize fixes when the document is loaded
-document.addEventListener("DOMContentLoaded", () => {
-  fixNetworkParameter()
-  addApiFallback()
-  console.log("Data purchase fixes applied")
-})
 
