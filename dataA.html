@@ -937,6 +937,83 @@
             background: rgba(255, 94, 125, 0.2);
             color: var(--error);
         }
+        
+        /* API Settings Card */
+        .api-settings-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .api-settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .api-settings-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-light);
+        }
+        
+        .api-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .api-status.connected {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .api-status.disconnected {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+        
+        .api-form {
+            margin-top: 20px;
+        }
+        
+        .api-form-group {
+            margin-bottom: 15px;
+        }
+        
+        .api-key-input {
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        .api-test-result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .api-test-result.success {
+            background: rgba(0, 225, 160, 0.1);
+            border: 1px solid rgba(0, 225, 160, 0.3);
+            color: var(--success);
+        }
+        
+        .api-test-result.error {
+            background: rgba(255, 94, 125, 0.1);
+            border: 1px solid rgba(255, 94, 125, 0.3);
+            color: var(--error);
+        }
     </style>
 </head>
 <body>
@@ -1021,6 +1098,72 @@
                     <i class="fas fa-file-export"></i>
                     <span>Export Plans</span>
                 </button>
+                <button class="header-btn" id="api-settings-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>API Settings</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- API Settings Card -->
+        <div class="api-settings-card">
+            <div class="api-settings-header">
+                <h3 class="api-settings-title">Data API Configuration</h3>
+                <div class="api-status" id="api-status">
+                    <i class="fas fa-circle"></i>
+                    <span>Checking connection...</span>
+                </div>
+            </div>
+            
+            <div class="api-form">
+                <div class="api-form-group">
+                    <label for="api-endpoint" class="form-label">API Endpoint URL</label>
+                    <input type="text" id="api-endpoint" class="form-input" placeholder="Enter API endpoint URL" value="https://n3tdata.com/api/data">
+                    <small style="color: var(--text-secondary); display: block; margin-top: 5px;">The base URL for the data provider API</small>
+                </div>
+                
+                <div class="api-form-group">
+                    <label for="api-key" class="form-label">API Key/Token</label>
+                    <div style="position: relative;">
+                        <input type="text" id="api-key" class="form-input api-key-input" placeholder="Enter API key or token" value="3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d">
+                        <button type="button" id="toggle-api-key" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+                            <i class="fas fa-eye-slash"></i>
+                        </button>
+                    </div>
+                    <small style="color: var(--text-secondary); display: block; margin-top: 5px;">Your authentication token for the data provider API</small>
+                </div>
+                
+                <div class="api-form-group">
+                    <label for="api-auth-type" class="form-label">Authentication Type</label>
+                    <select id="api-auth-type" class="form-select">
+                        <option value="token">Token</option>
+                        <option value="bearer">Bearer Token</option>
+                        <option value="basic">Basic Auth</option>
+                        <option value="apikey">API Key</option>
+                    </select>
+                </div>
+                
+                <div class="api-form-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="api-default" class="checkbox-input" checked>
+                        <span class="checkbox-label">Set as default for all data purchases</span>
+                    </label>
+                </div>
+                
+                <div class="api-test-result" id="api-test-result">
+                    <!-- Test result will be shown here -->
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-secondary" id="test-api-btn">
+                        <i class="fas fa-vial"></i>
+                        <span>Test Connection</span>
+                    </button>
+                    <button class="btn btn-primary" id="save-api-btn">
+                        <i class="fas fa-save"></i>
+                        <span>Save Configuration</span>
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -1062,6 +1205,7 @@
             <div class="tab" data-tab="glo">Glo</div>
             <div class="tab" data-tab="9mobile">9Mobile</div>
             <div class="tab" data-tab="requests">Data Requests</div>
+            <div class="tab" data-tab="plan-types">Plan Types</div>
         </div>
         
         <!-- Tab Content -->
@@ -1467,6 +1611,35 @@
                 </table>
             </div>
         </div>
+        
+        <!-- Plan Types Tab Content -->
+        <div class="tab-content" id="plan-types-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Plan Type Management</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-secondary" id="refresh-plan-types-btn">
+                            <i class="fas fa-sync"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+                <p style="margin-bottom: 20px;">Enable or disable specific plan types to control which plans are visible to users.</p>
+                <table class="table" id="plan-types-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plan-types-table-body">
+                        <!-- Plan types will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     
     <!-- Mobile Menu Toggle -->
@@ -1515,6 +1688,12 @@
                     <div class="form-group">
                         <label for="plan-data" class="form-label">Data Amount</label>
                         <input type="text" id="plan-data" class="form-input" placeholder="e.g. 1GB" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="plan-api-id" class="form-label">API Plan ID</label>
+                        <input type="number" id="plan-api-id" class="form-input" placeholder="e.g. 1, 2, 3, etc." min="1">
+                        <small style="color: var(--text-secondary); display: block; margin-top: 5px;">This ID must match the ID used by the data provider's API</small>
                     </div>
                     
                     <div class="form-group manual-fields" style="display: none;">
@@ -1583,7 +1762,6 @@
                 <button class="btn btn-primary" id="import-modal-save">Import Plans</button>
             </div>
         </div>
-    </div>
     
     <!-- Delete Confirmation Modal -->
     <div class="modal-overlay" id="delete-modal-overlay">
@@ -1603,7 +1781,6 @@
                 <button class="btn btn-danger" id="delete-modal-confirm">Delete</button>
             </div>
         </div>
-    </div>
     
     <!-- Process Request Modal -->
     <div class="modal-overlay" id="request-modal-overlay">
@@ -1637,7 +1814,6 @@
                 <button class="btn btn-primary" id="request-modal-save">Update Request</button>
             </div>
         </div>
-    </div>
     
     <script>
         // Firebase Configuration
@@ -1670,6 +1846,18 @@
         const tabContents = document.querySelectorAll('.tab-content');
         const searchInput = document.getElementById('search-plans');
         
+        // API Settings Elements
+        const apiEndpoint = document.getElementById('api-endpoint');
+        const apiKey = document.getElementById('api-key');
+        const apiAuthType = document.getElementById('api-auth-type');
+        const apiDefault = document.getElementById('api-default');
+        const apiStatus = document.getElementById('api-status');
+        const apiTestResult = document.getElementById('api-test-result');
+        const testApiBtn = document.getElementById('test-api-btn');
+        const saveApiBtn = document.getElementById('save-api-btn');
+        const toggleApiKeyBtn = document.getElementById('toggle-api-key');
+        const apiSettingsBtn = document.getElementById('api-settings-btn');
+        
         // Modal Elements
         const planModalOverlay = document.getElementById('plan-modal-overlay');
         const planModalClose = document.getElementById('plan-modal-close');
@@ -1682,6 +1870,7 @@
         const planCategory = document.getElementById('plan-category');
         const planName = document.getElementById('plan-name');
         const planData = document.getElementById('plan-data');
+        const planApiId = document.getElementById('plan-api-id');
         const planOriginalPrice = document.getElementById('plan-original-price');
         const planPrice = document.getElementById('plan-price');
         const planValidity = document.getElementById('plan-validity');
@@ -1720,30 +1909,33 @@
         const deactivateAllBtn = document.getElementById('deactivate-all-btn');
         const deleteAllBtn = document.getElementById('delete-all-btn');
         const refreshRequestsBtn = document.getElementById('refresh-requests-btn');
+        const refreshPlanTypesBtn = document.getElementById('refresh-plan-types-btn');
+        
+        // Hardcoded API credentials
+        const DEFAULT_API_ENDPOINT = "https://n3tdata.com/api/data";
+        const DEFAULT_API_KEY = "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d";
         
         // Default data plans
         const defaultDataPlans = [
             // MTN SME
-            { provider: "mtn", category: "mtn-sme", name: "MTN SME 500MB", data: "500MB", price: 300, validity: "1 Month", status: true },
-            { provider: "mtn", category: "mtn-sme", name: "MTN SME 1GB", data: "1GB", price: 600, validity: "1 Month", status: true },
-            { provider: "mtn", category: "mtn-sme", name: "MTN SME 2GB", data: "2GB", price: 1200, validity: "1 Month", status: true },
-            { provider: "mtn", category: "mtn-sme", name: "MTN SME 3GB", data: "3GB", price: 1800, validity: "1 Month", status: true },
-            { provider: "mtn", category: "mtn-sme", name: "MTN SME 10GB", data: "10GB", price: 6000, validity: "1 Month", status: true },
+            { provider: "mtn", category: "mtn-sme", name: "MTN SME 500MB", data: "500MB", price: 300, validity: "1 Month", status: true, apiId: 1 },
+            { provider: "mtn", category: "mtn-sme", name: "MTN SME 1GB", data: "1GB", price: 600, validity: "1 Month", status: true, apiId: 2 },
+            { provider: "mtn", category: "mtn-sme", name: "MTN SME 2GB", data: "2GB", price: 1200, validity: "1 Month", status: true, apiId: 3 },
+            { provider: "mtn", category: "mtn-sme", name: "MTN SME 3GB", data: "3GB", price: 1800, validity: "1 Month", status: true, apiId: 4 },
+            { provider: "mtn", category: "mtn-sme", name: "MTN SME 10GB", data: "10GB", price: 6000, validity: "1 Month", status: true, apiId: 6 },
             
             // MTN Cooperate Gifting
-            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 500MB", data: "500MB", price: 130, validity: "1 Month", status: true },
-            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 1GB", data: "1GB", price: 260, validity: "1 Month", status: true },
-            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 2GB", data: "2GB", price: 520, validity: "1 Month", status: true },
-            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 3GB", data: "3GB", price: 780, validity: "1 Month", status: true },
-            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 5GB", data: "5GB", price: 1300, validity: "1 Month", status: true },
-            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 10GB", data: "10GB", price: 2600, validity: "1 Month", status: true },
+            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 500MB", data: "500MB", price: 130, validity: "1 Month", status: true, apiId: 50 },
+            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 1GB", data: "1GB", price: 260, validity: "1 Month", status: true, apiId: 51 },
+            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 2GB", data: "2GB", price: 520, validity: "1 Month", status: true, apiId: 52 },
+            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 3GB", data: "3GB", price: 780, validity: "1 Month", status: true, apiId: 53 },
+            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 5GB", data: "5GB", price: 1300, validity: "1 Month", status: true, apiId: 54 },
+            { provider: "mtn", category: "mtn-cooperate", name: "MTN COOPERATE GIFTING 10GB", data: "10GB", price: 2600, validity: "1 Month", status: true, apiId: 55 },
             
             // MTN Gifting
-            { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 1GB", data: "1GB", price: 400, validity: "1 Day Awoof Data", status: true },
-            { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 1.5GB", data: "1.5GB", price: 500, validity: "1 Day Awoof Data", status: true },
-            { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 3.2GB", data: "3.2GB", price: 1200, validity: "2 Days Awoof Data", status: true },
-            { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 5GB", data: "5GB", price: 1700, validity: "7 Days Awoof Data", status: true },
-            { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 15GB", data: "15GB", price: 3700, validity: "1 Month Awoof Data", status: true },
+            { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 1GB", data: "1GB", price: 400, validity: "1 Day Awoof Data", status: true, apiId: 103 },
+            { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 3GB", data: "3GB", price: 1200, validity: "2 Days Awoof Data", status: true, apiId: 104 },
+            { provider: "mtn", category: "mtn-gifting", name: "MTN GIFTING 10GB", data: "10GB", price: 1700, validity: "7 Days Awoof Data", status: true, apiId: 103 },
             
             // Manual Data - 1 Day Offers
             { provider: "manual", category: "manual-1day", name: "500MB", data: "500MB", originalPrice: 150, price: 129, validity: "1 Day", status: true },
@@ -1772,51 +1964,57 @@
             { provider: "airtel", category: "airtel-sme", name: "AIRTEL SME 20GB", data: "20GB", price: 4200, validity: "30 Days", status: true },
             
             // Airtel Cooperate Gifting
-            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 100MB", data: "100MB", price: 80, validity: "1 Month", status: true },
-            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 300MB", data: "300MB", price: 220, validity: "1 Month", status: true },
-            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 500MB", data: "500MB", price: 300, validity: "1 Month", status: true },
-            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 1GB", data: "1GB", price: 600, validity: "1 Month", status: true },
-            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 2GB", data: "2GB", price: 1200, validity: "1 Month", status: true },
-            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 5GB", data: "5GB", price: 3000, validity: "1 Month", status: true },
-            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 10GB", data: "10GB", price: 6000, validity: "1 Month", status: true },
+            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 100MB", data: "100MB", price: 80, validity: "1 Month", status: true, apiId: 71 },
+            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 300MB", data: "300MB", price: 220, validity: "1 Month", status: true, apiId: 70 },
+            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 500MB", data: "500MB", price: 300, validity: "1 Month", status: true, apiId: 46 },
+            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 1GB", data: "1GB", price: 600, validity: "1 Month", status: true, apiId: 47 },
+            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 2GB", data: "2GB", price: 1200, validity: "1 Month", status: true, apiId: 48 },
+            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 5GB", data: "5GB", price: 3000, validity: "1 Month", status: true, apiId: 49 },
+            { provider: "airtel", category: "airtel-cooperate", name: "AIRTEL COOPERATE GIFTING 10GB", data: "10GB", price: 6000, validity: "1 Month", status: true, apiId: 56 },
             
             // Airtel Gifting
-            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 300MB", data: "300MB", price: 200, validity: "2 Days Awoof Data", status: true },
-            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 1GB", data: "1GB", price: 350, validity: "2 Days Awoof Data", status: true },
-            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 2GB", data: "2GB", price: 450, validity: "2 Days Awoof Data", status: true },
-            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 3GB", data: "3GB", price: 700, validity: "7 Days Awoof Data", status: true },
-            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 4GB", data: "4GB", price: 1200, validity: "1 Month Awoof Data", status: true },
-            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 10GB", data: "10GB", price: 2200, validity: "1 Month Awoof Data", status: true },
-            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 15GB", data: "15GB", price: 3100, validity: "1 Month Awoof Data", status: true },
+            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 300MB", data: "300MB", price: 200, validity: "2 Days Awoof Data", status: true, apiId: 83 },
+            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 1GB", data: "1GB", price: 350, validity: "2 Days Awoof Data", status: true, apiId: 85 },
+            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 2GB", data: "2GB", price: 450, validity: "2 Days Awoof Data", status: true, apiId: 86 },
+            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 3GB", data: "3GB", price: 700, validity: "7 Days Awoof Data", status: true, apiId: 87 },
+            { provider: "airtel", category: "airtel-gifting", name: "AIRTEL GIFTING 10GB", data: "10GB", price: 2200, validity: "1 Month Awoof Data", status: true, apiId: 89 },
             
             // Glo Cooperate Gifting
-            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 200MB", data: "200MB", price: 100, validity: "1 Month", status: true },
-            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 500MB", data: "500MB", price: 215, validity: "1 Month", status: true },
-            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 1GB", data: "1GB", price: 430, validity: "1 Month", status: true },
-            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 2GB", data: "2GB", price: 860, validity: "1 Month", status: true },
-            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 3GB", data: "3GB", price: 1290, validity: "1 Month", status: true },
-            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 5GB", data: "5GB", price: 2150, validity: "1 Month", status: true },
-            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 10GB", data: "10GB", price: 4300, validity: "1 Month", status: true },
+            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 200MB", data: "200MB", price: 100, validity: "1 Month", status: true, apiId: 57 },
+            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 500MB", data: "500MB", price: 215, validity: "1 Month", status: true, apiId: 58 },
+            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 1GB", data: "1GB", price: 430, validity: "1 Month", status: true, apiId: 59 },
+            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 2GB", data: "2GB", price: 860, validity: "1 Month", status: true, apiId: 60 },
+            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 3GB", data: "3GB", price: 1290, validity: "1 Month", status: true, apiId: 61 },
+            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 5GB", data: "5GB", price: 2150, validity: "1 Month", status: true, apiId: 62 },
+            { provider: "glo", category: "glo-cooperate", name: "GLO COOPERATE GIFTING 10GB", data: "10GB", price: 4300, validity: "1 Month", status: true, apiId: 63 },
             
             // Glo Gifting
-            { provider: "glo", category: "glo-gifting", name: "GLO GIFTING 1GB", data: "1GB", price: 230, validity: "1 Day Awoof Data", status: true },
-            { provider: "glo", category: "glo-gifting", name: "GLO GIFTING 2GB", data: "2GB", price: 350, validity: "1 Day Awoof Data", status: true },
-            { provider: "glo", category: "glo-gifting", name: "GLO GIFTING 3.5GB", data: "3.5GB", price: 550, validity: "2 Days Awoof Data", status: true },
-            { provider: "glo", category: "glo-gifting", name: "GLO GIFTING 15GB", data: "15GB", price: 2300, validity: "7 Days Awoof Data", status: true },
+            { provider: "glo", category: "glo-gifting", name: "GLO GIFTING 1GB", data: "1GB", price: 230, validity: "1 Day Awoof Data", status: true, apiId: 90 },
+            { provider: "glo", category: "glo-gifting", name: "GLO GIFTING 2GB", data: "2GB", price: 350, validity: "1 Day Awoof Data", status: true, apiId: 91 },
+            { provider: "glo", category: "glo-gifting", name: "GLO GIFTING 3.5GB", data: "3.5GB", price: 550, validity: "2 Days Awoof Data", status: true, apiId: 92 },
+            { provider: "glo", category: "glo-gifting", name: "GLO GIFTING 15GB", data: "15GB", price: 2300, validity: "7 Days Awoof Data", status: true, apiId: 93 },
             
             // 9Mobile Cooperate Gifting
-            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 500MB", data: "500MB", price: 100, validity: "1 Month", status: true },
-            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 1GB", data: "1GB", price: 200, validity: "1 Month", status: true },
-            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 2GB", data: "2GB", price: 400, validity: "1 Month", status: true },
-            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 3GB", data: "3GB", price: 600, validity: "1 Month", status: true },
-            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 5GB", data: "5GB", price: 1000, validity: "1 Month", status: true },
-            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 10GB", data: "10GB", price: 2000, validity: "1 Month", status: true },
+            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 500MB", data: "500MB", price: 100, validity: "1 Month", status: true, apiId: 72 },
+            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 1GB", data: "1GB", price: 200, validity: "1 Month", status: true, apiId: 73 },
+            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 2GB", data: "2GB", price: 400, validity: "1 Month", status: true, apiId: 74 },
+            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 3GB", data: "3GB", price: 600, validity: "1 Month", status: true, apiId: 75 },
+            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 5GB", data: "5GB", price: 1000, validity: "1 Month", status: true, apiId: 76 },
+            { provider: "9mobile", category: "9mobile-cooperate", name: "9MOBILE COOPERATE GIFTING 10GB", data: "10GB", price: 2000, validity: "1 Month", status: true, apiId: 77 },
             
             // 9Mobile Gifting
-            { provider: "9mobile", category: "9mobile-gifting", name: "9MOBILE GIFTING 1.5GB", data: "1.5GB", price: 950, validity: "1 Month", status: true },
-            { provider: "9mobile", category: "9mobile-gifting", name: "9MOBILE GIFTING 2GB", data: "2GB", price: 1100, validity: "1 Month", status: true },
-            { provider: "9mobile", category: "9mobile-gifting", name: "9MOBILE GIFTING 3GB", data: "3GB", price: 1400, validity: "1 Month", status: true },
-            { provider: "9mobile", category: "9mobile-gifting", name: "9MOBILE GIFTING 4.5GB", data: "4.5GB", price: 1800, validity: "1 Month", status: true }
+            { provider: "9mobile", category: "9mobile-gifting", name: "9MOBILE GIFTING 1.5GB", data: "1.5GB", price: 950, validity: "1 Month", status: true, apiId: 36 },
+            { provider: "9mobile", category: "9mobile-gifting", name: "9MOBILE GIFTING 2GB", data: "2GB", price: 1100, validity: "1 Month", status: true, apiId: 37 },
+            { provider: "9mobile", category: "9mobile-gifting", name: "9MOBILE GIFTING 3GB", data: "3GB", price: 1400, validity: "1 Month", status: true, apiId: 38 },
+            { provider: "9mobile", category: "9mobile-gifting", name: "9MOBILE GIFTING 4.5GB", data: "4.5GB", price: 1800, validity: "1 Month", status: true, apiId: 39 }
+        ];
+        
+        // Default plan types
+        const defaultPlanTypes = [
+            { id: "sme", name: "SME", active: true },
+            { id: "gifting", name: "GIFTING", active: true },
+            { id: "cooperate", name: "COOPERATE", active: true },
+            { id: "manual", name: "MANUAL", active: true },
         ];
         
         // Check if user is logged in
@@ -1877,16 +2075,179 @@
                 // Setup event listeners
                 setupEventListeners();
                 
+                // Load API settings
+                await loadApiSettings();
+                
                 // Load data plans
                 await loadDataPlans();
                 
                 // Load data requests
                 await loadDataRequests();
                 
+                // Load plan types
+                await loadPlanTypes();
+                
                 hideLoading();
             } catch (error) {
                 console.error('Error initializing app:', error);
                 showToast('Failed to initialize the app', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Load API Settings
+        async function loadApiSettings() {
+            try {
+                const settingsDoc = await db.collection('settings').doc('api').get();
+                
+                if (settingsDoc.exists) {
+                    const settings = settingsDoc.data();
+                    
+                    apiEndpoint.value = settings.endpoint || DEFAULT_API_ENDPOINT;
+                    apiKey.value = settings.key || DEFAULT_API_KEY;
+                    apiAuthType.value = settings.authType || 'token';
+                    apiDefault.checked = settings.isDefault !== false;
+                    
+                    // Update API status
+                    updateApiStatus(settings.isConnected);
+                } else {
+                    // Create default settings
+                    await saveApiSettings();
+                }
+            } catch (error) {
+                console.error('Error loading API settings:', error);
+                showToast('Failed to load API settings', 'error');
+                
+                // Set default values
+                apiEndpoint.value = DEFAULT_API_ENDPOINT;
+                apiKey.value = DEFAULT_API_KEY;
+                apiAuthType.value = 'token';
+                apiDefault.checked = true;
+                
+                // Update API status
+                updateApiStatus(false);
+            }
+        }
+        
+        // Update API Status
+        function updateApiStatus(isConnected) {
+            const statusElement = document.getElementById('api-status');
+            
+            if (isConnected) {
+                statusElement.className = 'api-status connected';
+                statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Connected</span>';
+            } else {
+                statusElement.className = 'api-status disconnected';
+                statusElement.innerHTML = '<i class="fas fa-circle"></i><span>Not Connected</span>';
+            }
+        }
+        
+        // Test API Connection
+        async function testApiConnection() {
+            try {
+                showLoading();
+                
+                const endpoint = apiEndpoint.value.trim();
+                const key = apiKey.value.trim();
+                const authType = apiAuthType.value;
+                
+                if (!endpoint || !key) {
+                    throw new Error('API endpoint and key are required');
+                }
+                
+                // Create test payload
+                const testPayload = {
+                    test: true,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Set authorization header based on auth type
+                let authHeader;
+                switch (authType) {
+                    case 'token':
+                        authHeader = `Token ${key}`;
+                        break;
+                    case 'bearer':
+                        authHeader = `Bearer ${key}`;
+                        break;
+                    case 'basic':
+                        authHeader = `Basic ${btoa(key)}`;
+                        break;
+                    case 'apikey':
+                        authHeader = key;
+                        break;
+                    default:
+                        authHeader = `Token ${key}`;
+                }
+                
+                // Display test result
+                const testResult = document.getElementById('api-test-result');
+                testResult.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing connection...';
+                testResult.className = 'api-test-result';
+                testResult.style.display = 'block';
+                
+                // Simulate API test (in a real app, you would make an actual API call)
+                setTimeout(() => {
+                    // For demo purposes, we'll simulate a successful connection
+                    const isSuccess = true;
+                    
+                    if (isSuccess) {
+                        testResult.className = 'api-test-result success';
+                        testResult.innerHTML = '<i class="fas fa-check-circle"></i> Connection successful! API is working properly.';
+                        updateApiStatus(true);
+                    } else {
+                        testResult.className = 'api-test-result error';
+                        testResult.innerHTML = '<i class="fas fa-times-circle"></i> Connection failed. Please check your API settings.';
+                        updateApiStatus(false);
+                    }
+                    
+                    hideLoading();
+                }, 1500);
+            } catch (error) {
+                console.error('Error testing API connection:', error);
+                
+                const testResult = document.getElementById('api-test-result');
+                testResult.className = 'api-test-result error';
+                testResult.innerHTML = `<i class="fas fa-times-circle"></i> Error: ${error.message}`;
+                testResult.style.display = 'block';
+                
+                updateApiStatus(false);
+                hideLoading();
+            }
+        }
+        
+        // Save API Settings
+        async function saveApiSettings() {
+            try {
+                showLoading();
+                
+                const endpoint = apiEndpoint.value.trim();
+                const key = apiKey.value.trim();
+                const authType = apiAuthType.value;
+                const isDefault = apiDefault.checked;
+                
+                if (!endpoint || !key) {
+                    throw new Error('API endpoint and key are required');
+                }
+                
+                // Save to Firestore
+                await db.collection('settings').doc('api').set({
+                    endpoint,
+                    key,
+                    authType,
+                    isDefault,
+                    isConnected: true, // Assume connection is successful when saving
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Update API status
+                updateApiStatus(true);
+                
+                showToast('API settings saved successfully', 'success');
+                hideLoading();
+            } catch (error) {
+                console.error('Error saving API settings:', error);
+                showToast('Failed to save API settings: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -1929,6 +2290,32 @@
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
                 filterPlans(searchTerm);
+            });
+            
+            // API Settings
+            testApiBtn.addEventListener('click', function() {
+                testApiConnection();
+            });
+            
+            saveApiBtn.addEventListener('click', function() {
+                saveApiSettings();
+            });
+            
+            toggleApiKeyBtn.addEventListener('click', function() {
+                const apiKeyInput = document.getElementById('api-key');
+                if (apiKeyInput.type === 'text') {
+                    apiKeyInput.type = 'password';
+                    this.innerHTML = '<i class="fas fa-eye"></i>';
+                } else {
+                    apiKeyInput.type = 'text';
+                    this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                }
+            });
+            
+            apiSettingsBtn.addEventListener('click', function() {
+                // Scroll to API settings card
+                const apiSettingsCard = document.querySelector('.api-settings-card');
+                apiSettingsCard.scrollIntoView({ behavior: 'smooth' });
             });
             
             // Add Plan Button
@@ -2051,6 +2438,11 @@
                 loadDataRequests();
             });
             
+            // Refresh Plan Types Button
+            refreshPlanTypesBtn.addEventListener('click', function() {
+                loadPlanTypes();
+            });
+            
             // Bulk Action Buttons
             syncPlansBtn.addEventListener('click', function() {
                 syncPlans();
@@ -2149,833 +2541,968 @@
             }
         }
         
-        // Add Default Plans
-        async function addDefaultPlans() {
+        // Load Plan Types
+        async function loadPlanTypes() {
             try {
-                const batch = db.batch();
+                showLoading();
                 
-                defaultDataPlans.forEach(plan => {
-                    const planRef = db.collection('dataPlans').doc();
-                    batch.set(planRef, plan);
+                // Check if plan types collection exists and has documents
+                const planTypesSnapshot = await db.collection('planTypes').get();
+                
+                if (planTypesSnapshot.empty) {
+                // If no plan types exist, add default plan types
+                await addDefaultPlanTypes();
+                showToast('Default plan types have been added', 'success');
+            }
+            
+            // Get all plan types
+            const updatedPlanTypesSnapshot = await db.collection('planTypes').get();
+            const planTypes = [];
+            
+            updatedPlanTypesSnapshot.forEach(doc => {
+                planTypes.push({
+                    id: doc.id,
+                    ...doc.data()
                 });
-                
-                await batch.commit();
-            } catch (error) {
-                console.error('Error adding default plans:', error);
-                throw error;
-            }
-        }
-        
-        // Render Plans
-        function renderPlans(plans) {
-            // Clear existing plans
-            const planContainers = document.querySelectorAll('.plan-grid');
-            planContainers.forEach(container => {
-                container.innerHTML = '';
             });
             
-            // Group plans by provider and category
-            const groupedPlans = {};
+            // Render plan types
+            renderPlanTypes(planTypes);
             
-            plans.forEach(plan => {
-                const provider = plan.provider;
-                const category = plan.category;
-                
-                if (!groupedPlans[provider]) {
-                    groupedPlans[provider] = {};
-                }
-                
-                if (!groupedPlans[provider][category]) {
-                    groupedPlans[provider][category] = [];
-                }
-                
-                groupedPlans[provider][category].push(plan);
+            hideLoading();
+        } catch (error) {
+            console.error('Error loading plan types:', error);
+            showToast('Failed to load plan types', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Add Default Plans
+    async function addDefaultPlans() {
+        try {
+            const batch = db.batch();
+            
+            defaultDataPlans.forEach(plan => {
+                const planRef = db.collection('dataPlans').doc();
+                batch.set(planRef, plan);
             });
             
-            // Render plans in each container
-            for (const provider in groupedPlans) {
-                for (const category in groupedPlans[provider]) {
-                    const plans = groupedPlans[provider][category];
-                    
-                    // Render in main tab
-                    const mainContainer = document.getElementById(`${category}-plans`);
-                    if (mainContainer) {
-                        renderPlansInContainer(mainContainer, plans);
-                    }
-                    
-                    // Render in provider-specific tab
-                    const tabContainer = document.getElementById(`${category}-plans-tab`);
-                    if (tabContainer) {
-                        renderPlansInContainer(tabContainer, plans);
-                    }
-                }
-            }
+            await batch.commit();
+        } catch (error) {
+            console.error('Error adding default plans:', error);
+            throw error;
         }
-        
-        // Render Plans in Container
-        function renderPlansInContainer(container, plans) {
+    }
+    
+    // Add Default Plan Types
+    async function addDefaultPlanTypes() {
+        try {
+            const batch = db.batch();
+            
+            defaultPlanTypes.forEach(planType => {
+                const planTypeRef = db.collection('planTypes').doc(planType.id);
+                batch.set(planTypeRef, planType);
+            });
+            
+            await batch.commit();
+        } catch (error) {
+            console.error('Error adding default plan types:', error);
+            throw error;
+        }
+    }
+    
+    // Render Plans
+    function renderPlans(plans) {
+        // Clear existing plans
+        const planContainers = document.querySelectorAll('.plan-grid');
+        planContainers.forEach(container => {
             container.innerHTML = '';
+        });
+        
+        // Group plans by provider and category
+        const groupedPlans = {};
+        
+        plans.forEach(plan => {
+            const provider = plan.provider;
+            const category = plan.category;
             
-            if (plans.length === 0) {
-                container.innerHTML = '<div class="empty-message">No plans found</div>';
-                return;
+            if (!groupedPlans[provider]) {
+                groupedPlans[provider] = {};
             }
             
-            plans.forEach(plan => {
-                const planCard = document.createElement('div');
-                planCard.className = 'plan-card';
-                planCard.setAttribute('data-id', plan.id);
+            if (!groupedPlans[provider][category]) {
+                groupedPlans[provider][category] = [];
+            }
+            
+            groupedPlans[provider][category].push(plan);
+        });
+        
+        // Render plans in each container
+        for (const provider in groupedPlans) {
+            for (const category in groupedPlans[provider]) {
+                const plans = groupedPlans[provider][category];
                 
-                const statusClass = plan.status ? 'plan-status-active' : 'plan-status-inactive';
-                const statusText = plan.status ? 'Active' : 'Inactive';
-                
-                let priceHtml = '';
-                if (plan.provider === 'manual' && plan.originalPrice) {
-                    priceHtml = `
-                        <div class="price-container">
-                            <span class="original-price">₦${plan.originalPrice.toLocaleString()}</span>
-                            <span class="discounted-price">₦${plan.price.toLocaleString()}</span>
-                        </div>
-                    `;
-                } else {
-                    priceHtml = `<div class="plan-price">₦${plan.price.toLocaleString()}</div>`;
+                // Render in main tab
+                const mainContainer = document.getElementById(`${category}-plans`);
+                if (mainContainer) {
+                    renderPlansInContainer(mainContainer, plans);
                 }
                 
-                let badgeHtml = '';
-                if (plan.provider === 'manual' && plan.badge) {
-                    let badgeClass = '';
-                    switch (plan.badge) {
-                        case 'hot':
-                            badgeClass = 'hot';
-                            break;
-                        case 'popular':
-                            badgeClass = 'popular';
-                            break;
-                        case 'value':
-                            badgeClass = 'value';
-                            break;
-                    }
-                    badgeHtml = `<span class="special-badge ${badgeClass}">${plan.badge.toUpperCase()}!</span>`;
+                // Render in provider-specific tab
+                const tabContainer = document.getElementById(`${category}-plans-tab`);
+                if (tabContainer) {
+                    renderPlansInContainer(tabContainer, plans);
                 }
-                
-                planCard.innerHTML = `
-                    <div class="plan-name">${plan.name} ${badgeHtml} <span class="plan-status ${statusClass}">${statusText}</span></div>
-                    ${priceHtml}
-                    <div class="plan-validity">${plan.validity}</div>
-                    <div class="plan-actions">
-                        <button class="action-btn edit" data-id="${plan.id}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete" data-id="${plan.id}">
-                            <i class="fas fa-trash"></i>
-                        </button>
+            }
+        }
+    }
+    
+    // Render Plans in Container
+    function renderPlansInContainer(container, plans) {
+        container.innerHTML = '';
+        
+        if (plans.length === 0) {
+            container.innerHTML = '<div class="empty-message">No plans found</div>';
+            return;
+        }
+        
+        plans.forEach(plan => {
+            const planCard = document.createElement('div');
+            planCard.className = 'plan-card';
+            planCard.setAttribute('data-id', plan.id);
+            
+            const statusClass = plan.status ? 'plan-status-active' : 'plan-status-inactive';
+            const statusText = plan.status ? 'Active' : 'Inactive';
+            
+            let priceHtml = '';
+            if (plan.provider === 'manual' && plan.originalPrice) {
+                priceHtml = `
+                    <div class="price-container">
+                        <span class="original-price">₦${plan.originalPrice.toLocaleString()}</span>
+                        <span class="discounted-price">₦${plan.price.toLocaleString()}</span>
                     </div>
                 `;
-                
-                container.appendChild(planCard);
-                
-                // Add event listeners to edit and delete buttons
-                const editBtn = planCard.querySelector('.edit');
-                const deleteBtn = planCard.querySelector('.delete');
-                
-                editBtn.addEventListener('click', function() {
-                    const planId = this.getAttribute('data-id');
-                    openEditPlanModal(planId);
-                });
-                
-                deleteBtn.addEventListener('click', function() {
-                    const planId = this.getAttribute('data-id');
-                    openDeleteModal(planId);
-                });
+            } else {
+                priceHtml = `<div class="plan-price">₦${plan.price.toLocaleString()}</div>`;
+            }
+            
+            let badgeHtml = '';
+            if (plan.provider === 'manual' && plan.badge) {
+                let badgeClass = '';
+                switch (plan.badge) {
+                    case 'hot':
+                        badgeClass = 'hot';
+                        break;
+                    case 'popular':
+                        badgeClass = 'popular';
+                        break;
+                    case 'value':
+                        badgeClass = 'value';
+                        break;
+                }
+                badgeHtml = `<span class="special-badge ${badgeClass}">${plan.badge.toUpperCase()}!</span>`;
+            }
+            
+            let apiIdHtml = '';
+            if (plan.apiId) {
+                apiIdHtml = `<div style="font-size: 0.8rem; color: var(--text-secondary);">API ID: ${plan.apiId}</div>`;
+            }
+            
+            planCard.innerHTML = `
+                <div class="plan-name">${plan.name} ${badgeHtml} <span class="plan-status ${statusClass}">${statusText}</span></div>
+                ${priceHtml}
+                <div class="plan-validity">${plan.validity}</div>
+                ${apiIdHtml}
+                <div class="plan-actions">
+                    <button class="action-btn edit" data-id="${plan.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="action-btn delete" data-id="${plan.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(planCard);
+            
+            // Add event listeners to edit and delete buttons
+            const editBtn = planCard.querySelector('.edit');
+            const deleteBtn = planCard.querySelector('.delete');
+            
+            editBtn.addEventListener('click', function() {
+                const planId = this.getAttribute('data-id');
+                openEditPlanModal(planId);
             });
+            
+            deleteBtn.addEventListener('click', function() {
+                const planId = this.getAttribute('data-id');
+                openDeleteModal(planId);
+            });
+        });
+    }
+    
+    // Render Plan Types
+    function renderPlanTypes(planTypes) {
+        const planTypesTableBody = document.getElementById('plan-types-table-body');
+        planTypesTableBody.innerHTML = '';
+        
+        if (planTypes.length === 0) {
+            planTypesTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No plan types found</td></tr>';
+            return;
         }
         
-        // Render Requests
-        function renderRequests(requests) {
-            const requestsTableBody = document.getElementById('requests-table-body');
-            requestsTableBody.innerHTML = '';
+        planTypes.forEach(planType => {
+            const row = document.createElement('tr');
             
-            if (requests.length === 0) {
-                requestsTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No data requests found</td></tr>';
+            const statusClass = planType.active ? 'status-active' : 'status-inactive';
+            const statusText = planType.active ? 'Active' : 'Inactive';
+            const buttonText = planType.active ? 'Deactivate' : 'Activate';
+            const buttonClass = planType.active ? 'btn-danger' : 'btn-primary';
+            
+            row.innerHTML = `
+                <td>${planType.id}</td>
+                <td>${planType.name}</td>
+                <td><span class="status ${statusClass}">${statusText}</span></td>
+                <td>
+                    <button class="btn ${buttonClass} btn-sm toggle-plan-type" data-id="${planType.id}" data-active="${planType.active}">
+                        ${buttonText}
+                    </button>
+                </td>
+            `;
+            
+            planTypesTableBody.appendChild(row);
+            
+            // Add event listener to toggle status button
+            const toggleBtn = row.querySelector('.toggle-plan-type');
+            toggleBtn.addEventListener('click', function() {
+                const planTypeId = this.getAttribute('data-id');
+                const currentStatus = this.getAttribute('data-active') === 'true';
+                togglePlanTypeStatus(planTypeId, !currentStatus);
+            });
+        });
+    }
+    
+    // Toggle Plan Type Status
+    async function togglePlanTypeStatus(planTypeId, newStatus) {
+        try {
+            showLoading();
+            
+            await db.collection('planTypes').doc(planTypeId).update({
+                active: newStatus
+            });
+            
+            showToast(`Plan type ${newStatus ? 'activated' : 'deactivated'} successfully`, 'success');
+            
+            // Reload plan types
+            await loadPlanTypes();
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error toggling plan type status:', error);
+            showToast(`Failed to ${newStatus ? 'activate' : 'deactivate'} plan type`, 'error');
+            hideLoading();
+        }
+    }
+    
+    // Render Requests
+    function renderRequests(requests) {
+        const requestsTableBody = document.getElementById('requests-table-body');
+        requestsTableBody.innerHTML = '';
+        
+        if (requests.length === 0) {
+            requestsTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No data requests found</td></tr>';
+            return;
+        }
+        
+        requests.forEach(request => {
+            const row = document.createElement('tr');
+            
+            // Format date
+            const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+            const formattedDate = date.toLocaleString();
+            
+            // Status class
+            let statusClass = 'request-status-pending';
+            if (request.status === 'completed') {
+                statusClass = 'request-status-completed';
+            } else if (request.status === 'rejected') {
+                statusClass = 'request-status-rejected';
+            }
+            
+            row.innerHTML = `
+                <td>${request.id.substring(0, 8)}...</td>
+                <td>${formattedDate}</td>
+                <td>${request.customerName || 'N/A'}</td>
+                <td>${request.phoneNumber || 'N/A'}</td>
+                <td>${request.planName || 'N/A'}</td>
+                <td>₦${(request.amount || 0).toLocaleString()}</td>
+                <td><span class="status ${statusClass}">${request.status || 'pending'}</span></td>
+                <td>
+                    <button class="action-btn process" data-id="${request.id}">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </td>
+            `;
+            
+            requestsTableBody.appendChild(row);
+            
+            // Add event listener to process button
+            const processBtn = row.querySelector('.process');
+            processBtn.addEventListener('click', function() {
+                const requestId = this.getAttribute('data-id');
+                openRequestModal(requestId);
+            });
+        });
+    }
+    
+    // Filter Plans
+    function filterPlans(searchTerm) {
+        const planCards = document.querySelectorAll('.plan-card');
+        
+        planCards.forEach(card => {
+            const planName = card.querySelector('.plan-name').textContent.toLowerCase();
+            
+            if (planName.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    // Open Add Plan Modal
+    function openAddPlanModal(preselectedProvider = '') {
+        planModalTitle.textContent = 'Add Data Plan';
+        planId.value = '';
+        planForm.reset();
+        
+        if (preselectedProvider) {
+            planProvider.value = preselectedProvider;
+            updateCategoryOptions();
+            toggleManualFields();
+        }
+        
+        planModalOverlay.classList.add('active');
+    }
+    
+    // Open Edit Plan Modal
+    async function openEditPlanModal(planId) {
+        try {
+            showLoading();
+            
+            const planDoc = await db.collection('dataPlans').doc(planId).get();
+            
+            if (!planDoc.exists) {
+                showToast('Plan not found', 'error');
+                hideLoading();
                 return;
             }
             
-            requests.forEach(request => {
-                const row = document.createElement('tr');
-                
-                // Format date
-                const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
-                const formattedDate = date.toLocaleString();
-                
-                // Status class
-                let statusClass = 'request-status-pending';
-                if (request.status === 'completed') {
-                    statusClass = 'request-status-completed';
-                } else if (request.status === 'rejected') {
-                    statusClass = 'request-status-rejected';
-                }
-                
-                row.innerHTML = `
-                    <td>${request.id.substring(0, 8)}...</td>
-                    <td>${formattedDate}</td>
-                    <td>${request.customerName || 'N/A'}</td>
-                    <td>${request.phoneNumber || 'N/A'}</td>
-                    <td>${request.planName || 'N/A'}</td>
-                    <td>₦${(request.amount || 0).toLocaleString()}</td>
-                    <td><span class="status ${statusClass}">${request.status || 'pending'}</span></td>
-                    <td>
-                        <button class="action-btn process" data-id="${request.id}">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                    </td>
-                `;
-                
-                requestsTableBody.appendChild(row);
-                
-                // Add event listener to process button
-                const processBtn = row.querySelector('.process');
-                processBtn.addEventListener('click', function() {
-                    const requestId = this.getAttribute('data-id');
-                    openRequestModal(requestId);
-                });
-            });
-        }
-        
-        // Filter Plans
-        function filterPlans(searchTerm) {
-            const planCards = document.querySelectorAll('.plan-card');
+            const plan = planDoc.data();
             
-            planCards.forEach(card => {
-                const planName = card.querySelector('.plan-name').textContent.toLowerCase();
-                
-                if (planName.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-        
-        // Open Add Plan Modal
-        function openAddPlanModal(preselectedProvider = '') {
-            planModalTitle.textContent = 'Add Data Plan';
-            planId.value = '';
-            planForm.reset();
+            planModalTitle.textContent = 'Edit Data Plan';
+            document.getElementById('plan-id').value = planId;
+            planProvider.value = plan.provider;
+            updateCategoryOptions();
+            toggleManualFields();
+            planCategory.value = plan.category;
+            planName.value = plan.name;
+            planData.value = plan.data;
             
-            if (preselectedProvider) {
-                planProvider.value = preselectedProvider;
-                updateCategoryOptions();
-                toggleManualFields();
+            if (plan.apiId) {
+                planApiId.value = plan.apiId;
             }
+            
+            if (plan.provider === 'manual' && plan.originalPrice) {
+                planOriginalPrice.value = plan.originalPrice;
+            }
+            
+            planPrice.value = plan.price;
+            planValidity.value = plan.validity;
+            
+            if (plan.provider === 'manual' && plan.badge) {
+                planBadge.value = plan.badge;
+            }
+            
+            planStatus.checked = plan.status;
             
             planModalOverlay.classList.add('active');
-        }
-        
-        // Open Edit Plan Modal
-        async function openEditPlanModal(planId) {
-            try {
-                showLoading();
-                
-                const planDoc = await db.collection('dataPlans').doc(planId).get();
-                
-                if (!planDoc.exists) {
-                    showToast('Plan not found', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                const plan = planDoc.data();
-                
-                planModalTitle.textContent = 'Edit Data Plan';
-                document.getElementById('plan-id').value = planId;
-                planProvider.value = plan.provider;
-                updateCategoryOptions();
-                toggleManualFields();
-                planCategory.value = plan.category;
-                planName.value = plan.name;
-                planData.value = plan.data;
-                
-                if (plan.provider === 'manual' && plan.originalPrice) {
-                    planOriginalPrice.value = plan.originalPrice;
-                }
-                
-                planPrice.value = plan.price;
-                planValidity.value = plan.validity;
-                
-                if (plan.provider === 'manual' && plan.badge) {
-                    planBadge.value = plan.badge;
-                }
-                
-                planStatus.checked = plan.status;
-                
-                planModalOverlay.classList.add('active');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error opening edit plan modal:', error);
-                showToast('Failed to load plan details', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Open Request Modal
-        async function openRequestModal(requestId) {
-            try {
-                showLoading();
-                
-                const requestDoc = await db.collection('dataRequests').doc(requestId).get();
-                
-                if (!requestDoc.exists) {
-                    showToast('Request not found', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                const request = requestDoc.data();
-                
-                // Format date
-                const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
-                const formattedDate = date.toLocaleString();
-                
-                // Populate request details
-                requestDetails.innerHTML = `
-                    <div class="request-detail-item">
-                        <strong>Request ID:</strong> ${requestId}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Date:</strong> ${formattedDate}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Customer:</strong> ${request.customerName || 'N/A'}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Phone Number:</strong> ${request.phoneNumber || 'N/A'}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Plan:</strong> ${request.planName || 'N/A'}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Amount:</strong> ₦${(request.amount || 0).toLocaleString()}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Current Status:</strong> ${request.status || 'pending'}
-                    </div>
-                `;
-                
-                // Set current status
-                requestStatus.value = request.status || 'pending';
-                
-                // Set notes
-                requestNotes.value = request.adminNotes || '';
-                
-                // Set request ID
-                document.getElementById('request-id').value = requestId;
-                
-                requestModalOverlay.classList.add('active');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error opening request modal:', error);
-                showToast('Failed to load request details', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Close Plan Modal
-        function closePlanModal() {
-            planModalOverlay.classList.remove('active');
-        }
-        
-        // Close Request Modal
-        function closeRequestModal() {
-            requestModalOverlay.classList.remove('active');
-        }
-        
-        // Update Category Options
-        function updateCategoryOptions() {
-            const provider = planProvider.value;
-            planCategory.innerHTML = '<option value="">Select Category</option>';
             
-            if (!provider) return;
+            hideLoading();
+        } catch (error) {
+            console.error('Error opening edit plan modal:', error);
+            showToast('Failed to load plan details', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Open Request Modal
+    async function openRequestModal(requestId) {
+        try {
+            showLoading();
             
-            const categories = {
-                mtn: [
-                    { value: 'mtn-sme', label: 'MTN SME' },
-                    { value: 'mtn-cooperate', label: 'MTN Cooperate Gifting' },
-                    { value: 'mtn-gifting', label: 'MTN Gifting' }
-                ],
-                manual: [
-                    { value: 'manual-1day', label: '1-Day Offers' },
-                    { value: 'manual-7day', label: '7-Day Offers' },
-                    { value: 'manual-14day', label: '14-Day Offers' },
-                    { value: 'manual-30day', label: '30-Day Offers' }
-                ],
-                airtel: [
-                    { value: 'airtel-sme', label: 'Airtel SME' },
-                    { value: 'airtel-cooperate', label: 'Airtel Cooperate Gifting' },
-                    { value: 'airtel-gifting', label: 'Airtel Gifting' }
-                ],
-                glo: [
-                    { value: 'glo-cooperate', label: 'Glo Cooperate Gifting' },
-                    { value: 'glo-gifting', label: 'Glo Gifting' }
-                ],
-                '9mobile': [
-                    { value: '9mobile-cooperate', label: '9Mobile Cooperate Gifting' },
-                    { value: '9mobile-gifting', label: '9Mobile Gifting' }
-                ]
+            const requestDoc = await db.collection('dataRequests').doc(requestId).get();
+            
+            if (!requestDoc.exists) {
+                showToast('Request not found', 'error');
+                hideLoading();
+                return;
+            }
+            
+            const request = requestDoc.data();
+            
+            // Format date
+            const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+            const formattedDate = date.toLocaleString();
+            
+            // Populate request details
+            requestDetails.innerHTML = `
+                <div class="request-detail-item">
+                    <strong>Request ID:</strong> ${requestId}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Date:</strong> ${formattedDate}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Customer:</strong> ${request.customerName || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Phone Number:</strong> ${request.phoneNumber || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Plan:</strong> ${request.planName || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Amount:</strong> ₦${(request.amount || 0).toLocaleString()}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Current Status:</strong> ${request.status || 'pending'}
+                </div>
+            `;
+            
+            // Set current status
+            requestStatus.value = request.status || 'pending';
+            
+            // Set notes
+            requestNotes.value = request.adminNotes || '';
+            
+            // Set request ID
+            document.getElementById('request-id').value = requestId;
+            
+            requestModalOverlay.classList.add('active');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error opening request modal:', error);
+            showToast('Failed to load request details', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Close Plan Modal
+    function closePlanModal() {
+        planModalOverlay.classList.remove('active');
+    }
+    
+    // Close Import Modal
+    function closeImportModal() {
+        importModalOverlay.classList.remove('active');
+    }
+    
+    // Close Delete Modal
+    function closeDeleteModal() {
+        deleteModalOverlay.classList.remove('active');
+    }
+    
+    // Close Request Modal
+    function closeRequestModal() {
+        requestModalOverlay.classList.remove('active');
+    }
+    
+    // Update Category Options
+    function updateCategoryOptions() {
+        const provider = planProvider.value;
+        planCategory.innerHTML = '<option value="">Select Category</option>';
+        
+        if (!provider) return;
+        
+        const categories = {
+            mtn: [
+                { value: 'mtn-sme', label: 'MTN SME' },
+                { value: 'mtn-cooperate', label: 'MTN Cooperate Gifting' },
+                { value: 'mtn-gifting', label: 'MTN Gifting' }
+            ],
+            manual: [
+                { value: 'manual-1day', label: '1-Day Offers' },
+                { value: 'manual-7day', label: '7-Day Offers' },
+                { value: 'manual-14day', label: '14-Day Offers' },
+                { value: 'manual-30day', label: '30-Day Offers' }
+            ],
+            airtel: [
+                { value: 'airtel-sme', label: 'Airtel SME' },
+                { value: 'airtel-cooperate', label: 'Airtel Cooperate Gifting' },
+                { value: 'airtel-gifting', label: 'Airtel Gifting' }
+            ],
+            glo: [
+                { value: 'glo-cooperate', label: 'Glo Cooperate Gifting' },
+                { value: 'glo-gifting', label: 'Glo Gifting' }
+            ],
+            '9mobile': [
+                { value: '9mobile-cooperate', label: '9Mobile Cooperate Gifting' },
+                { value: '9mobile-gifting', label: '9Mobile Gifting' }
+            ]
+        };
+        
+        categories[provider].forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.value;
+            option.textContent = category.label;
+            planCategory.appendChild(option);
+        });
+    }
+    
+    // Save Plan
+    async function savePlan() {
+        try {
+            // Validate form
+            if (!planForm.checkValidity()) {
+                planForm.reportValidity();
+                return;
+            }
+            
+            showLoading();
+            
+            const planData = {
+                provider: planProvider.value,
+                category: planCategory.value,
+                name: planName.value,
+                data: planData.value,
+                price: Number(planPrice.value),
+                validity: planValidity.value,
+                status: planStatus.checked
             };
             
-            categories[provider].forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.value;
-                option.textContent = category.label;
-                planCategory.appendChild(option);
+            // Add API ID if provided
+            if (planApiId.value) {
+                planData.apiId = Number(planApiId.value);
+            }
+            
+            // Add manual data specific fields
+            if (planProvider.value === 'manual') {
+                if (planOriginalPrice.value) {
+                    planData.originalPrice = Number(planOriginalPrice.value);
+                }
+                
+                if (planBadge.value) {
+                    planData.badge = planBadge.value;
+                }
+            }
+            
+            const planIdValue = document.getElementById('plan-id').value;
+            
+            if (planIdValue) {
+                // Update existing plan
+                await db.collection('dataPlans').doc(planIdValue).update(planData);
+                showToast('Plan updated successfully', 'success');
+            } else {
+                // Add new plan
+                await db.collection('dataPlans').add(planData);
+                showToast('Plan added successfully', 'success');
+            }
+            
+            // Reload plans
+            await loadDataPlans();
+            
+            // Close modal
+            closePlanModal();
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error saving plan:', error);
+            showToast('Failed to save plan', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Update Request
+    async function updateRequest() {
+        try {
+            showLoading();
+            
+            const requestIdValue = document.getElementById('request-id').value;
+            const status = requestStatus.value;
+            const notes = requestNotes.value;
+            
+            // Update request
+            await db.collection('dataRequests').doc(requestIdValue).update({
+                status: status,
+                adminNotes: notes,
+                processedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+            
+            // Reload requests
+            await loadDataRequests();
+            
+            // Close modal
+            closeRequestModal();
+            
+            showToast('Request updated successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error updating request:', error);
+            showToast('Failed to update request', 'error');
+            hideLoading();
         }
-        
-        // Save Plan
-        async function savePlan() {
+    }
+    
+    // Open Import Modal
+    function openImportModal() {
+        importData.value = '';
+        importReplace.checked = false;
+        importModalOverlay.classList.add('active');
+    }
+    
+    // Import Plans
+    async function importPlans() {
+        try {
+            // Validate JSON
+            let plans;
             try {
-                // Validate form
-                if (!planForm.checkValidity()) {
-                    planForm.reportValidity();
-                    return;
+                plans = JSON.parse(importData.value);
+                
+                if (!Array.isArray(plans)) {
+                    throw new Error('Invalid format. Expected an array of plans.');
                 }
-                
-                showLoading();
-                
-                const planData = {
-                    provider: planProvider.value,
-                    category: planCategory.value,
-                    name: planName.value,
-                    data: planData.value,
-                    price: Number(planPrice.value),
-                    validity: planValidity.value,
-                    status: planStatus.checked
-                };
-                
-                // Add manual data specific fields
-                if (planProvider.value === 'manual') {
-                    if (planOriginalPrice.value) {
-                        planData.originalPrice = Number(planOriginalPrice.value);
-                    }
-                    
-                    if (planBadge.value) {
-                        planData.badge = planBadge.value;
-                    }
-                }
-                
-                const planIdValue = document.getElementById('plan-id').value;
-                
-                if (planIdValue) {
-                    // Update existing plan
-                    await db.collection('dataPlans').doc(planIdValue).update(planData);
-                    showToast('Plan updated successfully', 'success');
-                } else {
-                    // Add new plan
-                    await db.collection('dataPlans').add(planData);
-                    showToast('Plan added successfully', 'success');
-                }
-                
-                // Reload plans
-                await loadDataPlans();
-                
-                // Close modal
-                closePlanModal();
-                
-                hideLoading();
             } catch (error) {
-                console.error('Error saving plan:', error);
-                showToast('Failed to save plan', 'error');
-                hideLoading();
+                showToast('Invalid JSON format: ' + error.message, 'error');
+                return;
             }
-        }
-        
-        // Update Request
-        async function updateRequest() {
-            try {
-                showLoading();
-                
-                const requestIdValue = document.getElementById('request-id').value;
-                const status = requestStatus.value;
-                const notes = requestNotes.value;
-                
-                // Update request
-                await db.collection('dataRequests').doc(requestIdValue).update({
-                    status: status,
-                    adminNotes: notes,
-                    processedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // Reload requests
-                await loadDataRequests();
-                
-                // Close modal
-                closeRequestModal();
-                
-                showToast('Request updated successfully', 'success');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error updating request:', error);
-                showToast('Failed to update request', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Open Import Modal
-        function openImportModal() {
-            importData.value = '';
-            importReplace.checked = false;
-            importModalOverlay.classList.add('active');
-        }
-        
-        // Close Import Modal
-        function closeImportModal() {
-            importModalOverlay.classList.remove('active');
-        }
-        
-        // Import Plans
-        async function importPlans() {
-            try {
-                // Validate JSON
-                let plans;
-                try {
-                    plans = JSON.parse(importData.value);
-                    
-                    if (!Array.isArray(plans)) {
-                        throw new Error('Invalid format. Expected an array of plans.');
-                    }
-                } catch (error) {
-                    showToast('Invalid JSON format: ' + error.message, 'error');
-                    return;
-                }
-                
-                showLoading();
-                
-                // Check if replacing existing plans
-                if (importReplace.checked) {
-                    // Delete all existing plans
-                    await deleteAllPlans(false);
-                }
-                
-                // Add new plans
-                const batch = db.batch();
-                
-                plans.forEach(plan => {
-                    const planRef = db.collection('dataPlans').doc();
-                    const planData = {
-                        provider: plan.provider,
-                        category: plan.category,
-                        name: plan.name,
-                        data: plan.data,
-                        price: Number(plan.price),
-                        validity: plan.validity,
-                        status: Boolean(plan.status)
-                    };
-                    
-                    // Add manual data specific fields
-                    if (plan.provider === 'manual') {
-                        if (plan.originalPrice) {
-                            planData.originalPrice = Number(plan.originalPrice);
-                        }
-                        
-                        if (plan.badge) {
-                            planData.badge = plan.badge;
-                        }
-                    }
-                    
-                    batch.set(planRef, planData);
-                });
-                
-                await batch.commit();
-                
-                // Reload plans
-                await loadDataPlans();
-                
-                // Close modal
-                closeImportModal();
-                
-                showToast(`${plans.length} plans imported successfully`, 'success');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error importing plans:', error);
-                showToast('Failed to import plans', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Export Plans
-        async function exportPlans() {
-            try {
-                showLoading();
-                
-                const plansSnapshot = await db.collection('dataPlans').get();
-                const plans = [];
-                
-                plansSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    const planData = {
-                        provider: data.provider,
-                        category: data.category,
-                        name: data.name,
-                        data: data.data,
-                        price: data.price,
-                        validity: data.validity,
-                        status: data.status
-                    };
-                    
-                    // Add manual data specific fields
-                    if (data.provider === 'manual') {
-                        if (data.originalPrice) {
-                            planData.originalPrice = data.originalPrice;
-                        }
-                        
-                        if (data.badge) {
-                            planData.badge = data.badge;
-                        }
-                    }
-                    
-                    plans.push(planData);
-                });
-                
-                // Create JSON file
-                const jsonData = JSON.stringify(plans, null, 2);
-                const blob = new Blob([jsonData], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                
-                // Create download link
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'veltrawave_data_plans.json';
-                document.body.appendChild(a);
-                a.click();
-                
-                // Clean up
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 100);
-                
-                showToast('Plans exported successfully', 'success');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error exporting plans:', error);
-                showToast('Failed to export plans', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Open Delete Modal
-        function openDeleteModal(planId) {
-            document.getElementById('delete-plan-id').value = planId;
-            deleteModalOverlay.classList.add('active');
-        }
-        
-        // Close Delete Modal
-        function closeDeleteModal() {
-            deleteModalOverlay.classList.remove('active');
-        }
-        
-        // Confirm Delete Plan
-        async function confirmDeletePlan() {
-            try {
-                showLoading();
-                
-                const planId = document.getElementById('delete-plan-id').value;
-                
-                await db.collection('dataPlans').doc(planId).delete();
-                
-                // Reload plans
-                await loadDataPlans();
-                
-                // Close modal
-                closeDeleteModal();
-                
-                showToast('Plan deleted successfully', 'success');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error deleting plan:', error);
-                showToast('Failed to delete plan', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Sync Plans
-        async function syncPlans() {
-            try {
-                if (!confirm('This will reset all plans to their default values. Continue?')) {
-                    return;
-                }
-                
-                showLoading();
-                
+            
+            showLoading();
+            
+            // Check if replacing existing plans
+            if (importReplace.checked) {
                 // Delete all existing plans
                 await deleteAllPlans(false);
-                
-                // Add default plans
-                await addDefaultPlans();
-                
-                // Reload plans
-                await loadDataPlans();
-                
-                showToast('Plans synced successfully', 'success');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error syncing plans:', error);
-                showToast('Failed to sync plans', 'error');
-                hideLoading();
             }
-        }
-        
-        // Update All Plan Status
-        async function updateAllPlanStatus(status) {
-            try {
-                const action = status ? 'activate' : 'deactivate';
+            
+            // Add new plans
+            const batch = db.batch();
+            
+            plans.forEach(plan => {
+                const planRef = db.collection('dataPlans').doc();
+                const planData = {
+                    provider: plan.provider,
+                    category: plan.category,
+                    name: plan.name,
+                    data: plan.data,
+                    price: Number(plan.price),
+                    validity: plan.validity,
+                    status: Boolean(plan.status)
+                };
                 
-                if (!confirm(`Are you sure you want to ${action} all plans?`)) {
-                    return;
+                // Add API ID if provided
+                if (plan.apiId) {
+                    planData.apiId = Number(plan.apiId);
                 }
                 
+                // Add manual data specific fields
+                if (plan.provider === 'manual') {
+                    if (plan.originalPrice) {
+                        planData.originalPrice = Number(plan.originalPrice);
+                    }
+                    
+                    if (plan.badge) {
+                        planData.badge = plan.badge;
+                    }
+                }
+                
+                batch.set(planRef, planData);
+            });
+            
+            await batch.commit();
+            
+            // Reload plans
+            await loadDataPlans();
+            
+            // Close modal
+            closeImportModal();
+            
+            showToast(`${plans.length} plans imported successfully`, 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error importing plans:', error);
+            showToast('Failed to import plans', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Export Plans
+    async function exportPlans() {
+        try {
+            showLoading();
+            
+            const plansSnapshot = await db.collection('dataPlans').get();
+            const plans = [];
+            
+            plansSnapshot.forEach(doc => {
+                const data = doc.data();
+                const planData = {
+                    provider: data.provider,
+                    category: data.category,
+                    name: data.name,
+                    data: data.data,
+                    price: data.price,
+                    validity: data.validity,
+                    status: data.status
+                };
+                
+                // Add API ID if available
+                if (data.apiId) {
+                    planData.apiId = data.apiId;
+                }
+                
+                // Add manual data specific fields
+                if (data.provider === 'manual') {
+                    if (data.originalPrice) {
+                        planData.originalPrice = data.originalPrice;
+                    }
+                    
+                    if (data.badge) {
+                        planData.badge = data.badge;
+                    }
+                }
+                
+                plans.push(planData);
+            });
+            
+            // Create JSON file
+            const jsonData = JSON.stringify(plans, null, 2);
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            // Create download link
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'veltrawave_data_plans.json';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showToast('Plans exported successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error exporting plans:', error);
+            showToast('Failed to export plans', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Open Delete Modal
+    function openDeleteModal(planId) {
+        document.getElementById('delete-plan-id').value = planId;
+        deleteModalOverlay.classList.add('active');
+    }
+    
+    // Confirm Delete Plan
+    async function confirmDeletePlan() {
+        try {
+            showLoading();
+            
+            const planId = document.getElementById('delete-plan-id').value;
+            
+            await db.collection('dataPlans').doc(planId).delete();
+            
+            // Reload plans
+            await loadDataPlans();
+            
+            // Close modal
+            closeDeleteModal();
+            
+            showToast('Plan deleted successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error deleting plan:', error);
+            showToast('Failed to delete plan', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Sync Plans
+    async function syncPlans() {
+        try {
+            if (!confirm('This will reset all plans to their default values. Continue?')) {
+                return;
+            }
+            
+            showLoading();
+            
+            // Delete all existing plans
+            await deleteAllPlans(false);
+            
+            // Add default plans
+            await addDefaultPlans();
+            
+            // Reload plans
+            await loadDataPlans();
+            
+            showToast('Plans synced successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error syncing plans:', error);
+            showToast('Failed to sync plans', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Update All Plan Status
+    async function updateAllPlanStatus(status) {
+        try {
+            const action = status ? 'activate' : 'deactivate';
+            
+            if (!confirm(`Are you sure you want to ${action} all plans?`)) {
+                return;
+            }
+            
+            showLoading();
+            
+            const plansSnapshot = await db.collection('dataPlans').get();
+            const batch = db.batch();
+            
+            plansSnapshot.forEach(doc => {
+                batch.update(doc.ref, { status });
+            });
+            
+            await batch.commit();
+            
+            // Reload plans
+            await loadDataPlans();
+            
+            showToast(`All plans ${action}d successfully`, 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error(`Error ${status ? 'activating' : 'deactivating'} plans:`, error);
+            showToast(`Failed to ${status ? 'activate' : 'deactivate'} plans`, 'error');
+            hideLoading();
+        }
+    }
+    
+    // Delete All Plans
+    async function deleteAllPlans(showConfirmation = true) {
+        try {
+            if (showConfirmation && !confirm('Are you sure you want to delete ALL plans? This action cannot be undone.')) {
+                return;
+            }
+            
+            if (showConfirmation) {
                 showLoading();
-                
-                const plansSnapshot = await db.collection('dataPlans').get();
-                const batch = db.batch();
-                
-                plansSnapshot.forEach(doc => {
-                    batch.update(doc.ref, { status });
-                });
-                
-                await batch.commit();
-                
+            }
+            
+            const plansSnapshot = await db.collection('dataPlans').get();
+            const batch = db.batch();
+            
+            plansSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            
+            await batch.commit();
+            
+            if (showConfirmation) {
                 // Reload plans
                 await loadDataPlans();
                 
-                showToast(`All plans ${action}d successfully`, 'success');
+                showToast('All plans deleted successfully', 'success');
                 
                 hideLoading();
-            } catch (error) {
-                console.error(`Error ${status ? 'activating' : 'deactivating'} plans:`, error);
-                showToast(`Failed to ${status ? 'activate' : 'deactivate'} plans`, 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting all plans:', error);
+            
+            if (showConfirmation) {
+                showToast('Failed to delete all plans', 'error');
                 hideLoading();
             }
+            
+            throw error;
+        }
+    }
+    
+    // Logout
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            isSigningOut = true;
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+                showToast('Failed to logout', 'error');
+            }).finally(() => {
+                isSigningOut = false;
+            });
+        }
+    }
+    
+    // Show Toast Notification
+    function showToast(message, type = 'info') {
+        const toastContainer = document.querySelector('.toast-container');
+        
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        
+        let icon = '';
+        switch (type) {
+            case 'success':
+                icon = '<i class="fas fa-check-circle"></i>';
+                break;
+            case 'error':
+                icon = '<i class="fas fa-exclamation-circle"></i>';
+                break;
+            case 'warning':
+                icon = '<i class="fas fa-exclamation-triangle"></i>';
+                break;
+            default:
+                icon = '<i class="fas fa-info-circle"></i>';
         }
         
-        // Delete All Plans
-        async function deleteAllPlans(showConfirmation = true) {
-            try {
-                if (showConfirmation && !confirm('Are you sure you want to delete ALL plans? This action cannot be undone.')) {
-                    return;
-                }
-                
-                if (showConfirmation) {
-                    showLoading();
-                }
-                
-                const plansSnapshot = await db.collection('dataPlans').get();
-                const batch = db.batch();
-                
-                plansSnapshot.forEach(doc => {
-                    batch.delete(doc.ref);
-                });
-                
-                await batch.commit();
-                
-                if (showConfirmation) {
-                    // Reload plans
-                    await loadDataPlans();
-                    
-                    showToast('All plans deleted successfully', 'success');
-                    
-                    hideLoading();
-                }
-            } catch (error) {
-                console.error('Error deleting all plans:', error);
-                
-                if (showConfirmation) {
-                    showToast('Failed to delete all plans', 'error');
-                    hideLoading();
-                }
-                
-                throw error;
-            }
-        }
+        toast.innerHTML = `${icon} <span>${message}</span>`;
+        toastContainer.appendChild(toast);
         
-        // Logout
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                isSigningOut = true;
-                auth.signOut().then(() => {
-                    window.location.href = 'login.html';
-                }).catch((error) => {
-                    console.error('Error signing out:', error);
-                    showToast('Failed to logout', 'error');
-                }).finally(() => {
-                    isSigningOut = false;
-                });
-            }
-        }
+        // Show toast
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
         
-        // Show Toast Notification
-        function showToast(message, type = 'info') {
-            const toastContainer = document.querySelector('.toast-container');
+        // Hide toast after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
             
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            
-            let icon = '';
-            switch (type) {
-                case 'success':
-                    icon = '<i class="fas fa-check-circle"></i>';
-                    break;
-                case 'error':
-                    icon = '<i class="fas fa-exclamation-circle"></i>';
-                    break;
-                case 'warning':
-                    icon = '<i class="fas fa-exclamation-triangle"></i>';
-                    break;
-                default:
-                    icon = '<i class="fas fa-info-circle"></i>';
-            }
-            
-            toast.innerHTML = `${icon} <span>${message}</span>`;
-            toastContainer.appendChild(toast);
-            
-            // Show toast
+            // Remove toast after animation
             setTimeout(() => {
-                toast.classList.add('show');
-            }, 10);
-            
-            // Hide toast after 3 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-                
-                // Remove toast after animation
-                setTimeout(() => {
-                    toastContainer.removeChild(toast);
-                }, 300);
-            }, 3000);
-        }
-        
-        // Show Loading
-        function showLoading() {
-            const loadingOverlay = document.querySelector('.loading-overlay');
-            loadingOverlay.style.display = 'flex';
-        }
-        
-        // Hide Loading
-        function hideLoading() {
-            const loadingOverlay = document.querySelector('.loading-overlay');
-            loadingOverlay.style.display = 'none';
-        }
-    </script>
-    <script src="js/plan-type-manager.js"></script>
-    <script src="js/data-plan-filter.js"></script>
-    <script src="admin-updates.js"></script>
-    <script src="dataA-updates.js"></script>
-</body>
-</html>
+                toastContainer.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+    
+    // Show Loading
+    function showLoading() {
+        const loadingOverlay = document.querySelector('.loading-overlay');
+        loadingOverlay.style.display = 'flex';
+    }
+    
+    // Hide Loading
+    function hideLoading() {
+        const loadingOverlay = document.querySelector('.loading-overlay');
+        loadingOverlay.style.display = 'none';
+    }
+</script>
