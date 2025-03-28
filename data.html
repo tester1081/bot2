@@ -1534,7 +1534,7 @@
     
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
-    <script src="fix-data-purchase.js"></script>
+    
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -2592,7 +2592,7 @@ function processAutomaticRequest(requestData, amount) {
             
             // Create payload for API
             const payload = {
-                network: parseInt(requestData.networkId),
+                network: parseInt(requestData.networkId) || 1, // Ensure it's a valid number
                 phone: requestData.phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
                 data_plan: dataPlanId,
                 bypass: false,
@@ -2601,92 +2601,8 @@ function processAutomaticRequest(requestData, amount) {
             
             console.log("API Payload:", payload);
             
-            // Make API call through our proxy
-            return fetch('/api/data-proxy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => {
-                console.log("API Response status:", response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("API Response data:", data);
-                
-                // Check if the API call was successful
-                if (data.status === 'success') {
-                    // Deduct amount from user's balance
-                    const newBalance = currentUser.balance - amount;
-                    
-                    // Update user's balance in Firestore
-                    return db.collection('users').doc(currentUser.uid).update({
-                        balance: newBalance,
-                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                    })
-                    .then(() => {
-                        // Update local user object
-                        currentUser.balance = newBalance;
-                        
-                        // Update balance display
-                        updateBalanceDisplay();
-                        
-                        // Update request status in Firestore
-                        return db.collection('dataRequests').doc(docRef.id).update({
-                            status: 'completed',
-                            apiResponse: data,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    })
-                    .then(() => {
-                        // Close modal
-                        confirmationModal.classList.remove('show');
-                        
-                        // Show success toast
-                        showToast('success', 'Purchase Successful', 'Your data purchase has been processed successfully');
-                        
-                        // Reset form
-                        document.getElementById('data-form').reset();
-                        document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
-                        
-                        // Refresh requests
-                        fetchUserRequests();
-                    });
-                } else {
-                    // API call failed
-                    throw new Error(data.message || 'API call failed');
-                }
-            })
-            .catch(error => {
-                console.error("API Error:", error);
-                
-                // Update request status in Firestore
-                return db.collection('dataRequests').doc(docRef.id).update({
-                    status: 'failed',
-                    error: error.message,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                })
-                .then(() => {
-                    // Close modal
-                    confirmationModal.classList.remove('show');
-                    
-                    // Check if error is due to insufficient funds or admin-related
-                    if (error.message && (
-                        error.message.toLowerCase().includes('insufficient') || 
-                        error.message.toLowerCase().includes('balance') ||
-                        error.message.toLowerCase().includes('wallet')
-                    )) {
-                        showToast('error', 'Error 404', 'Contact admin for assistance');
-                    } else {
-                        showToast('error', 'Failed', 'Failed to process your data purchase. Please try again.');
-                    }
-                });
-            });
+            // Make direct API call
+            makeDirectApiCall(payload, docRef.id, amount);
         })
         .catch(error => {
             console.error("Error saving automatic request:", error);
@@ -2700,11 +2616,111 @@ function processAutomaticRequest(requestData, amount) {
             
             // Show error toast
             showToast('error', 'Failed', 'Failed to process your request. Please try again.');
+        });
+}
+
+// Make direct API call to N3tdata
+function makeDirectApiCall(payload, requestId, amount) {
+    // Show processing toast
+    showToast('info', 'Processing', 'Processing your data purchase...');
+    
+    // Create the request options
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Token 3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d'
+        },
+        body: JSON.stringify(payload)
+    };
+    
+    // Make the fetch request directly to the API
+    fetch('https://n3tdata.com/api/data', options)
+        .then(response => {
+            console.log("Direct API Response status:", response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
         })
-        .finally(() => {
-            // Reset confirm button
-            document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-            document.getElementById('confirm-purchase').disabled = false;
+        .then(data => {
+            console.log("Direct API Response data:", data);
+            
+            // Check if the API call was successful
+            if (data.status === 'success') {
+                // Deduct amount from user's balance
+                const newBalance = currentUser.balance - amount;
+                
+                // Update user's balance in Firestore
+                return db.collection('users').doc(currentUser.uid).update({
+                    balance: newBalance,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    // Update local user object
+                    currentUser.balance = newBalance;
+                    
+                    // Update balance display
+                    updateBalanceDisplay();
+                    
+                    // Update request status in Firestore
+                    return db.collection('dataRequests').doc(requestId).update({
+                        status: 'completed',
+                        apiResponse: data,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    // Close modal
+                    confirmationModal.classList.remove('show');
+                    
+                    // Show success toast
+                    showToast('success', 'Purchase Successful', 'Your data purchase has been processed successfully');
+                    
+                    // Reset form
+                    document.getElementById('data-form').reset();
+                    document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
+                    
+                    // Refresh requests
+                    fetchUserRequests();
+                    
+                    // Reset confirm button
+                    document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+                    document.getElementById('confirm-purchase').disabled = false;
+                });
+            } else {
+                // API call failed
+                throw new Error(data.message || 'API call failed');
+            }
+        })
+        .catch(error => {
+            console.error("Direct API Error:", error);
+            
+            // Update request status in Firestore
+            db.collection('dataRequests').doc(requestId).update({
+                status: 'failed',
+                error: error.message,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                // Close modal
+                confirmationModal.classList.remove('show');
+                
+                // Check if error is due to insufficient funds or admin-related
+                if (error.message && (
+                    error.message.toLowerCase().includes('insufficient') || 
+                    error.message.toLowerCase().includes('balance') ||
+                    error.message.toLowerCase().includes('wallet')
+                )) {
+                    showToast('error', 'Error 404', 'Contact admin for assistance');
+                } else {
+                    showToast('error', 'Failed', 'Failed to process your data purchase. Please try again.');
+                }
+                
+                // Reset confirm button
+                document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+                document.getElementById('confirm-purchase').disabled = false;
+            });
         });
 }
         // Update Data Plan Dropdown
