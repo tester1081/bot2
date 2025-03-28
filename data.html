@@ -977,11 +977,7 @@
         }
         
         .modal-btn.confirm {
-            background: linear-gradient(135deg,  var(--primary), var(--primary-dark));
-            color: white;
-        }
-        
-        .modal  var(--primary), var(--primary-dark));
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
         }
         
@@ -1487,108 +1483,108 @@
         const confirmAmount = document.getElementById('confirm-amount');
         
         // Check Authentication State
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the app without requiring authentication
-    initApp();
-    
-    // Get Telegram user ID if available
-    let telegramUserId = null;
-    
-    if (window.Telegram && window.Telegram.WebApp) {
-        const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-        if (tgUser) {
-            telegramUserId = tgUser.id.toString();
-            console.log("Telegram user ID detected:", telegramUserId);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the app without requiring authentication
+            initApp();
             
-            // Load user data directly using Telegram ID
-            loadUserDataByTelegramId(telegramUserId);
-        } else {
-            console.log("No Telegram user data available");
-            // For testing only - use a default user ID
-            telegramUserId = '5966603094';
-            console.log("Using test Telegram ID:", telegramUserId);
-            loadUserDataByTelegramId(telegramUserId);
-        }
-    } else {
-        console.log("Not in Telegram WebApp - using test mode");
-        // For testing only - use a default user ID
-        telegramUserId = '5966603094';
-        console.log("Using test Telegram ID:", telegramUserId);
-        loadUserDataByTelegramId(telegramUserId);
-    }
-});
-
-// Load user data by Telegram ID
-function loadUserDataByTelegramId(telegramId) {
-    console.log("Loading user data for Telegram ID:", telegramId);
-    
-    db.collection("users").where("user_id", "==", telegramId).get()
-        .then((querySnapshot) => {
-            if (!querySnapshot.empty) {
-                // User found
-                const userDoc = querySnapshot.docs[0];
-                currentUser = {
-                    uid: userDoc.id,
-                    telegramId: telegramId,
-                    ...userDoc.data()
-                };
-                console.log("User data loaded:", currentUser);
-                
-                // Show user-specific content
-                document.querySelectorAll('.user-only').forEach(el => {
-                    el.style.display = 'block';
-                });
-                
-                // Fetch user-specific data
-                fetchUserRequests();
-                
-                // Show welcome toast with balance
-                if (currentUser.balance !== undefined) {
-                    showToast('success', 'Welcome', `Your balance: ₦${currentUser.balance.toLocaleString()}`);
+            // Get Telegram user ID if available
+            let telegramUserId = null;
+            
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+                if (tgUser) {
+                    telegramUserId = tgUser.id.toString();
+                    console.log("Telegram user ID detected:", telegramUserId);
+                    
+                    // Load user data directly using Telegram ID
+                    loadUserDataByTelegramId(telegramUserId);
+                } else {
+                    console.log("No Telegram user data available");
+                    // For testing only - use a default user ID
+                    telegramUserId = '5966603094';
+                    console.log("Using test Telegram ID:", telegramUserId);
+                    loadUserDataByTelegramId(telegramUserId);
                 }
             } else {
-                console.log("No user document found for Telegram ID:", telegramId);
-                // Create a new user
-                createNewUser(telegramId);
+                console.log("Not in Telegram WebApp - using test mode");
+                // For testing only - use a default user ID
+                telegramUserId = '5966603094';
+                console.log("Using test Telegram ID:", telegramUserId);
+                loadUserDataByTelegramId(telegramUserId);
             }
-        })
-        .catch((error) => {
-            console.error("Error loading user data:", error);
-            showToast('error', 'Error', 'Failed to load user data');
         });
-}
 
-// Create a new user
-function createNewUser(telegramId) {
-    const userData = {
-        user_id: telegramId,
-        balance: 0,
-        role: "user",
-        vtu_id: telegramId.substring(0, 6),
-        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    
-    db.collection("users").add(userData)
-        .then((docRef) => {
-            console.log("New user created with ID:", docRef.id);
-            currentUser = {
-                uid: docRef.id,
-                telegramId: telegramId,
-                ...userData
+        // Load user data by Telegram ID
+        function loadUserDataByTelegramId(telegramId) {
+            console.log("Loading user data for Telegram ID:", telegramId);
+            
+            db.collection("users").where("user_id", "==", telegramId).get()
+                .then((querySnapshot) => {
+                    if (!querySnapshot.empty) {
+                        // User found
+                        const userDoc = querySnapshot.docs[0];
+                        currentUser = {
+                            uid: userDoc.id,
+                            telegramId: telegramId,
+                            ...userDoc.data()
+                        };
+                        console.log("User data loaded:", currentUser);
+                        
+                        // Show user-specific content
+                        document.querySelectorAll('.user-only').forEach(el => {
+                            el.style.display = 'block';
+                        });
+                        
+                        // Fetch user-specific data
+                        fetchUserRequests();
+                        
+                        // Show welcome toast with balance
+                        if (currentUser.balance !== undefined) {
+                            showToast('success', 'Welcome', `Your balance: ₦${currentUser.balance.toLocaleString()}`);
+                        }
+                    } else {
+                        console.log("No user document found for Telegram ID:", telegramId);
+                        // Create a new user
+                        createNewUser(telegramId);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error loading user data:", error);
+                    showToast('error', 'Error', 'Failed to load user data');
+                });
+        }
+
+        // Create a new user
+        function createNewUser(telegramId) {
+            const userData = {
+                user_id: telegramId,
+                balance: 0,
+                role: "user",
+                vtu_id: telegramId.substring(0, 6),
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
             };
             
-            // Show user-specific content
-            document.querySelectorAll('.user-only').forEach(el => {
-                el.style.display = 'block';
-            });
-            
-            showToast('success', 'Welcome', 'Your account has been created');
-        })
-        .catch((error) => {
-            console.error("Error creating new user:", error);
-            showToast('error', 'Error', 'Failed to create user account');
-        });
-}
+            db.collection("users").add(userData)
+                .then((docRef) => {
+                    console.log("New user created with ID:", docRef.id);
+                    currentUser = {
+                        uid: docRef.id,
+                        telegramId: telegramId,
+                        ...userData
+                    };
+                    
+                    // Show user-specific content
+                    document.querySelectorAll('.user-only').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                    
+                    showToast('success', 'Welcome', 'Your account has been created');
+                })
+                .catch((error) => {
+                    console.error("Error creating new user:", error);
+                    showToast('error', 'Error', 'Failed to create user account');
+                });
+        }
         
         // Initialize App
         function initApp() {
@@ -1844,8 +1840,8 @@ function createNewUser(telegramId) {
                     const badgeText = plan.badge === 'hot' ? 'HOT!' : 
                                      plan.badge === 'popular' ? 'MOST POPULAR' : 
                                      'BEST VALUE';
-                    badgeHTML = `<div class="badge ${plan.badge}">${badgeText}</div>
-                `;
+                    badgeHTML = `<div class="badge ${plan.badge}">${badgeText}</div>`;
+                }
                 
                 planCard.innerHTML = `
                     ${badgeHTML}
@@ -1893,129 +1889,129 @@ function createNewUser(telegramId) {
         }
         
         // Fetch User Requests
-function fetchUserRequests() {
-    if (!currentUser) {
-        // User is not authenticated, show a message but don't redirect
-        document.getElementById('requests-container').innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-user-lock"></i>
-                <p>Please restart the app to view your data purchase requests.</p>
-            </div>
-        `;
-        return;
-    }
-    
-    // Query by telegramId or userId
-    let query;
-    if (currentUser.telegramId) {
-        query = db.collection('dataRequests').where('telegramId', '==', currentUser.telegramId);
-    } else if (currentUser.user_id) {
-        query = db.collection('dataRequests').where('telegramId', '==', currentUser.user_id);
-    } else {
-        query = db.collection('dataRequests').where('userId', '==', currentUser.uid);
-    }
-    
-    query.orderBy('timestamp', 'desc')
-        .limit(10)
-        .get()
-        .then(snapshot => {
-            const requestsContainer = document.getElementById('requests-container');
-            const emptyRequests = document.getElementById('empty-requests');
-            
-            if (snapshot.empty) {
-                // Show empty state
-                emptyRequests.style.display = 'block';
-                requestsContainer.innerHTML = '';
-                requestsContainer.appendChild(emptyRequests);
+        function fetchUserRequests() {
+            if (!currentUser) {
+                // User is not authenticated, show a message but don't redirect
+                document.getElementById('requests-container').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-lock"></i>
+                        <p>Please restart the app to view your data purchase requests.</p>
+                    </div>
+                `;
                 return;
             }
             
-            // Hide empty state and show requests
-            emptyRequests.style.display = 'none';
-            requestsContainer.innerHTML = '';
+            // Query by telegramId or userId
+            let query;
+            if (currentUser.telegramId) {
+                query = db.collection('dataRequests').where('telegramId', '==', currentUser.telegramId);
+            } else if (currentUser.user_id) {
+                query = db.collection('dataRequests').where('telegramId', '==', currentUser.user_id);
+            } else {
+                query = db.collection('dataRequests').where('userId', '==', currentUser.uid);
+            }
             
-            snapshot.forEach(doc => {
-                const request = doc.data();
-                const timestamp = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
-                const formattedTime = formatTimestamp(timestamp);
-                
-                // Get status message from API response if available
-                let statusMessage = '';
-                if (request.apiResponse && request.apiResponse.message) {
-                    statusMessage = request.apiResponse.message;
-                }
-                
-                const requestCard = document.createElement('div');
-                requestCard.className = `request-card ${request.status || 'pending'}`;
-                
-                requestCard.innerHTML = `
-                    <div class="request-header">
-                        <div class="request-title">${request.planName || 'Data Plan'}</div>
-                        <div class="request-status ${request.status || 'pending'}">${(request.status || 'pending').charAt(0).toUpperCase() + (request.status || 'pending').slice(1)}</div>
-                    </div>
-                    <div class="request-details">
-                        <div class="request-detail">
-                            <div class="request-detail-label">Phone Number</div>
-                            <div class="request-detail-value">${request.phoneNumber || 'N/A'}</div>
-                        </div>
-                        <div class="request-detail">
-                            <div class="request-detail-label">Amount</div>
-                            <div class="request-detail-value">₦${request.amount ? request.amount.toLocaleString() : '0'}</div>
-                        </div>
-                        <div class="request-detail">
-                            <div class="request-detail-label">Date</div>
-                            <div class="request-detail-value">${formattedTime}</div>
-                        </div>
-                        <div class="request-detail">
-                            <div class="request-detail-label">Request ID</div>
-                            <div class="request-detail-value">${request.requestId || doc.id.substring(0, 8)}</div>
-                        </div>
-                    </div>
-                    ${statusMessage ? `
-                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
-                        ${statusMessage}
-                    </div>` : ''}
-                    <div class="request-actions">
-                        ${request.status === 'pending' ? 
-                            `<button class="request-btn cancel-btn" data-id="${doc.id}">Cancel</button>
-                            <button class="request-btn primary track-btn" data-id="${doc.id}">Status</button>` : 
-                            `<button class="request-btn primary buy-again-btn" data-id="${doc.id}" data-phone="${request.phoneNumber}" data-plan="${request.planName}">Buy Again</button>`
+            query.orderBy('timestamp', 'desc')
+                .limit(10)
+                .get()
+                .then(snapshot => {
+                    const requestsContainer = document.getElementById('requests-container');
+                    const emptyRequests = document.getElementById('empty-requests');
+                    
+                    if (snapshot.empty) {
+                        // Show empty state
+                        emptyRequests.style.display = 'block';
+                        requestsContainer.innerHTML = '';
+                        requestsContainer.appendChild(emptyRequests);
+                        return;
+                    }
+                    
+                    // Hide empty state and show requests
+                    emptyRequests.style.display = 'none';
+                    requestsContainer.innerHTML = '';
+                    
+                    snapshot.forEach(doc => {
+                        const request = doc.data();
+                        const timestamp = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+                        const formattedTime = formatTimestamp(timestamp);
+                        
+                        // Get status message from API response if available
+                        let statusMessage = '';
+                        if (request.apiResponse && request.apiResponse.message) {
+                            statusMessage = request.apiResponse.message;
                         }
-                    </div>
-                `;
-                
-                requestsContainer.appendChild(requestCard);
-            });
-            
-            // Add event listeners to buttons
-            document.querySelectorAll('.cancel-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    cancelRequest(this.getAttribute('data-id'));
+                        
+                        const requestCard = document.createElement('div');
+                        requestCard.className = `request-card ${request.status || 'pending'}`;
+                        
+                        requestCard.innerHTML = `
+                            <div class="request-header">
+                                <div class="request-title">${request.planName || 'Data Plan'}</div>
+                                <div class="request-status ${request.status || 'pending'}">${(request.status || 'pending').charAt(0).toUpperCase() + (request.status || 'pending').slice(1)}</div>
+                            </div>
+                            <div class="request-details">
+                                <div class="request-detail">
+                                    <div class="request-detail-label">Phone Number</div>
+                                    <div class="request-detail-value">${request.phoneNumber || 'N/A'}</div>
+                                </div>
+                                <div class="request-detail">
+                                    <div class="request-detail-label">Amount</div>
+                                    <div class="request-detail-value">₦${request.amount ? request.amount.toLocaleString() : '0'}</div>
+                                </div>
+                                <div class="request-detail">
+                                    <div class="request-detail-label">Date</div>
+                                    <div class="request-detail-value">${formattedTime}</div>
+                                </div>
+                                <div class="request-detail">
+                                    <div class="request-detail-label">Request ID</div>
+                                    <div class="request-detail-value">${request.requestId || doc.id.substring(0, 8)}</div>
+                                </div>
+                            </div>
+                            ${statusMessage ? `
+                            <div style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                                ${statusMessage}
+                            </div>` : ''}
+                            <div class="request-actions">
+                                ${request.status === 'pending' ? 
+                                    `<button class="request-btn cancel-btn" data-id="${doc.id}">Cancel</button>
+                                    <button class="request-btn primary track-btn" data-id="${doc.id}">Status</button>` : 
+                                    `<button class="request-btn primary buy-again-btn" data-id="${doc.id}" data-phone="${request.phoneNumber}" data-plan="${request.planName}">Buy Again</button>`
+                                }
+                            </div>
+                        `;
+                        
+                        requestsContainer.appendChild(requestCard);
+                    });
+                    
+                    // Add event listeners to buttons
+                    document.querySelectorAll('.cancel-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            cancelRequest(this.getAttribute('data-id'));
+                        });
+                    });
+                    
+                    document.querySelectorAll('.track-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            // Show status instead of redirecting to admin page
+                            trackRequest(this.getAttribute('data-id'));
+                        });
+                    });
+                    
+                    document.querySelectorAll('.buy-again-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            buyAgain(
+                                this.getAttribute('data-id'),
+                                this.getAttribute('data-phone'),
+                                this.getAttribute('data-plan')
+                            );
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching requests:", error);
+                    showToast('error', 'Error', 'Failed to load your requests');
                 });
-            });
-            
-            document.querySelectorAll('.track-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Show status instead of redirecting to admin page
-                    trackRequest(this.getAttribute('data-id'));
-                });
-            });
-            
-            document.querySelectorAll('.buy-again-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    buyAgain(
-                        this.getAttribute('data-id'),
-                        this.getAttribute('data-phone'),
-                        this.getAttribute('data-plan')
-                    );
-                });
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching requests:", error);
-            showToast('error', 'Error', 'Failed to load your requests');
-        });
-}
+        }
 
         // Cancel Request
         function cancelRequest(requestId) {
@@ -2034,28 +2030,28 @@ function fetchUserRequests() {
         }
         
         // Track Request
-function trackRequest(requestId) {
-    // Show status instead of redirecting to admin page
-    showToast('info', 'Request Status', 'Your request is being processed');
-    
-    // Fetch the latest status
-    db.collection('dataRequests').doc(requestId).get()
-        .then(doc => {
-            if (doc.exists) {
-                const request = doc.data();
-                const status = request.status || 'pending';
-                const statusText = status.charAt(0).toUpperCase() + status.slice(1);
-                
-                showToast('info', 'Request Status', `Status: ${statusText}`);
-            } else {
-                showToast('error', 'Not Found', 'Request not found');
-            }
-        })
-        .catch(error => {
-            console.error("Error tracking request:", error);
-            showToast('error', 'Error', 'Failed to track request');
-        });
-}
+        function trackRequest(requestId) {
+            // Show status instead of redirecting to admin page
+            showToast('info', 'Request Status', 'Your request is being processed');
+            
+            // Fetch the latest status
+            db.collection('dataRequests').doc(requestId).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const request = doc.data();
+                        const status = request.status || 'pending';
+                        const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+                        
+                        showToast('info', 'Request Status', `Status: ${statusText}`);
+                    } else {
+                        showToast('error', 'Not Found', 'Request not found');
+                    }
+                })
+                .catch(error => {
+                    console.error("Error tracking request:", error);
+                    showToast('error', 'Error', 'Failed to track request');
+                });
+        }
         
         // Show Receipt
         function showReceipt(requestId) {
@@ -2227,173 +2223,184 @@ function trackRequest(requestId) {
         }
         
         // Process Data Purchase
-function processDataPurchase() {
-    // Check if user is authenticated
-    if (!currentUser) {
-        // Try to authenticate with Telegram
-        let telegramUserId = null;
-        
-        if (window.Telegram && window.Telegram.WebApp) {
-            const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-            if (tgUser) {
-                telegramUserId = tgUser.id.toString();
-                loadUserDataByTelegramId(telegramUserId);
-                showToast('info', 'Processing', 'Please try again in a moment');
-                confirmationModal.classList.remove('show');
-                return;
-            }
-        }
-        
-        // If still not authenticated, show a message but don't redirect to admin login
-        confirmationModal.classList.remove('show');
-        showToast('error', 'Authentication Required', 'Please restart the app to authenticate');
-        return;
-    }
-    
-    // Get purchase details
-    const networkName = document.getElementById('confirm-network').textContent;
-    const planName = document.getElementById('confirm-plan').textContent;
-    const phoneNumber = document.getElementById('confirm-number').textContent;
-    const amountText = document.getElementById('confirm-amount').textContent;
-    const amount = parseInt(amountText.replace(/[^\d]/g, ''));
-    
-    // Determine if this is from automatic or manual mode
-    const isManual = document.querySelector('.mode-option.active').dataset.mode === 'manual';
-    
-    // Get plan ID and network ID
-    let planId;
-    if (isManual) {
-        planId = selectedPlan.id;
-    } else {
-        planId = document.getElementById('data-plan').value;
-    }
-    
-    // Map network name to network ID for API
-    let networkId;
-    switch(networkName.toLowerCase()) {
-        case 'mtn': networkId = 1; break;
-        case 'airtel': networkId = 2; break;
-        case 'glo': networkId = 3; break;
-        case '9mobile': networkId = 4; break;
-        default: networkId = 1; // Default to MTN
-    }
-    
-    // Generate request ID
-    const requestId = `Data_${Date.now()}`;
-    
-    // Disable confirm button and show loading
-    const confirmBtn = document.getElementById('confirm-purchase');
-    confirmBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
-    confirmBtn.disabled = true;
-    
-    // Create request data for Firestore
-    const requestData = {
-        userId: currentUser.uid,
-        telegramId: currentUser.telegramId || currentUser.user_id,
-        phoneNumber: phoneNumber,
-        planName: planName,
-        networkName: networkName,
-        networkId: selectedNetwork,
-        planId: planId,
-        amount: amount,
-        status: 'pending',
-        timestamp: firebase.firestore.Timestamp.now(),
-        requestId: requestId
-    };
-    
-    // Save to Firestore first
-    db.collection('dataRequests').add(requestData)
-        .then(docRef => {
-            console.log("Request saved with ID:", docRef.id);
-            
-            // Now make the API call to process the data purchase
-            const apiUrl = '/api/data-proxy'; // Use our proxy API
-
-            // Determine data plan ID for API
-            // This is a simplified mapping - you may need to adjust based on your actual plan IDs
-            let dataPlanId = 1; // Default
-            if (planName.includes('500MB')) dataPlanId = 1;
-            else if (planName.includes('1GB')) dataPlanId = 2;
-            else if (planName.includes('2GB')) dataPlanId = 3;
-            else if (planName.includes('5GB')) dataPlanId = 4;
-            else if (planName.includes('10GB')) dataPlanId = 5;
-
-            // Create payload for API
-            const payload = {
-                network: networkId,
-                phone: phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
-                data_plan: dataPlanId,
-                bypass: false,
-                'request-id': requestId
-            };
-
-            // Make API call
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("API Response:", data);
+        function processDataPurchase() {
+            // Check if user is authenticated
+            if (!currentUser) {
+                // Try to authenticate with Telegram
+                let telegramUserId = null;
                 
-                // Update request status in Firestore
-                return db.collection('dataRequests').doc(docRef.id).update({
-                    status: data.status === 'success' ? 'completed' : 'failed',
-                    apiResponse: data,
-                    updatedAt: firebase.firestore.Timestamp.now()
-                });
-            })
-            .then(() => {
-                // Close modal
-                confirmationModal.classList.remove('show');
-                
-                // Show success toast
-                showToast('success', 'Purchase Successful', 'Your data purchase has been processed successfully');
-                
-                // Reset form
-                if (isManual) {
-                    document.getElementById('manual-phone-number').value = '';
-                    document.querySelectorAll('.plan-card').forEach(card => {
-                        card.classList.remove('active');
-                    });
-                    selectedPlanDisplay.textContent = 'Select a plan above';
-                    selectedPlanDisplay.classList.remove('active');
-                    placeOrderBtn.disabled = true;
-                    selectedPlan = null;
-                } else {
-                    document.getElementById('data-form').reset();
-                    document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
+                if (window.Telegram && window.Telegram.WebApp) {
+                    const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+                    if (tgUser) {
+                        telegramUserId = tgUser.id.toString();
+                        loadUserDataByTelegramId(telegramUserId);
+                        showToast('info', 'Processing', 'Please try again in a moment');
+                        confirmationModal.classList.remove('show');
+                        return;
+                    }
                 }
                 
-                // Refresh requests
-                fetchUserRequests();
-            })
-            .catch(error => {
-                console.error("API Error:", error);
-                
-                // Update request status in Firestore
-                db.collection('dataRequests').doc(docRef.id).update({
-                    status: 'failed',
-                    error: error.message,
-                    updatedAt: firebase.firestore.Timestamp.now()
+                // If still not authenticated, show a message but don't redirect to admin login
+                confirmationModal.classList.remove('show');
+                showToast('error', 'Authentication Required', 'Please restart the app to authenticate');
+                return;
+            }
+            
+            // Get purchase details
+            const networkName = document.getElementById('confirm-network').textContent;
+            const planName = document.getElementById('confirm-plan').textContent;
+            const phoneNumber = document.getElementById('confirm-number').textContent;
+            const amountText = document.getElementById('confirm-amount').textContent;
+            const amount = parseInt(amountText.replace(/[^\d]/g, ''));
+            
+            // Determine if this is from automatic or manual mode
+            const isManual = document.querySelector('.mode-option.active').dataset.mode === 'manual';
+            
+            // Get plan ID and network ID
+            let planId;
+            if (isManual) {
+                planId = selectedPlan.id;
+            } else {
+                planId = document.getElementById('data-plan').value;
+            }
+            
+            // Map network name to network ID for API
+            let networkId;
+            switch(networkName.toLowerCase()) {
+                case 'mtn': networkId = 1; break;
+                case 'airtel': networkId = 2; break;
+                case 'glo': networkId = 3; break;
+                case '9mobile': networkId = 4; break;
+                default: networkId = 1; // Default to MTN
+            }
+            
+            // Generate request ID
+            const requestId = `Data_${Date.now()}`;
+            
+            // Disable confirm button and show loading
+            const confirmBtn = document.getElementById('confirm-purchase');
+            confirmBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
+            confirmBtn.disabled = true;
+            
+            // Create request data for Firestore
+            const requestData = {
+                userId: currentUser.uid,
+                telegramId: currentUser.telegramId || currentUser.user_id,
+                phoneNumber: phoneNumber,
+                planName: planName,
+                networkName: networkName,
+                networkId: selectedNetwork,
+                planId: planId,
+                amount: amount,
+                status: 'pending',
+                timestamp: firebase.firestore.Timestamp.now(),
+                requestId: requestId
+            };
+            
+            // Save to Firestore first
+            db.collection('dataRequests').add(requestData)
+                .then(docRef => {
+                    console.log("Request saved with ID:", docRef.id);
+                    
+                    // Determine data plan ID for API
+                    // This is a simplified mapping - you may need to adjust based on your actual plan IDs
+                    let dataPlanId = 1; // Default
+                    if (planName.includes('500MB')) dataPlanId = 1;
+                    else if (planName.includes('1GB')) dataPlanId = 2;
+                    else if (planName.includes('2GB')) dataPlanId = 3;
+                    else if (planName.includes('5GB')) dataPlanId = 4;
+                    else if (planName.includes('10GB')) dataPlanId = 5;
+                    
+                    // Create payload for API
+                    const payload = {
+                        network: networkId,
+                        phone: phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
+                        data_plan: dataPlanId,
+                        bypass: false,
+                        'request-id': requestId
+                    };
+                    
+                    // Make direct API call
+                    // Note: In a production environment, you should use a server-side proxy to protect your API key
+                    fetch('https://n3tdata.com/api/data', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Token 3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("API Response:", data);
+                        
+                        // Update request status in Firestore
+                        return db.collection('dataRequests').doc(docRef.id).update({
+                            status: data.status === 'success' ? 'completed' : 'failed',
+                            apiResponse: data,
+                            updatedAt: firebase.firestore.Timestamp.now()
+                        });
+                    })
+                    .then(() => {
+                        // Close modal
+                        confirmationModal.classList.remove('show');
+                        
+                        // Show success toast
+                        showToast('success', 'Purchase Successful', 'Your data purchase has been processed successfully');
+                        
+                        // Reset form
+                        if (isManual) {
+                            document.getElementById('manual-phone-number').value = '';
+                            document.querySelectorAll('.plan-card').forEach(card => {
+                                card.classList.remove('active');
+                            });
+                            selectedPlanDisplay.textContent = 'Select a plan above';
+                            selectedPlanDisplay.classList.remove('active');
+                            placeOrderBtn.disabled = true;
+                            selectedPlan = null;
+                        } else {
+                            document.getElementById('data-form').reset();
+                            document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
+                        }
+                        
+                        // Refresh requests
+                        fetchUserRequests();
+                    })
+                    .catch(error => {
+                        console.error("API Error:", error);
+                        
+                        // Update request status in Firestore
+                        db.collection('dataRequests').doc(docRef.id).update({
+                            status: 'failed',
+                            error: error.message,
+                            updatedAt: firebase.firestore.Timestamp.now()
+                        });
+                        
+                        showToast('error', 'Purchase Failed', 'Failed to process your data purchase. Please try again.');
+                    })
+                    .finally(() => {
+                        // Reset confirm button
+                        confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+                        confirmBtn.disabled = false;
+                    });
+                })
+                .catch(error => {
+                    console.error("Error saving request:", error);
+                    showToast('error', 'Error', 'Failed to submit your request');
+                    
+                    // Reset confirm button
+                    confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+                    confirmBtn.disabled = false;
+                    
+                    // Close modal
+                    confirmationModal.classList.remove('show');
                 });
-                
-                showToast('error', 'Purchase Failed', 'Failed to process your data purchase. Please try again.');
-            });
-        })
-        .catch(error => {
-            console.error("Error saving request:", error);
-            showToast('error', 'Error', 'Failed to submit your request');
-        })
-        .finally(() => {
-            // Reset confirm button
-            confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-            confirmBtn.disabled = false;
-        });
-}
+        }
         
         // Update Data Plan Dropdown
         function updateDataPlanDropdown() {
