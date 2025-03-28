@@ -1520,6 +1520,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Load user data by Telegram ID
 function loadUserDataByTelegramId(telegramId) {
+    console.log("Loading user data for Telegram ID:", telegramId);
+    
     db.collection("users").where("user_id", "==", telegramId).get()
         .then((querySnapshot) => {
             if (!querySnapshot.empty) {
@@ -1539,6 +1541,11 @@ function loadUserDataByTelegramId(telegramId) {
                 
                 // Fetch user-specific data
                 fetchUserRequests();
+                
+                // Show welcome toast with balance
+                if (currentUser.balance !== undefined) {
+                    showToast('success', 'Welcome', `Your balance: ₦${currentUser.balance.toLocaleString()}`);
+                }
             } else {
                 console.log("No user document found for Telegram ID:", telegramId);
                 // Create a new user
@@ -1837,8 +1844,8 @@ function createNewUser(telegramId) {
                     const badgeText = plan.badge === 'hot' ? 'HOT!' : 
                                      plan.badge === 'popular' ? 'MOST POPULAR' : 
                                      'BEST VALUE';
-                    badgeHTML = `<div class="badge ${plan.badge}">${badgeText}</div>`;
-                }
+                    badgeHTML = `<div class="badge ${plan.badge}">${badgeText}</div>
+                `;
                 
                 planCard.innerHTML = `
                     ${badgeHTML}
@@ -1902,6 +1909,8 @@ function fetchUserRequests() {
     let query;
     if (currentUser.telegramId) {
         query = db.collection('dataRequests').where('telegramId', '==', currentUser.telegramId);
+    } else if (currentUser.user_id) {
+        query = db.collection('dataRequests').where('telegramId', '==', currentUser.user_id);
     } else {
         query = db.collection('dataRequests').where('userId', '==', currentUser.uid);
     }
@@ -1930,6 +1939,12 @@ function fetchUserRequests() {
                 const timestamp = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
                 const formattedTime = formatTimestamp(timestamp);
                 
+                // Get status message from API response if available
+                let statusMessage = '';
+                if (request.apiResponse && request.apiResponse.message) {
+                    statusMessage = request.apiResponse.message;
+                }
+                
                 const requestCard = document.createElement('div');
                 requestCard.className = `request-card ${request.status || 'pending'}`;
                 
@@ -1956,6 +1971,10 @@ function fetchUserRequests() {
                             <div class="request-detail-value">${request.requestId || doc.id.substring(0, 8)}</div>
                         </div>
                     </div>
+                    ${statusMessage ? `
+                    <div style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
+                        ${statusMessage}
+                    </div>` : ''}
                     <div class="request-actions">
                         ${request.status === 'pending' ? 
                             `<button class="request-btn cancel-btn" data-id="${doc.id}">Cancel</button>
@@ -1978,7 +1997,7 @@ function fetchUserRequests() {
             document.querySelectorAll('.track-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     // Show status instead of redirecting to admin page
-                    showToast('info', 'Request Status', 'Your request is being processed');
+                    trackRequest(this.getAttribute('data-id'));
                 });
             });
             
@@ -2241,12 +2260,22 @@ function processDataPurchase() {
     // Determine if this is from automatic or manual mode
     const isManual = document.querySelector('.mode-option.active').dataset.mode === 'manual';
     
-    // Get plan ID
+    // Get plan ID and network ID
     let planId;
     if (isManual) {
         planId = selectedPlan.id;
     } else {
         planId = document.getElementById('data-plan').value;
+    }
+    
+    // Map network name to network ID for API
+    let networkId;
+    switch(networkName.toLowerCase()) {
+        case 'mtn': networkId = 1; break;
+        case 'airtel': networkId = 2; break;
+        case 'glo': networkId = 3; break;
+        case '9mobile': networkId = 4; break;
+        default: networkId = 1; // Default to MTN
     }
     
     // Generate request ID
@@ -2257,7 +2286,7 @@ function processDataPurchase() {
     confirmBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
     confirmBtn.disabled = true;
     
-    // Create request data
+    // Create request data for Firestore
     const requestData = {
         userId: currentUser.uid,
         telegramId: currentUser.telegramId || currentUser.user_id,
@@ -2272,37 +2301,88 @@ function processDataPurchase() {
         requestId: requestId
     };
     
-    // Save to Firestore
+    // Save to Firestore first
     db.collection('dataRequests').add(requestData)
         .then(docRef => {
             console.log("Request saved with ID:", docRef.id);
             
-            // Close modal
-            confirmationModal.classList.remove('show');
-            
-            // Show success toast
-            showToast('success', 'Request Submitted', 'Your data purchase request has been submitted successfully');
-            
-            // Reset form
-            if (isManual) {
-                document.getElementById('manual-phone-number').value = '';
-                document.querySelectorAll('.plan-card').forEach(card => {
-                    card.classList.remove('active');
+            // Now make the API call to process the data purchase
+            const apiUrl = '/api/data-proxy'; // Use our proxy API
+
+            // Determine data plan ID for API
+            // This is a simplified mapping - you may need to adjust based on your actual plan IDs
+            let dataPlanId = 1; // Default
+            if (planName.includes('500MB')) dataPlanId = 1;
+            else if (planName.includes('1GB')) dataPlanId = 2;
+            else if (planName.includes('2GB')) dataPlanId = 3;
+            else if (planName.includes('5GB')) dataPlanId = 4;
+            else if (planName.includes('10GB')) dataPlanId = 5;
+
+            // Create payload for API
+            const payload = {
+                network: networkId,
+                phone: phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
+                data_plan: dataPlanId,
+                bypass: false,
+                'request-id': requestId
+            };
+
+            // Make API call
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("API Response:", data);
+                
+                // Update request status in Firestore
+                return db.collection('dataRequests').doc(docRef.id).update({
+                    status: data.status === 'success' ? 'completed' : 'failed',
+                    apiResponse: data,
+                    updatedAt: firebase.firestore.Timestamp.now()
                 });
-                selectedPlanDisplay.textContent = 'Select a plan above';
-                selectedPlanDisplay.classList.remove('active');
-                placeOrderBtn.disabled = true;
-                selectedPlan = null;
-            } else {
-                document.getElementById('data-form').reset();
-                document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
-            }
-            
-            // Refresh requests
-            fetchUserRequests();
-            
-            // Don't redirect to admin page
-            showToast('info', 'Processing', 'Your request is being processed');
+            })
+            .then(() => {
+                // Close modal
+                confirmationModal.classList.remove('show');
+                
+                // Show success toast
+                showToast('success', 'Purchase Successful', 'Your data purchase has been processed successfully');
+                
+                // Reset form
+                if (isManual) {
+                    document.getElementById('manual-phone-number').value = '';
+                    document.querySelectorAll('.plan-card').forEach(card => {
+                        card.classList.remove('active');
+                    });
+                    selectedPlanDisplay.textContent = 'Select a plan above';
+                    selectedPlanDisplay.classList.remove('active');
+                    placeOrderBtn.disabled = true;
+                    selectedPlan = null;
+                } else {
+                    document.getElementById('data-form').reset();
+                    document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
+                }
+                
+                // Refresh requests
+                fetchUserRequests();
+            })
+            .catch(error => {
+                console.error("API Error:", error);
+                
+                // Update request status in Firestore
+                db.collection('dataRequests').doc(docRef.id).update({
+                    status: 'failed',
+                    error: error.message,
+                    updatedAt: firebase.firestore.Timestamp.now()
+                });
+                
+                showToast('error', 'Purchase Failed', 'Failed to process your data purchase. Please try again.');
+            });
         })
         .catch(error => {
             console.error("Error saving request:", error);
