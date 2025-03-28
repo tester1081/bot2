@@ -1,0 +1,314 @@
+// Updates for the dataA.html admin page
+// Add this script at the end of your dataA.html file
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Assuming these variables are defined elsewhere in your project
+  // or imported from a module.  If not, you'll need to define them.
+  // For example:
+  // const db = firebase.firestore();
+  // const showLoading = () => { console.log("Loading..."); };
+  const hideLoading = () => {
+    console.log("Loading complete.")
+  }
+  // const showToast = (message, type) => { console.log(`${type}: ${message}`); };
+  // const loadDataPlans = async () => { console.log("Loading data plans..."); };
+  // const closePlanModal = () => { console.log("Closing modal..."); };
+  const planModalTitle = document.getElementById("plan-modal-title") // Or however it's defined
+  const planProvider = document.getElementById("plan-provider") // Or however it's defined
+  const updateCategoryOptions = () => {
+    console.log("Updating category options...")
+  } // Or however it's defined
+  const toggleManualFields = () => {
+    console.log("Toggling manual fields...")
+  } // Or however it's defined
+
+  // Add plan ID field to the plan form
+  const planForm = document.getElementById("plan-form")
+  if (planForm) {
+    // Create the plan ID input field
+    const planIdField = document.createElement("div")
+    planIdField.className = "form-group"
+    planIdField.innerHTML = `
+      <label for="plan-api-id" class="form-label">API Plan ID</label>
+      <input type="number" id="plan-api-id" class="form-input" placeholder="e.g. 1, 2, 3, etc." min="1">
+      <small style="color: var(--text-secondary); display: block; margin-top: 5px;">
+        This ID must match the ID used by the data provider's API
+      </small>
+    `
+
+    // Insert after the plan name field
+    const planNameField = document.querySelector(".form-group:has(#plan-name)")
+    if (planNameField) {
+      planNameField.after(planIdField)
+    } else {
+      // Fallback: append to the form
+      planForm.appendChild(planIdField)
+    }
+
+    // Update the savePlan function to include the API ID
+    const originalSavePlan = window.savePlan
+    if (originalSavePlan) {
+      window.savePlan = async () => {
+        try {
+          // Validate form
+          if (!planForm.checkValidity()) {
+            planForm.reportValidity()
+            return
+          }
+
+          showLoading()
+
+          const planApiId = document.getElementById("plan-api-id").value
+
+          const planData = {
+            provider: document.getElementById("plan-provider").value,
+            category: document.getElementById("plan-category").value,
+            name: document.getElementById("plan-name").value,
+            data: document.getElementById("plan-data").value,
+            price: Number(document.getElementById("plan-price").value),
+            validity: document.getElementById("plan-validity").value,
+            status: document.getElementById("plan-status").checked,
+            apiId: planApiId ? Number(planApiId) : null, // Add API ID
+          }
+
+          // Add manual data specific fields
+          if (planData.provider === "manual") {
+            const planOriginalPrice = document.getElementById("plan-original-price")
+            const planBadge = document.getElementById("plan-badge")
+
+            if (planOriginalPrice.value) {
+              planData.originalPrice = Number(planOriginalPrice.value)
+            }
+
+            if (planBadge.value) {
+              planData.badge = planBadge.value
+            }
+          }
+
+          const planIdValue = document.getElementById("plan-id").value
+
+          if (planIdValue) {
+            // Update existing plan
+            await db.collection("dataPlans").doc(planIdValue).update(planData)
+            showToast("Plan updated successfully", "success")
+          } else {
+            // Add new plan
+            await db.collection("dataPlans").add(planData)
+            showToast("Plan added successfully", "success")
+          }
+
+          // Reload plans
+          await loadDataPlans()
+
+          // Close modal
+          closePlanModal()
+
+          hideLoading()
+        } catch (error) {
+          console.error("Error saving plan:", error)
+          showToast("Failed to save plan", "error")
+          hideLoading()
+        }
+      }
+    }
+  }
+
+  // Modify the openEditPlanModal function to populate the API ID field
+  const originalOpenEditPlanModal = window.openEditPlanModal
+  if (originalOpenEditPlanModal) {
+    window.openEditPlanModal = async (planId) => {
+      try {
+        showLoading()
+
+        const planDoc = await db.collection("dataPlans").doc(planId).get()
+
+        if (!planDoc.exists) {
+          showToast("Plan not found", "error")
+          hideLoading()
+          return
+        }
+
+        const plan = planDoc.data()
+
+        planModalTitle.textContent = "Edit Data Plan"
+        document.getElementById("plan-id").value = planId
+        planProvider.value = plan.provider
+        updateCategoryOptions()
+        toggleManualFields()
+
+        // Declare variables
+        const planCategory = document.getElementById("plan-category")
+        const planName = document.getElementById("plan-name")
+        const planData = document.getElementById("plan-data")
+        const planOriginalPrice = document.getElementById("plan-original-price")
+        const planPrice = document.getElementById("plan-price")
+        const planBadge = document.getElementById("plan-badge")
+        const planValidity = document.getElementById("plan-validity")
+        const planStatus = document.getElementById("plan-status")
+        const planModalOverlay = document.getElementById("plan-modal-overlay")
+
+        planCategory.value = plan.category
+        planName.value = plan.name
+        planData.value = plan.data
+
+        // Set API ID if available
+        const planApiIdField = document.getElementById("plan-api-id")
+        if (planApiIdField && plan.apiId) {
+          planApiIdField.value = plan.apiId
+        }
+
+        if (plan.provider === "manual" && plan.originalPrice) {
+          planOriginalPrice.value = plan.originalPrice
+        }
+
+        planPrice.value = plan.price
+        planValidity.value = plan.validity
+
+        if (plan.provider === "manual" && plan.badge) {
+          planBadge.value = plan.badge
+        }
+
+        planStatus.checked = plan.status
+
+        planModalOverlay.classList.add("active")
+
+        hideLoading()
+      } catch (error) {
+        console.error("Error opening edit plan modal:", error)
+        showToast("Failed to load plan details", "error")
+        hideLoading()
+      }
+    }
+  }
+
+  // Add bulk update API IDs button
+  const bulkActionButtons = document.querySelector(".bulk-action-buttons")
+  if (bulkActionButtons) {
+    const updateApiIdsBtn = document.createElement("button")
+    updateApiIdsBtn.className = "btn btn-secondary"
+    updateApiIdsBtn.innerHTML = `
+      <i class="fas fa-sync-alt"></i>
+      <span>Update API IDs</span>
+    `
+    bulkActionButtons.appendChild(updateApiIdsBtn)
+
+    // Add event listener
+    updateApiIdsBtn.addEventListener("click", async () => {
+      if (confirm("This will update all plan API IDs based on their names. Continue?")) {
+        await updateAllPlanApiIds()
+      }
+    })
+  }
+
+  // Function to update all plan API IDs
+  async function updateAllPlanApiIds() {
+    try {
+      showLoading()
+
+      // Get all plans
+      const plansSnapshot = await db.collection("dataPlans").get()
+      const batch = db.batch()
+      let updatedCount = 0
+
+      // Plan ID mapping
+      const planIdMap = {
+        // MTN SME
+        "MTN SME 750MB": 1,
+        "MTN SME 1GB": 2,
+        "MTN SME 1.5GB": 3,
+        "MTN SME 1.2GB": 4,
+        "MTN SME 2GB": 5,
+        "MTN SME 10GB": 6,
+
+        // 9MOBILE GIFTING
+        "9MOBILE GIFTING 1.5GB": 36,
+        "9MOBILE GIFTING 2GB": 37,
+        "9MOBILE GIFTING 3GB": 38,
+        "9MOBILE GIFTING 4.5GB": 39,
+
+        // AIRTEL COOPERATE GIFTING
+        "AIRTEL COOPERATE GIFTING 500MB": 46,
+        "AIRTEL COOPERATE GIFTING 1GB": 47,
+        "AIRTEL COOPERATE GIFTING 2GB": 48,
+        "AIRTEL COOPERATE GIFTING 5GB": 49,
+
+        // MTN COOPERATE GIFTING
+        "MTN COOPERATE GIFTING 500MB": 50,
+        "MTN COOPERATE GIFTING 1GB": 51,
+        "MTN COOPERATE GIFTING 2GB": 52,
+        "MTN COOPERATE GIFTING 3GB": 53,
+        "MTN COOPERATE GIFTING 5GB": 54,
+        "MTN COOPERATE GIFTING 10GB": 55,
+
+        // AIRTEL COOPERATE GIFTING
+        "AIRTEL COOPERATE GIFTING 10GB": 56,
+
+        // GLO COOPERATE GIFTING
+        "GLO COOPERATE GIFTING 200MB": 57,
+        "GLO COOPERATE GIFTING 500MB": 58,
+        "GLO COOPERATE GIFTING 1GB": 59,
+        "GLO COOPERATE GIFTING 2GB": 60,
+        "GLO COOPERATE GIFTING 3GB": 61,
+        "GLO COOPERATE GIFTING 5GB": 62,
+        "GLO COOPERATE GIFTING 10GB": 63,
+
+        // AIRTEL COOPERATE GIFTING
+        "AIRTEL COOPERATE GIFTING 300MB": 70,
+        "AIRTEL COOPERATE GIFTING 100MB": 71,
+
+        // 9MOBILE COOPERATE GIFTING
+        "9MOBILE COOPERATE GIFTING 500MB": 72,
+        "9MOBILE COOPERATE GIFTING 1GB": 73,
+        "9MOBILE COOPERATE GIFTING 2GB": 74,
+        "9MOBILE COOPERATE GIFTING 3GB": 75,
+        "9MOBILE COOPERATE GIFTING 5GB": 76,
+        "9MOBILE COOPERATE GIFTING 10GB": 77,
+
+        // AIRTEL GIFTING
+        "AIRTEL GIFTING 300MB": 83,
+        "AIRTEL GIFTING 600MB": 84,
+        "AIRTEL GIFTING 1GB": 85,
+        "AIRTEL GIFTING 2GB": 86,
+        "AIRTEL GIFTING 3GB": 87,
+        "AIRTEL GIFTING 7GB": 88,
+        "AIRTEL GIFTING 10GB": 89,
+
+        // GLO GIFTING
+        "GLO GIFTING 1GB": 90,
+        "GLO GIFTING 2GB": 91,
+        "GLO GIFTING 3.5GB": 92,
+        "GLO GIFTING 15GB": 93,
+
+        // MTN GIFTING
+        "MTN GIFTING 10GB": 103,
+        "MTN GIFTING 3GB": 104,
+      }
+
+      plansSnapshot.forEach((doc) => {
+        const plan = doc.data()
+        const planName = plan.name.toUpperCase()
+
+        // Check if plan name exists in mapping
+        if (planIdMap[planName]) {
+          batch.update(doc.ref, { apiId: planIdMap[planName] })
+          updatedCount++
+        }
+      })
+
+      // Commit batch update
+      await batch.commit()
+
+      // Reload plans
+      await loadDataPlans()
+
+      showToast(`Updated API IDs for ${updatedCount} plans`, "success")
+
+      hideLoading()
+    } catch (error) {
+      console.error("Error updating plan API IDs:", error)
+      showToast("Failed to update plan API IDs", "error")
+      hideLoading()
+    }
+  }
+})
+
