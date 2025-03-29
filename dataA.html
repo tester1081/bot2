@@ -2559,7 +2559,7 @@
                     openDeleteModal(planId);
                 });
             });
-        }
+}
         
         // Render Plan Types
         function renderPlanTypes(planTypes) {
@@ -2905,66 +2905,77 @@
         
         // Save Plan
         async function savePlan() {
-            try {
-                // Validate form
-                if (!planForm.checkValidity()) {
-                    planForm.reportValidity();
-                    return;
-                }
-                
-                showLoading();
-                
-                const planData = {
-                    provider: planProvider.value,
-                    category: planCategory.value,
-                    name: planName.value,
-                    data: planData.value,
-                    price: Number(planPrice.value),
-                    validity: planValidity.value,
-                    status: planStatus.checked
-                };
-                
-                // Add API ID if provided
-                if (planApiId.value) {
-                    planData.apiId = Number(planApiId.value);
-                }
-                
-                // Add manual data specific fields
-                if (planProvider.value === 'manual') {
-                    if (planOriginalPrice.value) {
-                        planData.originalPrice = Number(planOriginalPrice.value);
-                    }
-                    
-                    if (planBadge.value) {
-                        planData.badge = planBadge.value;
-                    }
-                }
-                
-                const planIdValue = document.getElementById('plan-id').value;
-                
-                if (planIdValue) {
-                    // Update existing plan
-                    await db.collection('dataPlans').doc(planIdValue).update(planData);
-                    showToast('Plan updated successfully', 'success');
-                } else {
-                    // Add new plan
-                    await db.collection('dataPlans').add(planData);
-                    showToast('Plan added successfully', 'success');
-                }
-                
-                // Reload plans
-                await loadDataPlans();
-                
-                // Close modal
-                closePlanModal();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error saving plan:', error);
-                showToast('Failed to save plan', 'error');
-                hideLoading();
+    try {
+        // Validate form
+        if (!planForm.checkValidity()) {
+            planForm.reportValidity();
+            return;
+        }
+        
+        showLoading();
+        
+        // Get values from form
+        const planIdValue = document.getElementById('plan-id').value;
+        const providerValue = planProvider.value;
+        const categoryValue = planCategory.value;
+        const nameValue = planName.value;
+        const dataValue = document.getElementById('plan-data').value;
+        const priceValue = Number(planPrice.value);
+        const validityValue = planValidity.value;
+        const statusValue = planStatus.checked;
+        
+        // Create plan data object - renamed to formData to avoid conflict
+        const formData = {
+            provider: providerValue,
+            category: categoryValue,
+            name: nameValue,
+            data: dataValue,
+            price: priceValue,
+            validity: validityValue,
+            status: statusValue
+        };
+        
+        // Add API ID if provided
+        if (planApiId.value) {
+            formData.apiId = Number(planApiId.value);
+        }
+        
+        // Add manual data specific fields
+        if (providerValue === 'manual') {
+            if (planOriginalPrice.value) {
+                formData.originalPrice = Number(planOriginalPrice.value);
+            }
+            
+            if (planBadge.value) {
+                formData.badge = planBadge.value;
             }
         }
+        
+        console.log("Saving plan data:", formData); // Debug log
+        
+        if (planIdValue) {
+            // Update existing plan
+            await db.collection('dataPlans').doc(planIdValue).update(formData);
+            showToast('Plan updated successfully', 'success');
+        } else {
+            // Add new plan
+            await db.collection('dataPlans').add(formData);
+            showToast('Plan added successfully', 'success');
+        }
+        
+        // Reload plans
+        await loadDataPlans();
+        
+        // Close modal
+        closePlanModal();
+        
+        hideLoading();
+    } catch (error) {
+        console.error('Error saving plan:', error);
+        showToast('Failed to save plan: ' + error.message, 'error');
+        hideLoading();
+    }
+}
         
         // Update Request
         async function updateRequest() {
