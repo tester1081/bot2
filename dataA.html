@@ -11,7 +11,1855 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         
+        :root {<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Plans Management - VeltraWave VTU</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        
         :root {
+            --primary: #2D7FF9;
+            --primary-light: #5A9DFF;
+            --primary-dark: #0D5ED6;
+            --secondary: #8C52FF;
+            --accent: #FF5E8A;
+            --background: #0A0F1E;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --surface: rgba(255, 255, 255, 0.12);
+            --text: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --success: #00E1A0;
+            --warning: #FFB547;
+            --error: #FF5E7D;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            transform: translateX(0);
+        }
+        
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-sidebar:hover {
+            color: var(--text);
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-label {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+        
+        .sidebar.collapsed .menu-label {
+            display: none;
+        }
+        
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border-left-color: var(--primary);
+        }
+        
+        .menu-item i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .header-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .header-btn i {
+            font-size: 1rem;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+        }
+        
+        .tab:hover {
+            color: var(--text);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Tables */
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .table-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th, .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .table td {
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .status-inactive {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            padding: 5px;
+        }
+        
+        .action-btn:hover {
+            color: var(--text);
+        }
+        
+        .action-btn.edit:hover {
+            color: var(--primary);
+        }
+        
+        .action-btn.delete:hover {
+            color: var(--error);
+        }
+        
+        /* Search */
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: var(--background);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: var(--text);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255, 255, 255, 0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .checkbox-input {
+            display: none;
+        }
+        
+        .checkbox-label {
+            position: relative;
+            padding-left: 30px;
+            cursor: pointer;
+        }
+        
+        .checkbox-label:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .checkbox-input:checked + .checkbox-label:before {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .checkbox-label:after {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 4px;
+            top: 0;
+            color: white;
+            font-size: 12px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .checkbox-input:checked + .checkbox-label:after {
+            opacity: 1;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #d93d5d;
+        }
+        
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            background: rgba(20, 30, 50, 0.95);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast i {
+            font-size: 1.2rem;
+        }
+        
+        .toast-success i {
+            color: var(--success);
+        }
+        
+        .toast-error i {
+            color: var(--error);
+        }
+        
+        .toast-warning i {
+            color: var(--warning);
+        }
+        
+        .toast-info i {
+            color: var(--primary);
+        }
+        
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 15, 30, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 99;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .sidebar .logo span, .sidebar .menu-label, .sidebar .menu-item span {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+            
+            .main-content.expanded {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 250px;
+            }
+            
+            .sidebar.mobile-active {
+                transform: translateX(0);
+            }
+            
+            .sidebar.mobile-active .logo span, 
+            .sidebar.mobile-active .menu-label, 
+            .sidebar.mobile-active .menu-item span {
+                display: block;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.expanded {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .header-actions {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Network Provider Cards */
+        .provider-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .provider-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .provider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .provider-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .provider-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .provider-category {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .provider-category-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-light);
+        }
+        
+        .plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .plan-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .plan-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .plan-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .plan-price {
+            color: var(--success);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .plan-validity {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .plan-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .bulk-action-bar {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .bulk-action-title {
+            font-weight: 600;
+        }
+        
+        .bulk-action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        /* Badge for plan status */
+        .plan-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-left: 5px;
+        }
+        
+        .plan-status-active {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .plan-status-inactive {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+        
+        /* Special pricing display */
+        .price-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .original-price {
+            color: var(--text-secondary);
+            text-decoration: line-through;
+            font-size: 0.9rem;
+        }
+        
+        .discounted-price {
+            color: var(--success);
+            font-weight: 700;
+        }
+        
+        /* Special badges */
+        .special-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 5px;
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+        
+        .special-badge.hot {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+        
+        .special-badge.popular {
+            background: rgba(140, 82, 255, 0.2);
+            color: var(--secondary);
+        }
+        
+        .special-badge.value {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        /* Data Requests Table */
+        .requests-container {
+            margin-top: 30px;
+        }
+        
+        .requests-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .requests-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .request-status-pending {
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+        
+        .request-status-completed {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .request-status-rejected {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+        
+        /* Request details */
+        .request-detail-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .request-detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* API Response */
+        .api-response {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .api-response.success {
+            border-left: 3px solid var(--success);
+        }
+        
+        .api-response.error {
+            border-left: 3px solid var(--error);
+        }
+        
+        /* API Processing Section */
+        .api-processing-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .api-processing-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-light);
+        }
+        
+        .api-action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img src="public/logo.png" alt="VeltraWave" class="logo-image">
+                <span>VeltraWave</span>
+            </div>
+            <button class="toggle-sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-label">Main</div>
+            <a href="admin.html" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="overviewA.html" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Overview</span>
+            </a>
+            <a href="usersA.html" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            
+            <div class="menu-label">Management</div>
+            <a href="dataA.html" class="menu-item active">
+                <i class="fas fa-wifi"></i>
+                <span>Data</span>
+            </a>
+            <a href="storeA.html" class="menu-item">
+                <i class="fas fa-store"></i>
+                <span>Store</span>
+            </a>
+            <a href="requestsA.html" class="menu-item">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Requests</span>
+            </a>
+            <a href="reviewsA.html" class="menu-item">
+                <i class="fas fa-star"></i>
+                <span>Reviews</span>
+            </a>
+            
+            <div class="menu-label">Settings</div>
+            <a href="settingsA.html" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="#" class="menu-item" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Data Plans Management</h1>
+            <div class="header-actions">
+                <button class="header-btn" id="add-plan-btn">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Plan</span>
+                </button>
+                <button class="header-btn" id="import-plans-btn">
+                    <i class="fas fa-file-import"></i>
+                    <span>Import Plans</span>
+                </button>
+                <button class="header-btn" id="export-plans-btn">
+                    <i class="fas fa-file-export"></i>
+                    <span>Export Plans</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="search-plans" placeholder="Search data plans...">
+        </div>
+        
+        <!-- Bulk Action Bar -->
+        <div class="bulk-action-bar">
+            <div class="bulk-action-title">Bulk Actions</div>
+            <div class="bulk-action-buttons">
+                <button class="btn btn-secondary" id="sync-plans-btn">
+                    <i class="fas fa-sync"></i>
+                    <span>Sync Plans</span>
+                </button>
+                <button class="btn btn-secondary" id="activate-all-btn">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Activate All</span>
+                </button>
+                <button class="btn btn-secondary" id="deactivate-all-btn">
+                    <i class="fas fa-times-circle"></i>
+                    <span>Deactivate All</span>
+                </button>
+                <button class="btn btn-danger" id="delete-all-btn">
+                    <i class="fas fa-trash"></i>
+                    <span>Delete All</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="all">All Plans</div>
+            <div class="tab" data-tab="mtn">MTN</div>
+            <div class="tab" data-tab="manual">Manual Data</div>
+            <div class="tab" data-tab="airtel">Airtel</div>
+            <div class="tab" data-tab="glo">Glo</div>
+            <div class="tab" data-tab="9mobile">9Mobile</div>
+            <div class="tab" data-tab="requests">Data Requests</div>
+            <div class="tab" data-tab="plan-types">Plan Types</div>
+        </div>
+        
+        <!-- Tab Content -->
+        <div class="tab-content active" id="all-tab">
+            <!-- MTN Provider Card -->
+            <div class="provider-card" data-provider="mtn">
+                <div class="provider-header">
+                    <h2 class="provider-title">MTN</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-mtn-plan">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- MTN SME Category -->
+                <div class="provider-category" data-category="mtn-sme">
+                    <h3 class="provider-category-title">MTN SME</h3>
+                    <div class="plan-grid" id="mtn-sme-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- MTN Cooperate Gifting Category -->
+                <div class="provider-category" data-category="mtn-cooperate">
+                    <h3 class="provider-category-title">MTN Cooperate Gifting</h3>
+                    <div class="plan-grid" id="mtn-cooperate-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- MTN Gifting Category -->
+                <div class="provider-category" data-category="mtn-gifting">
+                    <h3 class="provider-category-title">MTN Gifting</h3>
+                    <div class="plan-grid" id="mtn-gifting-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Manual Data Provider Card -->
+            <div class="provider-card" data-provider="manual">
+                <div class="provider-header">
+                    <h2 class="provider-title">VeltraWave Exclusive MTN Special Data</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-manual-plan">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 1-Day Offers Category -->
+                <div class="provider-category" data-category="manual-1day">
+                    <h3 class="provider-category-title">1-Day Offers (24 Hours Validity)</h3>
+                    <div class="plan-grid" id="manual-1day-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 7-Day Offers Category -->
+                <div class="provider-category" data-category="manual-7day">
+                    <h3 class="provider-category-title">7-Day Offers (1 Week Validity)</h3>
+                    <div class="plan-grid" id="manual-7day-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 14-Day Offers Category -->
+                <div class="provider-category" data-category="manual-14day">
+                    <h3 class="provider-category-title">14-Day Offers (2 Weeks Validity)</h3>
+                    <div class="plan-grid" id="manual-14day-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 30-Day Offers Category -->
+                <div class="provider-category" data-category="manual-30day">
+                    <h3 class="provider-category-title">30-Day Offers (1 Month Validity)</h3>
+                    <div class="plan-grid" id="manual-30day-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Airtel Provider Card -->
+            <div class="provider-card" data-provider="airtel">
+                <div class="provider-header">
+                    <h2 class="provider-title">Airtel</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-airtel-plan">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Airtel SME Category -->
+                <div class="provider-category" data-category="airtel-sme">
+                    <h3 class="provider-category-title">Airtel SME</h3>
+                    <div class="plan-grid" id="airtel-sme-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Airtel Cooperate Gifting Category -->
+                <div class="provider-category" data-category="airtel-cooperate">
+                    <h3 class="provider-category-title">Airtel Cooperate Gifting</h3>
+                    <div class="plan-grid" id="airtel-cooperate-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Airtel Gifting Category -->
+                <div class="provider-category" data-category="airtel-gifting">
+                    <h3 class="provider-category-title">Airtel Gifting</h3>
+                    <div class="plan-grid" id="airtel-gifting-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Glo Provider Card -->
+            <div class="provider-card" data-provider="glo">
+                <div class="provider-header">
+                    <h2 class="provider-title">Glo</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-glo-plan">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Glo Cooperate Gifting Category -->
+                <div class="provider-category" data-category="glo-cooperate">
+                    <h3 class="provider-category-title">Glo Cooperate Gifting</h3>
+                    <div class="plan-grid" id="glo-cooperate-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Glo Gifting Category -->
+                <div class="provider-category" data-category="glo-gifting">
+                    <h3 class="provider-category-title">Glo Gifting</h3>
+                    <div class="plan-grid" id="glo-gifting-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 9Mobile Provider Card -->
+            <div class="provider-card" data-provider="9mobile">
+                <div class="provider-header">
+                    <h2 class="provider-title">9Mobile</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-9mobile-plan">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 9Mobile Cooperate Gifting Category -->
+                <div class="provider-category" data-category="9mobile-cooperate">
+                    <h3 class="provider-category-title">9Mobile Cooperate Gifting</h3>
+                    <div class="plan-grid" id="9mobile-cooperate-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 9Mobile Gifting Category -->
+                <div class="provider-category" data-category="9mobile-gifting">
+                    <h3 class="provider-category-title">9Mobile Gifting</h3>
+                    <div class="plan-grid" id="9mobile-gifting-plans">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MTN Tab Content -->
+        <div class="tab-content" id="mtn-tab">
+            <!-- MTN Provider Card (Same as in All tab) -->
+            <div class="provider-card" data-provider="mtn">
+                <div class="provider-header">
+                    <h2 class="provider-title">MTN</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-mtn-plan-tab">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- MTN SME Category -->
+                <div class="provider-category" data-category="mtn-sme">
+                    <h3 class="provider-category-title">MTN SME</h3>
+                    <div class="plan-grid" id="mtn-sme-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- MTN Cooperate Gifting Category -->
+                <div class="provider-category" data-category="mtn-cooperate">
+                    <h3 class="provider-category-title">MTN Cooperate Gifting</h3>
+                    <div class="plan-grid" id="mtn-cooperate-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- MTN Gifting Category -->
+                <div class="provider-category" data-category="mtn-gifting">
+                    <h3 class="provider-category-title">MTN Gifting</h3>
+                    <div class="plan-grid" id="mtn-gifting-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Manual Data Tab Content -->
+        <div class="tab-content" id="manual-tab">
+            <!-- Manual Data Provider Card -->
+            <div class="provider-card" data-provider="manual">
+                <div class="provider-header">
+                    <h2 class="provider-title">VeltraWave Exclusive MTN Special Data</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-manual-plan-tab">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 1-Day Offers Category -->
+                <div class="provider-category" data-category="manual-1day">
+                    <h3 class="provider-category-title">1-Day Offers (24 Hours Validity)</h3>
+                    <div class="plan-grid" id="manual-1day-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 7-Day Offers Category -->
+                <div class="provider-category" data-category="manual-7day">
+                    <h3 class="provider-category-title">7-Day Offers (1 Week Validity)</h3>
+                    <div class="plan-grid" id="manual-7day-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 14-Day Offers Category -->
+                <div class="provider-category" data-category="manual-14day">
+                    <h3 class="provider-category-title">14-Day Offers (2 Weeks Validity)</h3>
+                    <div class="plan-grid" id="manual-14day-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 30-Day Offers Category -->
+                <div class="provider-category" data-category="manual-30day">
+                    <h3 class="provider-category-title">30-Day Offers (1 Month Validity)</h3>
+                    <div class="plan-grid" id="manual-30day-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Airtel Tab Content -->
+        <div class="tab-content" id="airtel-tab">
+            <!-- Airtel Provider Card (Same as in All tab) -->
+            <div class="provider-card" data-provider="airtel">
+                <div class="provider-header">
+                    <h2 class="provider-title">Airtel</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-airtel-plan-tab">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Airtel SME Category -->
+                <div class="provider-category" data-category="airtel-sme">
+                    <h3 class="provider-category-title">Airtel SME</h3>
+                    <div class="plan-grid" id="airtel-sme-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Airtel Cooperate Gifting Category -->
+                <div class="provider-category" data-category="airtel-cooperate">
+                    <h3 class="provider-category-title">Airtel Cooperate Gifting</h3>
+                    <div class="plan-grid" id="airtel-cooperate-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Airtel Gifting Category -->
+                <div class="provider-category" data-category="airtel-gifting">
+                    <h3 class="provider-category-title">Airtel Gifting</h3>
+                    <div class="plan-grid" id="airtel-gifting-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Glo Tab Content -->
+        <div class="tab-content" id="glo-tab">
+            <!-- Glo Provider Card (Same as in All tab) -->
+            <div class="provider-card" data-provider="glo">
+                <div class="provider-header">
+                    <h2 class="provider-title">Glo</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-glo-plan-tab">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Glo Cooperate Gifting Category -->
+                <div class="provider-category" data-category="glo-cooperate">
+                    <h3 class="provider-category-title">Glo Cooperate Gifting</h3>
+                    <div class="plan-grid" id="glo-cooperate-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Glo Gifting Category -->
+                <div class="provider-category" data-category="glo-gifting">
+                    <h3 class="provider-category-title">Glo Gifting</h3>
+                    <div class="plan-grid" id="glo-gifting-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 9Mobile Tab Content -->
+        <div class="tab-content" id="9mobile-tab">
+            <!-- 9Mobile Provider Card (Same as in All tab) -->
+            <div class="provider-card" data-provider="9mobile">
+                <div class="provider-header">
+                    <h2 class="provider-title">9Mobile</h2>
+                    <div class="provider-actions">
+                        <button class="btn btn-secondary btn-sm" id="add-9mobile-plan-tab">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Plan</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 9Mobile Cooperate Gifting Category -->
+                <div class="provider-category" data-category="9mobile-cooperate">
+                    <h3 class="provider-category-title">9Mobile Cooperate Gifting</h3>
+                    <div class="plan-grid" id="9mobile-cooperate-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 9Mobile Gifting Category -->
+                <div class="provider-category" data-category="9mobile-gifting">
+                    <h3 class="provider-category-title">9Mobile Gifting</h3>
+                    <div class="plan-grid" id="9mobile-gifting-plans-tab">
+                        <!-- Plans will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Requests Tab Content -->
+        <div class="tab-content" id="requests-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Data Purchase Requests</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-secondary" id="refresh-requests-btn">
+                            <i class="fas fa-sync"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+                <table class="table" id="requests-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Phone Number</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requests-table-body">
+                        <!-- Requests will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Plan Types Tab Content -->
+        <div class="tab-content" id="plan-types-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Plan Type Management</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-secondary" id="refresh-plan-types-btn">
+                            <i class="fas fa-sync"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+                <p style="margin-bottom: 20px;">Enable or disable specific plan types to control which plans are visible to users.</p>
+                <table class="table" id="plan-types-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Network</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plan-types-table-body">
+                        <!-- Plan types will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Add/Edit Plan Modal -->
+    <div class="modal-overlay" id="plan-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="plan-modal-title">Add Data Plan</h3>
+                <button class="modal-close" id="plan-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="plan-form">
+                    <input type="hidden" id="plan-id">
+                    
+                    <div class="form-group">
+                        <label for="plan-provider" class="form-label">Provider</label>
+                        <select id="plan-provider" class="form-select" required>
+                            <option value="">Select Provider</option>
+                            <option value="mtn">MTN</option>
+                            <option value="manual">Manual Data</option>
+                            <option value="airtel">Airtel</option>
+                            <option value="glo">Glo</option>
+                            <option value="9mobile">9Mobile</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="plan-category" class="form-label">Category</label>
+                        <select id="plan-category" class="form-select" required>
+                            <option value="">Select Category</option>
+                            <!-- Categories will be populated based on provider -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="plan-name" class="form-label">Plan Name</label>
+                        <input type="text" id="plan-name" class="form-input" placeholder="e.g. MTN SME 1GB" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="plan-data" class="form-label">Data Amount</label>
+                        <input type="text" id="plan-data" class="form-input" placeholder="e.g. 1GB" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="plan-api-id" class="form-label">API Plan ID</label>
+                        <input type="number" id="plan-api-id" class="form-input" placeholder="e.g. 1, 2, 3, etc." min="1">
+                        <small style="color: var(--text-secondary); display: block; margin-top: 5px;">This ID must match the ID used by the data provider's API</small>
+                    </div>
+                    
+                    <div class="form-group manual-fields" style="display: none;">
+                        <label for="plan-original-price" class="form-label">Original Price (₦)</label>
+                        <input type="number" id="plan-original-price" class="form-input" placeholder="e.g. 600">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="plan-price" class="form-label">Price (₦)</label>
+                        <input type="number" id="plan-price" class="form-input" placeholder="e.g. 600" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="plan-validity" class="form-label">Validity</label>
+                        <input type="text" id="plan-validity" class="form-input" placeholder="e.g. 30 Days" required>
+                    </div>
+                    
+                    <div class="form-group manual-fields" style="display: none;">
+                        <label for="plan-badge" class="form-label">Special Badge</label>
+                        <select id="plan-badge" class="form-select">
+                            <option value="">None</option>
+                            <option value="hot">HOT!</option>
+                            <option value="popular">MOST POPULAR</option>
+                            <option value="value">BEST VALUE</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="plan-status" class="checkbox-input" checked>
+                            <span class="checkbox-label">Active</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="plan-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="plan-modal-save">Save Plan</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import Plans Modal -->
+    <div class="modal-overlay" id="import-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Import Data Plans</h3>
+                <button class="modal-close" id="import-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="import-data" class="form-label">Paste JSON Data</label>
+                    <textarea id="import-data" class="form-input" style="min-height: 200px;" placeholder='[{"provider": "mtn", "category": "mtn-sme", "name": "MTN SME 1GB", "data": "1GB", "price": 600, "validity": "30 Days", "status": true}]'></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="import-replace" class="checkbox-input">
+                        <span class="checkbox-label">Replace existing plans</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="import-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="import-modal-save">Import Plans</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="delete-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Delete</h3>
+                <button class="modal-close" id="delete-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this plan? This action cannot be undone.</p>
+                <input type="hidden" id="delete-plan-id">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="delete-modal-cancel">Cancel</button>
+                <button class="btn btn-danger" id="delete-modal-confirm">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Process Request Modal -->
+    <div class="modal-overlay" id="request-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="request-modal-title">Process Data Request</h3>
+                <button class="modal-close" id="request-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="request-details">
+                    <!-- Request details will be loaded dynamically -->
+                </div>
+                <div class="form-group">
+                    <label for="request-status" class="form-label">Update Status</label>
+                    <select id="request-status" class="form-select" required>
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="request-notes" class="form-label">Admin Notes</label>
+                    <textarea id="request-notes" class="form-input" placeholder="Add notes about this request (optional)"></textarea>
+                </div>
+                <input type="hidden" id="request-id">
+                
+                <div class="api-processing-section">
+                    <h4 class="api-processing-title">N3TData API Processing</h4>
+                    <p>Process this request through the N3TData API to fulfill the data purchase.</p>
+                    
+                    <div id="api-response-container" style="display: none;">
+                        <div class="api-response" id="api-response">
+                            <!-- API response will be shown here -->
+                        </div>
+                    </div>
+                    
+                    <div class="api-action-buttons">
+                        <button class="btn btn-primary" id="process-api-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Process via API</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="request-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="request-modal-save">Update Request</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.firebasestorage.app",
+            messagingSenderId: "431351611304",
+            appId: "1:431351611304:web:7381dd659920f9f325a79d",
+            measurementId: "G-HRHN8GJCR3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        // N3TData API Configuration
+        const N3T_DATA_API = {
+            endpoint: "https://n3tdata.com/api/data",
+            token: "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d",
+            networkIds: {
+                "mtn": 1,
+                "airtel": 2,
+                "glo": 3,
+                "9mobile": 4
+            }
+        };
+        
+        // Flag to prevent auth state change loop
+        let isCheckingAdmin = false;
+        let isSigningOut = false;
+        
+        // DOM Elements
+        const sidebar = document.querySelector('.sidebar');
+        const toggleSidebarBtn = document.querySelector('.toggle-sidebar');
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mainContent = document.querySelector('.main-content');
+        const logoutBtn = document.getElementById('logout-btn');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const searchInput = document.getElementById('search-plans');
+        
+        // Modal Elements
+        const planModalOverlay = document.getElementById('plan-modal-overlay');
+        const planModalClose = document.getElementById('plan-modal-close');
+        const planModalCancel = document.getElementById('plan-modal-cancel');
+        const planModalSave = document.getElementById('plan-modal-save');
+        const planModalTitle = document.getElementById('plan-modal-title');
+        const planForm = document.getElementById('plan-form');
+        const planId = document.getElementById('plan-id');
+        const planProvider = document.getElementById('plan-provider');
+        const planCategory = document.getElementById('plan-category');
+        const planName = document.getElementById('plan-name');
+        const planData = document.getElementById('plan-data');
+        const planApiId = document.getElementById('plan-api-id');
+        const planOriginalPrice = document.getElementById('plan-original-price');
+        const planPrice = document.getElementById('plan-price');
+        const planValidity = document.getElementById('plan-validity');
+        const planBadge = document.getElementById('plan-badge');
+        const planStatus = document.getElementById('plan-status');
+        const manualFields = document.querySelectorAll('.manual-fields');
+        
+        const importModalOverlay = document.getElementById('import-modal-overlay');
+        const importModalClose = document.getElementById('import-modal-close');
+        const importModalCancel = document.getElementById('import-modal-cancel');
+        const importModalSave = document.getElementById('import-modal-save');
+        const importData = document.getElementById('import-data');
+        const importReplace = document.getElementById('import-replace');
+        
+        const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+        const deleteModalClose = document.getElementById('delete-modal-close');
+        const deleteModalCancel = document.getElementById('delete-modal-cancel');
+        const deleteModalConfirm = document.getElementById('delete-modal-confirm');
+        const deletePlanId = document.getElementById('delete-plan-id');
+        
+        const requestModalOverlay = document.getElementById('request-modal-overlay');
+        const requestModalClose = document.getElementById('request-modal-close');
+        const requestModalCancel = document.getElementById('request-modal-cancel');
+        const requestModalSave = document.getElementById('request-modal-save');
+        const requestDetails = document.getElementById('request-details');
+        const requestStatus = document.getElementById('request-status');
+        const requestNotes = document.getElementById('request-notes');
+        const requestId = document.getElementById('request-id');
+        const processApiBtn = document.getElementById('process-api-btn');
+        const apiResponseContainer = document.getElementById('api-response-container');
+        const apiResponse = document.getElementById('api-response');
+        
+        // Button Elements
+        const addPlanBtn = document.getElementById('add-plan-btn');
+        const importPlansBtn = document.getElementById('import-plans-btn');
+        const exportPlansBtn = document.getElementById('export-plans-btn');
+        const syncPlansBtn = document.getElementById('sync-plans-btn');
+        const activateAllBtn = document.getElementById('activate-all-btn');
+        const deactivateAllBtn = document.getElementById('deactivate-all-btn');
+        const deleteAllBtn = document.getElementById('delete-all-btn');
+        const refreshRequestsBtn = document.getElementById('refresh-requests-btn');
+        const refreshPlanTypesBtn = document.getElementById('refresh-plan-types-btn');
+        
+        // Default plan types
+        const defaultPlanTypes = [
+
             --primary: #2D7FF9;
             --primary-light: #5A9DFF;
             --primary-dark: #0D5ED6;
