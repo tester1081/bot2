@@ -1532,6 +1532,18 @@
         let selectedPlanType = "";
         let selectedPlan = null;
         
+        // N3TData API Configuration
+        const API_ENDPOINT = "https://n3tdata.com/api/data";
+        const API_TOKEN = "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d";
+        
+        // Network IDs for API
+        const NETWORK_IDS = {
+            "MTN": 1,
+            "AIRTEL": 2,
+            "GLO": 3,
+            "9MOBILE": 4
+        };
+        
         // DOM Elements
         const modeOptions = document.querySelectorAll('.mode-option');
         const modeIndicator = document.querySelector('.mode-indicator');
@@ -1863,15 +1875,26 @@
         function updatePlanTypesUI(planTypes) {
             const planTypeSelect = document.getElementById('plan-type');
             planTypeSelect.innerHTML = '<option value="" selected disabled>Select Plan Type</option>';
-            
+        
+            // Create a map to track unique plan types by name
+            const uniquePlanTypes = new Map();
+        
+            // Process plan types and keep only unique ones by name
             planTypes.forEach(planType => {
-                if (planType.status) {
-                    const option = document.createElement('option');
-                    option.value = planType.id;
-                    option.textContent = planType.name;
-                    planTypeSelect.appendChild(option);
+                if (planType.active !== false && !uniquePlanTypes.has(planType.name)) {
+                    uniquePlanTypes.set(planType.name, planType);
                 }
             });
+        
+            // Add unique plan types to dropdown
+            uniquePlanTypes.forEach(planType => {
+                const option = document.createElement('option');
+                option.value = planType.id;
+                option.textContent = planType.name;
+                planTypeSelect.appendChild(option);
+            });
+        
+            console.log(`Added ${uniquePlanTypes.size} unique plan types to dropdown`);
         }
         
         // Update Manual Plans UI
@@ -2454,7 +2477,7 @@
                 phoneNumber: phoneNumber,
                 planName: planName,
                 networkName: networkName,
-                networkId: selectedNetwork,
+                networkId: networkId, // Use the numeric network ID for API
                 planId: planId,
                 amount: amount,
                 status: 'pending',
@@ -2467,7 +2490,7 @@
                 saveManualRequest(requestData, amount);
             } else {
                 // For automatic data, make API call first, then update balance only on success
-                processAutomaticRequest(requestData, amount);
+                processAutomaticRequest(requestData, amount, networkId);
             }
         }
         
@@ -2529,325 +2552,423 @@
         }
         
         // Process automatic data request
-        function processAutomaticRequest(requestData, amount) {
+        function processAutomaticRequest(requestData, amount, networkId) {
             // First save the request to Firestore
             db.collection('dataRequests').add(requestData)
                 .then(docRef => {
                     console.log("Automatic request saved with ID:", docRef.id);
                     
-                    // Determine data plan ID for API based on the selected plan
+                    // Get the selected data plan
+                    const planId = parseInt(document.getElementById('data-plan').value);
                     let dataPlanId = 1; // Default
-                    const planName = requestData.planName;
                     
+                    // Find the actual plan in our data plans array
+                    const selectedPlan = dataPlans.find(plan => plan.id === requestData.planId);
+                    
+                    // If we have a plan with apiId, use that
+                    if (selectedPlan && selectedPlan.apiId) {
+                        dataPlanId = selectedPlan.apiId;
+                    } else {
+                        // Try to extract plan ID from the plan name
+                        const planName = requestData.planName;
+                        if (planName.includes('500MB')) dataPlanId = 1;
+                        else if (planName.includes('1GB')) dataPlanId = 2;
+                        else if (planName.includes('2GB')) dataPlanId = 3;
+                        else if (planName.includes('3GB')) dataPlanId = 4;
+                        else if (planName.includes('5GB')) dataPlanId = 5;
+                        else if (planName.includes('10GB')) dataPlanId = 6;
+                }
+                
+                console.log("Making API call with plan ID:", dataPlanId);
+                
+                // Create payload for API
+                const payload = {
+                    network: networkId, // Use the mapped network ID
+                    phone: requestData.phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
+                    data_plan: dataPlanId,
+                    bypass: false,
+                    'request-id': requestData.requestId
+                };
+                
+                console.log("API Payload:", payload);
+                
+                // Make API call to N3TData
+                callN3TDataAPI(payload, docRef.id, amount);
+            })
+            .catch(error => {
+                console.error("Error saving automatic request:", error);
+                
+                // Reset confirm button
+                document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+                document.getElementById('confirm-purchase').disabled = false;
+                
+                // Close modal
+                confirmationModal.classList.remove('show');
+                
+                // Show error toast
+                showToast('error', 'Failed', 'Failed to process your request. Please try again.');
+            });
+    }
+    
+    // Call N3TData API
+    function callN3TDataAPI(payload, requestId, amount) {
+        // Show processing toast
+        showToast('info', 'Processing', 'Processing your data purchase...');
+        
+        console.log("Making API call with payload:", payload);
+        
+        // Create the request options
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Token ${API_TOKEN}`
+            },
+            body: JSON.stringify(payload)
+        };
+        
+        // Make the fetch request to the API
+        fetch(API_ENDPOINT, options)
+            .then(response => {
+                console.log("API Response status:", response.status);
+                // Even if we get an error status, we still want to parse the JSON
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        // Add status to the error data
+                        data.httpStatus = response.status;
+                        return Promise.reject(data);
+                    }
+                    return data;
+                });
+            })
+            .then(data => {
+                console.log("API Response data:", data);
+                
+                // Check if the API call was successful
+                if (data.status === 'success') {
+                    // Deduct amount from user's balance
+                    const newBalance = currentUser.balance - amount;
+                    
+                    // Update user's balance in Firestore
+                    return db.collection('users').doc(currentUser.uid).update({
+                        balance: newBalance,
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    })
+                    .then(() => {
+                        // Update local user object
+                        currentUser.balance = newBalance;
+                        
+                        // Update balance display
+                        updateBalanceDisplay();
+                        
+                        // Update request status in Firestore
+                        return db.collection('dataRequests').doc(requestId).update({
+                            status: 'completed',
+                            apiResponse: data,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    })
+                    .then(() => {
+                        // Close modal
+                        confirmationModal.classList.remove('show');
+                        
+                        // Show success toast
+                        showToast('success', 'Purchase Successful', 'Your data purchase has been processed successfully');
+                        
+                        // Reset form
+                        document.getElementById('data-form').reset();
+                        document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
+                        
+                        // Refresh requests
+                        fetchUserRequests();
+                        
+                        // Reset confirm button
+                        document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+                        document.getElementById('confirm-purchase').disabled = false;
+                    });
+                } else {
+                    // API call returned success:false
+                    throw new Error(data.message || 'API call failed');
+                }
+            })
+            .catch(error => {
+                console.error("API Error:", error);
+                
+                // Customize error message for insufficient funds or other errors
+                let errorMessage = error.message || 'Failed to process request';
+                
+                // If it's a 403 error, it's likely an authentication issue with the API
+                if (error.httpStatus === 403) {
+                    errorMessage = 'vwave error: contact admin';
+                }
+                
+                // Check if error is related to insufficient funds
+                if (errorMessage.toLowerCase().includes('insufficient') || 
+                    errorMessage.toLowerCase().includes('balance') || 
+                    errorMessage.toLowerCase().includes('wallet') || 
+                    errorMessage.toLowerCase().includes('fund')) {
+                    errorMessage = 'vwave error: contact admin';
+                }
+                
+                // Update request status in Firestore
+                db.collection('dataRequests').doc(requestId).update({
+                    status: 'failed',
+                    error: errorMessage,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    // Close modal
+                    confirmationModal.classList.remove('show');
+                    
+                    // Show error toast with custom message
+                    showToast('error', 'Failed', errorMessage);
+                    
+                    // Reset confirm button
+                    document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+                    document.getElementById('confirm-purchase').disabled = false;
+                })
+                .catch(firestoreError => {
+                    console.error("Error updating request status:", firestoreError);
+                    confirmationModal.classList.remove('show');
+                    showToast('error', 'Failed', 'An error occurred while processing your request');
+                    document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+                    document.getElementById('confirm-purchase').disabled = false;
+                });
+            });
+    }
+    
+    // Process automatic data request
+    function processAutomaticRequest(requestData, amount, networkId) {
+        // First save the request to Firestore
+        db.collection('dataRequests').add(requestData)
+            .then(docRef => {
+                console.log("Automatic request saved with ID:", docRef.id);
+                
+                // Get the selected data plan
+                const planId = parseInt(document.getElementById('data-plan').value);
+                let dataPlanId = 1; // Default
+                
+                // Find the actual plan in our data plans array
+                const selectedPlan = dataPlans.find(plan => plan.id === requestData.planId);
+                
+                // If we have a plan with apiId, use that
+                if (selectedPlan && selectedPlan.apiId) {
+                    dataPlanId = selectedPlan.apiId;
+                } else {
                     // Try to extract plan ID from the plan name
+                    const planName = requestData.planName;
                     if (planName.includes('500MB')) dataPlanId = 1;
                     else if (planName.includes('1GB')) dataPlanId = 2;
                     else if (planName.includes('2GB')) dataPlanId = 3;
                     else if (planName.includes('3GB')) dataPlanId = 4;
                     else if (planName.includes('5GB')) dataPlanId = 5;
                     else if (planName.includes('10GB')) dataPlanId = 6;
-                    
-                    console.log("Making API call with plan ID:", dataPlanId);
-                    
-                    // Create payload for API
-                    const payload = {
-                        network: parseInt(requestData.networkId) || 1, // Ensure it's a valid number
-                        phone: requestData.phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
-                        data_plan: dataPlanId,
-                        bypass: false,
-                        'request-id': requestData.requestId
-                    };
-                    
-                    console.log("API Payload:", payload);
-                    
-                    // Make direct API call
-                    makeDirectApiCall(payload, docRef.id, amount);
-                })
-                .catch(error => {
-                    console.error("Error saving automatic request:", error);
-                    
-                    // Reset confirm button
-                    document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-                    document.getElementById('confirm-purchase').disabled = false;
-                    
-                    // Close modal
-                    confirmationModal.classList.remove('show');
-                    
-                    // Show error toast
-                    showToast('error', 'Failed', 'Failed to process your request. Please try again.');
-                });
-        }
-        
-        // Make direct API call to N3tdata
-        function makeDirectApiCall(payload, requestId, amount) {
-            // Show processing toast
-            showToast('info', 'Processing', 'Processing your data purchase...');
-            
-            // Create the request options
-            const options = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Token 3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d'
-                },
-                body: JSON.stringify(payload)
-            };
-            
-            // Make the fetch request directly to the API
-            fetch('https://n3tdata.com/api/data', options)
-                .then(response => {
-                    console.log("Direct API Response status:", response.status);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("Direct API Response data:", data);
-                    
-                    // Check if the API call was successful
-                    if (data.status === 'success') {
-                        // Deduct amount from user's balance
-                        const newBalance = currentUser.balance - amount;
-                        
-                        // Update user's balance in Firestore
-                        return db.collection('users').doc(currentUser.uid).update({
-                            balance: newBalance,
-                            updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                        })
-                        .then(() => {
-                            // Update local user object
-                            currentUser.balance = newBalance;
-                            
-                            // Update balance display
-                            updateBalanceDisplay();
-                            
-                            // Update request status in Firestore
-                            return db.collection('dataRequests').doc(requestId).update({
-                                status: 'completed',
-                                apiResponse: data,
-                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        })
-                        .then(() => {
-                            // Close modal
-                            confirmationModal.classList.remove('show');
-                            
-                            // Show success toast
-                            showToast('success', 'Purchase Successful', 'Your data purchase has been processed successfully');
-                            
-                            // Reset form
-                            document.getElementById('data-form').reset();
-                            document.getElementById('data-plan').innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
-                            
-                            // Refresh requests
-                            fetchUserRequests();
-                            
-                            // Reset confirm button
-                            document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-                            document.getElementById('confirm-purchase').disabled = false;
-                        });
-                    } else {
-                        // API call failed
-                        throw new Error(data.message || 'API call failed');
-                    }
-                })
-                .catch(error => {
-                    console.error("Direct API Error:", error);
-                    
-                    // Update request status in Firestore
-                    db.collection('dataRequests').doc(requestId).update({
-                        status: 'failed',
-                        error: error.message,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    })
-                    .then(() => {
-                        // Close modal
-                        confirmationModal.classList.remove('show');
-                        
-                        // Check if error is due to insufficient funds or admin-related
-                        if (error.message && (
-                            error.message.toLowerCase().includes('insufficient') || 
-                            error.message.toLowerCase().includes('balance') ||
-                            error.message.toLowerCase().includes('wallet')
-                        )) {
-                            showToast('error', 'Error 404', 'Contact admin for assistance');
-                        } else {
-                            showToast('error', 'Failed', 'Failed to process your data purchase. Please try again.');
-                        }
-                        
-                        // Reset confirm button
-                        document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-                        document.getElementById('confirm-purchase').disabled = false;
-                    });
-                });
-        }
-        
-        // Update Data Plan Dropdown
-        function updateDataPlanDropdown() {
-            const dataPlanSelect = document.getElementById('data-plan');
-            
-            // Clear existing options
-            dataPlanSelect.innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
-            
-            if (!selectedPlanType) return;
-            
-            // Filter plans by type and network
-            const filteredPlans = dataPlans.filter(plan => {
-                const category = plan.category ? plan.category.toLowerCase() : '';
-                const provider = plan.provider ? plan.provider.toLowerCase() : '';
-                const networkMatch = provider.includes(getNetworkName(selectedNetwork).toLowerCase());
-                const typeMatch = category.includes(selectedPlanType.toLowerCase());
-                return networkMatch && typeMatch && plan.status === true;
-            });
-            
-            if (filteredPlans.length > 0) {
-                // Add plans to dropdown
-                filteredPlans.forEach(plan => {
-                    const option = document.createElement('option');
-                    option.value = plan.id;
-                    option.textContent = `${plan.data} - ${plan.validity} - ₦${plan.price.toLocaleString()}`;
-                    dataPlanSelect.appendChild(option);
-                });
-            } else {
-                // Add default plans if no plans found
-                const defaultPlans = [
-                    { id: 'default-1', data: '500MB', validity: '1 Day', price: 129 },
-                    { id: 'default-2', data: '1GB', validity: '1 Day', price: 249 },
-                    { id: 'default-3', data: '2.5GB', validity: '2 Days', price: 519 },
-                    { id: 'default-4', data: '5GB', validity: '7 Days', price: 1299 },
-                    { id: 'default-5', data: '10GB', validity: '30 Days', price: 2499 }
-                ];
+                }
                 
-                defaultPlans.forEach(plan => {
-                    const option = document.createElement('option');
-                    option.value = plan.id;
-                    option.textContent = `${plan.data} - ${plan.validity} - ₦${plan.price.toLocaleString()}`;
-                    dataPlanSelect.appendChild(option);
-                });
-            }
-        }
-        
-        // Get Network Name
-        function getNetworkName(networkId) {
-            const network = networks.find(n => n.id === networkId);
-            if (network) return network.name;
-            
-            // Default network names
-            switch (networkId) {
-                case '1': return 'MTN';
-                case '2': return 'Airtel';
-                case '3': return 'Glo';
-                case '4': return '9mobile';
-                default: return 'MTN';
-            }
-        }
-        
-        // Get Network Class
-        function getNetworkClass(networkName) {
-            const name = networkName.toLowerCase();
-            if (name.includes('mtn')) return 'mtn';
-            if (name.includes('airtel')) return 'airtel';
-            if (name.includes('glo')) return 'glo';
-            if (name.includes('9mobile') || name.includes('etisalat')) return 'etisalat';
-            return '';
-        }
-        
-        // Set Mode Indicator Position
-        function setModeIndicatorPosition(activeOption) {
-            const index = Array.from(modeOptions).indexOf(activeOption);
-            const width = 100 / modeOptions.length;
-            modeIndicator.style.transform = `translateX(${index * 100}%)`;
-            modeIndicator.style.width = `${width}%`;
-        }
-        
-        // Set Nav Indicator Position
-        function setNavIndicatorPosition(activeItem) {
-            const navBar = document.querySelector('.nav-bar');
-            const navIndicator = document.querySelector('.nav-indicator');
-            
-            if (!navBar || !navIndicator || !activeItem) return;
-            
-            const itemRect = activeItem.getBoundingClientRect();
-            const navRect = navBar.getBoundingClientRect();
-            
-            navIndicator.style.width = `${itemRect.width}px`;
-            navIndicator.style.left = `${itemRect.left - navRect.left}px`;
-        }
-        
-        // Format Timestamp
-        function formatTimestamp(timestamp) {
-            const now = new Date();
-            const diff = now.getTime() - timestamp.getTime();
-            const minutes = Math.floor(diff / 60000);
-            
-            if (minutes < 60) {
-                return minutes <= 1 ? 'Just now' : `${minutes} minutes ago`;
-            } else if (minutes < 1440) {
-                const hours = Math.floor(minutes / 60);
-                return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
-            } else if (minutes < 10080) { // 7 days
-                const days = Math.floor(minutes / 1440);
-                return `${days} ${days === 1 ? 'day' : 'days'} ago`;
-            } else {
-                const day = timestamp.getDate();
-                const month = timestamp.toLocaleString('default', { month: 'short' });
-                const year = timestamp.getFullYear();
-                return `${day} ${month} ${year}`;
-            }
-        }
-        
-        // Update Balance Display
-        function updateBalanceDisplay() {
-            if (currentUser && currentUser.balance !== undefined) {
-                balanceValue.textContent = `₦${currentUser.balance.toLocaleString()}`;
-                confirmBalance.textContent = `₦${currentUser.balance.toLocaleString()}`;
-            } else {
-                balanceValue.textContent = '₦0.00';
-                confirmBalance.textContent = '₦0.00';
-            }
-        }
-        
-        // Show Toast
-        function showToast(type, title, message) {
-            const toastContainer = document.getElementById('toast-container');
-            
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            let icon;
-            switch (type) {
-                case 'success': icon = 'check-circle'; break;
-                case 'error': icon = 'times-circle'; break;
-                case 'warning': icon = 'exclamation-triangle'; break;
-                default: icon = 'info-circle';
-            }
-            
-            toast.innerHTML = `
-                <div class="toast-icon">
-                    <i class="fas fa-${icon}"></i>
-                </div>
-                <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-                <div class="toast-close">
-                    <i class="fas fa-times"></i>
-                </div>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            // Add click event to close button
-            toast.querySelector('.toast-close').addEventListener('click', function() {
-                toast.remove();
+                console.log("Making API call with plan ID:", dataPlanId);
+                
+                // Create payload for API
+                const payload = {
+                    network: networkId, // Use the mapped network ID
+                    phone: requestData.phoneNumber.replace(/^0/, '234'), // Convert 07067479043 to 2347067479043 format
+                    data_plan: dataPlanId,
+                    bypass: false,
+                    'request-id': requestData.requestId
+                };
+                
+                console.log("API Payload:", payload);
+                
+                // Make API call to N3TData
+                callN3TDataAPI(payload, docRef.id, amount);
+            })
+            .catch(error => {
+                console.error("Error saving automatic request:", error);
+                
+                // Reset confirm button
+                document.getElementById('confirm-purchase').innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
+                document.getElementById('confirm-purchase').disabled = false;
+                
+                // Close modal
+                confirmationModal.classList.remove('show');
+                
+                // Show error toast
+                showToast('error', 'Failed', 'Failed to process your request. Please try again.');
             });
+    }
+    
+    // Update Data Plan Dropdown
+    function updateDataPlanDropdown() {
+        const dataPlanSelect = document.getElementById('data-plan');
+        
+        // Clear existing options
+        dataPlanSelect.innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
+        
+        if (!selectedPlanType) return;
+        
+        // Get the selected plan type name
+        const selectedPlanTypeObj = planTypes.find(pt => pt.id === selectedPlanType);
+        const selectedPlanTypeName = selectedPlanTypeObj ? selectedPlanTypeObj.name : '';
+        
+        console.log(`Filtering plans for network: ${getNetworkName(selectedNetwork)} and plan type: ${selectedPlanTypeName}`);
+        
+        // Filter plans by type and network
+        const filteredPlans = dataPlans.filter(plan => {
+            // Match by network
+            const provider = plan.provider ? plan.provider.toLowerCase() : '';
+            const networkMatch = provider.includes(getNetworkName(selectedNetwork).toLowerCase());
             
-            // Auto remove toast after animation completes
-            setTimeout(() => {
-                toast.remove();
-            }, 5500);
+            // Match by category/plan type
+            const category = plan.category ? plan.category.toLowerCase() : '';
+            const planTypeMatch = selectedPlanTypeName && 
+                (category.includes(selectedPlanTypeName.toLowerCase()) || 
+                 category.includes(selectedPlanType.toLowerCase()));
+            
+            return networkMatch && planTypeMatch && plan.status === true;
+        });
+        
+        console.log(`Found ${filteredPlans.length} matching plans`);
+        
+        if (filteredPlans.length > 0) {
+            // Add plans to dropdown
+            filteredPlans.forEach(plan => {
+                const option = document.createElement('option');
+                option.value = plan.id;
+                option.textContent = `${plan.data} - ${plan.validity} - ₦${plan.price.toLocaleString()}`;
+                // Store the apiId as a data attribute if available
+                if (plan.apiId) {
+                    option.dataset.apiId = plan.apiId;
+                }
+                dataPlanSelect.appendChild(option);
+            });
+        } else {
+            // No plans found - don't add default plans
+            console.log("No plans found for the selected network and plan type");
+            
+            // Show a message in the dropdown
+            const option = document.createElement('option');
+            option.value = "";
+            option.disabled = true;
+            option.textContent = "No plans available for this selection";
+            dataPlanSelect.appendChild(option);
         }
-    </script>
+    }
+    
+    // Process Data Purchase
+    function processDataPurchase() {
+        // Check if user is authenticated
+        if (!currentUser) {
+            // Try to authenticate with Telegram
+            let telegramUserId = null;
+            
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+                if (tgUser) {
+                    telegramUserId = tgUser.id.toString();
+                    loadUserDataByTelegramId(telegramUserId);
+                    showToast('info', 'Processing', 'Please try again in a moment');
+                    confirmationModal.classList.remove('show');
+                    return;
+                }
+            }
+            
+            // If still not authenticated, show a message
+            confirmationModal.classList.remove('show');
+            showToast('error', 'Authentication Required', 'Please restart the app to authenticate');
+            return;
+        }
+        
+        // Get purchase details
+        const networkName = document.getElementById('confirm-network').textContent;
+        const planName = document.getElementById('confirm-plan').textContent;
+        const phoneNumber = document.getElementById('confirm-number').textContent;
+        const amountText = document.getElementById('confirm-amount').textContent;
+        const amount = parseInt(amountText.replace(/[^\d]/g, ''));
+        
+        // Check if user has enough balance
+        if (currentUser.balance < amount) {
+            confirmationModal.classList.remove('show');
+            showInsufficientBalanceModal(amount);
+            return;
+        }
+        
+        // Determine if this is from automatic or manual mode
+        const isManual = document.querySelector('.mode-option.active').dataset.mode === 'manual';
+        
+        // Get plan ID and network ID
+        let planId;
+        if (isManual) {
+            planId = selectedPlan.id;
+        } else {
+            planId = document.getElementById('data-plan').value;
+        }
+        
+        // Map network name to network ID for API
+        let networkId;
+        switch(networkName.toLowerCase()) {
+            case 'mtn': networkId = 1; break;
+            case 'airtel': networkId = 2; break;
+            case 'glo': networkId = 3; break;
+            case '9mobile': networkId = 4; break;
+            default: networkId = 1; // Default to MTN
+        }
+        
+        // Generate request ID
+        const requestId = `Data_${Date.now()}`;
+        
+        // Disable confirm button and show loading
+        const confirmBtn = document.getElementById('confirm-purchase');
+        confirmBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
+        confirmBtn.disabled = true;
+        
+        // Create request data for Firestore
+        const requestData = {
+            userId: currentUser.uid,
+            telegramId: currentUser.telegramId || currentUser.user_id,
+            phoneNumber: phoneNumber,
+            planName: planName,
+            networkName: networkName,
+            networkId: networkId, // Use the numeric network ID for API
+            planId: planId,
+            amount: amount,
+            status: 'pending',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            requestId: requestId
+        };
+        
+        if (isManual) {
+            // For manual data, just save to Firestore and deduct balance
+            saveManualRequest(requestData, amount);
+        } else {
+            // For automatic data, make API call first, then update balance only on success
+            processAutomaticRequest(requestData, amount, networkId);
+        }
+    }
+    
+    // Update Plan Types UI
+    function updatePlanTypesUI(planTypes) {
+        const planTypeSelect = document.getElementById('plan-type');
+        planTypeSelect.innerHTML = '<option value="" selected disabled>Select Plan Type</option>';
+        
+        // Create a map to track unique plan types by name
+        const uniquePlanTypes = new Map();
+        
+        // Process plan types and keep only unique ones by name
+        planTypes.forEach(planType => {
+            if (planType.active !== false && !uniquePlanTypes.has(planType.name)) {
+                uniquePlanTypes.set(planType.name, planType);
+            }
+        });
+        
+        // Add unique plan types to dropdown
+        uniquePlanTypes.forEach(planType => {
+            const option = document.createElement('option');
+            option.value = planType.id;
+            option.textContent = planType.name;
+            planTypeSelect.appendChild(option);
+        });
+        
+        console.log(`Added ${uniquePlanTypes.size} unique plan types to dropdown`);
+    }
+</script>
 </body>
 </html>
