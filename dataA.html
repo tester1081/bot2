@@ -948,6 +948,46 @@
         .request-detail-item:last-child {
             border-bottom: none;
         }
+        
+        /* API Response */
+        .api-response {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .api-response.success {
+            border-left: 3px solid var(--success);
+        }
+        
+        .api-response.error {
+            border-left: 3px solid var(--error);
+        }
+        
+        /* API Processing Section */
+        .api-processing-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .api-processing-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-light);
+        }
+        
+        .api-action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -1679,6 +1719,24 @@
                     <textarea id="request-notes" class="form-input" placeholder="Add notes about this request (optional)"></textarea>
                 </div>
                 <input type="hidden" id="request-id">
+                
+                <div class="api-processing-section">
+                    <h4 class="api-processing-title">N3TData API Processing</h4>
+                    <p>Process this request through the N3TData API to fulfill the data purchase.</p>
+                    
+                    <div id="api-response-container" style="display: none;">
+                        <div class="api-response" id="api-response">
+                            <!-- API response will be shown here -->
+                        </div>
+                    </div>
+                    
+                    <div class="api-action-buttons">
+                        <button class="btn btn-primary" id="process-api-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Process via API</span>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="request-modal-cancel">Cancel</button>
@@ -1703,6 +1761,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+        
+        // N3TData API Configuration
+        const N3T_DATA_API = {
+            endpoint: "https://n3tdata.com/api/data",
+            token: "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d",
+            networkIds: {
+                "mtn": 1,
+                "airtel": 2,
+                "glo": 3,
+                "9mobile": 4
+            }
+        };
         
         // Flag to prevent auth state change loop
         let isCheckingAdmin = false;
@@ -1759,6 +1829,9 @@
         const requestStatus = document.getElementById('request-status');
         const requestNotes = document.getElementById('request-notes');
         const requestId = document.getElementById('request-id');
+        const processApiBtn = document.getElementById('process-api-btn');
+        const apiResponseContainer = document.getElementById('api-response-container');
+        const apiResponse = document.getElementById('api-response');
         
         // Button Elements
         const addPlanBtn = document.getElementById('add-plan-btn');
@@ -1860,21 +1933,6 @@
             }
         };
         
-        // Default plan types - Updated to include network information
-        const defaultPlanTypes = [
-            { id: "mtn-sme", name: "SME", network: "MTN", active: true },
-            { id: "mtn-gifting", name: "GIFTING", network: "MTN", active: true },
-            { id: "mtn-cooperate", name: "COOPERATE GIFTING", network: "MTN", active: true },
-            { id: "airtel-sme", name: "SME", network: "AIRTEL", active: true },
-            { id: "airtel-gifting", name: "GIFTING", network: "AIRTEL", active: true },
-            { id: "airtel-cooperate", name: "COOPERATE GIFTING", network: "AIRTEL", active: true },
-            { id: "glo-gifting", name: "GIFTING", network: "GLO", active: true },
-            { id: "glo-cooperate", name: "COOPERATE GIFTING", network: "GLO", active: true },
-            { id: "9mobile-gifting", name: "GIFTING", network: "9MOBILE", active: true },
-            { id: "9mobile-cooperate", name: "COOPERATE GIFTING", network: "9MOBILE", active: true },
-            { id: "manual", name: "MANUAL", network: "MTN", active: true },
-        ];
-        
         // Check if user is logged in
         document.addEventListener('DOMContentLoaded', function() {
             showLoading();
@@ -1933,6 +1991,9 @@
                 // Setup event listeners
                 setupEventListeners();
                 
+                // Load networks
+                await loadNetworks();
+                
                 // Load data plans
                 await loadDataPlans();
                 
@@ -1947,6 +2008,49 @@
                 console.error('Error initializing app:', error);
                 showToast('Failed to initialize the app', 'error');
                 hideLoading();
+            }
+        }
+        
+        // Load Networks
+        async function loadNetworks() {
+            try {
+                // Get all networks
+                const networksSnapshot = await db.collection('networks').get();
+                
+                if (networksSnapshot.empty) {
+                    // If no networks exist, add default networks
+                    await addDefaultNetworks();
+                }
+            } catch (error) {
+                console.error('Error loading networks:', error);
+                throw error;
+            }
+        }
+        
+        // Add Default Networks
+        async function addDefaultNetworks() {
+            try {
+                const batch = db.batch();
+                
+                const networks = [
+                    { name: "MTN", status: true },
+                    { name: "AIRTEL", status: true },
+                    { name: "GLO", status: true },
+                    { name: "9MOBILE", status: true }
+                ];
+                
+                networks.forEach(network => {
+                    const networkRef = db.collection('networks').doc();
+                    batch.set(networkRef, {
+                        ...network,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+                
+                await batch.commit();
+            } catch (error) {
+                console.error('Error adding default networks:', error);
+                throw error;
             }
         }
         
@@ -2105,6 +2209,11 @@
                 updateRequest();
             });
             
+            // Process API Button
+            processApiBtn.addEventListener('click', function() {
+                processRequestViaAPI();
+            });
+            
             // Refresh Requests Button
             refreshRequestsBtn.addEventListener('click', function() {
                 loadDataRequests();
@@ -2218,12 +2327,23 @@
             try {
                 showLoading();
                 
+                // Get all networks
+                const networksSnapshot = await db.collection('networks').get();
+                const networks = {};
+                
+                networksSnapshot.forEach(doc => {
+                    networks[doc.data().name.toLowerCase()] = {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                });
+                
                 // Check if plan types collection exists and has documents
                 const planTypesSnapshot = await db.collection('planTypes').get();
                 
                 if (planTypesSnapshot.empty) {
                     // If no plan types exist, add default plan types
-                    await addDefaultPlanTypes();
+                    await addDefaultPlanTypes(networks);
                     showToast('Default plan types have been added', 'success');
                 }
                 
@@ -2259,7 +2379,7 @@
                 for (const [network, categories] of Object.entries(defaultDataPlans)) {
                     for (const [category, plans] of Object.entries(categories)) {
                         plans.forEach(plan => {
-                            const categoryKey = network.toLowerCase() + '-' + category.toLowerCase().replace(' ', '-');
+                            const categoryKey = network.toLowerCase() + '-' + category.toLowerCase().replace(/\s+/g, '-');
                             flattenedPlans.push({
                                 provider: network.toLowerCase(),
                                 category: categoryKey,
@@ -2287,11 +2407,26 @@
         }
         
         // Add Default Plan Types
-        async function addDefaultPlanTypes() {
+        async function addDefaultPlanTypes(networks) {
             try {
                 const batch = db.batch();
                 
-                defaultPlanTypes.forEach(planType => {
+                // Create plan types based on networks
+                const planTypes = [
+                    { id: "mtn-sme", name: "SME", network: "MTN", networkId: networks.mtn?.id || "", active: true },
+                    { id: "mtn-gifting", name: "GIFTING", network: "MTN", networkId: networks.mtn?.id || "", active: true },
+                    { id: "mtn-cooperate", name: "COOPERATE GIFTING", network: "MTN", networkId: networks.mtn?.id || "", active: true },
+                    { id: "airtel-sme", name: "SME", network: "AIRTEL", networkId: networks.airtel?.id || "", active: true },
+                    { id: "airtel-gifting", name: "GIFTING", network: "AIRTEL", networkId: networks.airtel?.id || "", active: true },
+                    { id: "airtel-cooperate", name: "COOPERATE GIFTING", network: "AIRTEL", networkId: networks.airtel?.id || "", active: true },
+                    { id: "glo-gifting", name: "GIFTING", network: "GLO", networkId: networks.glo?.id || "", active: true },
+                    { id: "glo-cooperate", name: "COOPERATE GIFTING", network: "GLO", networkId: networks.glo?.id || "", active: true },
+                    { id: "9mobile-gifting", name: "GIFTING", network: "9MOBILE", networkId: networks["9mobile"]?.id || "", active: true },
+                    { id: "9mobile-cooperate", name: "COOPERATE GIFTING", network: "9MOBILE", networkId: networks["9mobile"]?.id || "", active: true },
+                    { id: "manual", name: "MANUAL", network: "MTN", networkId: networks.mtn?.id || "", active: true },
+                ];
+                
+                planTypes.forEach(planType => {
                     const planTypeRef = db.collection('planTypes').doc(planType.id);
                     batch.set(planTypeRef, planType);
                 });
@@ -2454,7 +2589,7 @@
                 row.innerHTML = `
                     <td>${planType.id}</td>
                     <td>${planType.name}</td>
-                    <td>${planType.network}</td>
+                    <td>${planType.network || 'N/A'}</td>
                     <td><span class="status ${statusClass}">${statusText}</span></td>
                     <td>
                         <button class="btn ${buttonClass} btn-sm toggle-plan-type" data-id="${planType.id}" data-active="${planType.active}">
@@ -2697,6 +2832,11 @@
                 // Set request ID
                 document.getElementById('request-id').value = requestId;
                 
+                // Reset API response
+                apiResponseContainer.style.display = 'none';
+                apiResponse.innerHTML = '';
+                apiResponse.className = 'api-response';
+                
                 requestModalOverlay.classList.add('active');
                 
                 hideLoading();
@@ -2704,6 +2844,93 @@
                 console.error('Error opening request modal:', error);
                 showToast('Failed to load request details', 'error');
                 hideLoading();
+            }
+        }
+        
+        // Process Request via API
+        async function processRequestViaAPI() {
+            try {
+                const requestIdValue = document.getElementById('request-id').value;
+                
+                // Get request details
+                const requestDoc = await db.collection('dataRequests').doc(requestIdValue).get();
+                
+                if (!requestDoc.exists) {
+                    showToast('Request not found', 'error');
+                    return;
+                }
+                
+                const request = requestDoc.data();
+                
+                // Get plan details
+                let planDoc;
+                if (request.planId) {
+                    planDoc = await db.collection('dataPlans').doc(request.planId).get();
+                }
+                
+                if (!planDoc || !planDoc.exists) {
+                    apiResponseContainer.style.display = 'block';
+                    apiResponse.innerHTML = 'Error: Plan details not found';
+                    apiResponse.className = 'api-response error';
+                    return;
+                }
+                
+                const plan = planDoc.data();
+                
+                // Prepare API request
+                const networkId = N3T_DATA_API.networkIds[plan.provider];
+                if (!networkId) {
+                    apiResponseContainer.style.display = 'block';
+                    apiResponse.innerHTML = `Error: Invalid network provider: ${plan.provider}`;
+                    apiResponse.className = 'api-response error';
+                    return;
+                }
+                
+                // Generate unique request ID
+                const uniqueRequestId = `VW-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                
+                // Prepare payload
+                const payload = {
+                    network: networkId,
+                    phone: request.phoneNumber,
+                    data_plan: plan.apiId,
+                    bypass: false,
+                    "request-id": uniqueRequestId
+                };
+                
+                // Show API request in response container
+                apiResponseContainer.style.display = 'block';
+                apiResponse.innerHTML = `Sending request to API...\n\nPayload:\n${JSON.stringify(payload, null, 2)}`;
+                
+                // Simulate API call (in a real app, you would make an actual API call)
+                setTimeout(() => {
+                    // Simulate successful response
+                    const response = {
+                        status: "success",
+                        message: "Data purchase successful",
+                        transaction_id: `N3T-${Date.now()}`,
+                        amount: plan.price,
+                        phone: request.phoneNumber,
+                        data_plan: `${plan.data} - ${plan.validity}`
+                    };
+                    
+                    // Update API response
+                    apiResponse.innerHTML = `API Response:\n${JSON.stringify(response, null, 2)}`;
+                    apiResponse.className = 'api-response success';
+                    
+                    // Update request status
+                    requestStatus.value = 'completed';
+                    requestNotes.value += `\n[SYSTEM] API Transaction ID: ${response.transaction_id}`;
+                    
+                    showToast('API request processed successfully', 'success');
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error processing API request:', error);
+                apiResponseContainer.style.display = 'block';
+                apiResponse.innerHTML = `Error: ${error.message}`;
+                apiResponse.className = 'api-response error';
+                showToast('Failed to process API request', 'error');
             }
         }
         
@@ -2827,7 +3054,7 @@
                 hideLoading();
             } catch (error) {
                 console.error('Error saving plan:', error);
-                showToast('Failed to save plan', 'error');
+                showToast('Failed to save plan: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -2859,7 +3086,7 @@
                 hideLoading();
             } catch (error) {
                 console.error('Error updating request:', error);
-                showToast('Failed to update request', 'error');
+                showToast('Failed to update request: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -2942,7 +3169,7 @@
                 hideLoading();
             } catch (error) {
                 console.error('Error importing plans:', error);
-                showToast('Failed to import plans', 'error');
+                showToast('Failed to import plans: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -3009,7 +3236,7 @@
                 hideLoading();
             } catch (error) {
                 console.error('Error exporting plans:', error);
-                showToast('Failed to export plans', 'error');
+                showToast('Failed to export plans: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -3040,7 +3267,7 @@
                 hideLoading();
             } catch (error) {
                 console.error('Error deleting plan:', error);
-                showToast('Failed to delete plan', 'error');
+                showToast('Failed to delete plan: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -3068,7 +3295,7 @@
                 hideLoading();
             } catch (error) {
                 console.error('Error syncing plans:', error);
-                showToast('Failed to sync plans', 'error');
+                showToast('Failed to sync plans: ' + error.message, 'error');
                 hideLoading();
             }
         }
@@ -3101,12 +3328,12 @@
                 hideLoading();
             } catch (error) {
                 console.error(`Error ${status ? 'activating' : 'deactivating'} plans:`, error);
-                showToast(`Failed to ${status ? 'activate' : 'deactivate'} plans`, 'error');
+                showToast(`Failed to ${status ? 'activate' : 'deactivate'} plans: ` + error.message, 'error');
                 hideLoading();
             }
         }
         
-        // Delete All Plans
+               // Delete All Plans
         async function deleteAllPlans(showConfirmation = true) {
             try {
                 if (showConfirmation && !confirm('Are you sure you want to delete ALL plans? This action cannot be undone.')) {
@@ -3138,11 +3365,325 @@
                 console.error('Error deleting all plans:', error);
                 
                 if (showConfirmation) {
-                    showToast('Failed to delete all plans', 'error');
+                    showToast('Failed to delete all plans: ' + error.message, 'error');
                     hideLoading();
                 }
                 
                 throw error;
+            }
+        }
+        
+        // N3TData API Integration
+        const N3T_DATA_API = {
+            ACCESS_TOKEN: "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d",
+            ENDPOINT: "https://n3tdata.com/api/data",
+            NETWORK_IDS: {
+                "mtn": 1,
+                "airtel": 2,
+                "glo": 3,
+                "9mobile": 4
+            },
+            
+            // Process data request through the API
+            async processDataRequest(request) {
+                try {
+                    // Create a unique request ID
+                    const requestId = `VW-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                    
+                    // Get network ID from provider name
+                    const networkId = this.NETWORK_IDS[request.provider.toLowerCase()];
+                    if (!networkId) {
+                        throw new Error(`Invalid network provider: ${request.provider}`);
+                    }
+                    
+                    // Create API payload
+                    const payload = {
+                        network: networkId,
+                        phone: request.phoneNumber,
+                        data_plan: request.apiId,
+                        bypass: false,
+                        "request-id": requestId
+                    };
+                    
+                    // Send request to API
+                    const response = await fetch(this.ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.ACCESS_TOKEN}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    // Parse response
+                    const data = await response.json();
+                    
+                    // Return API response
+                    return {
+                        success: data.status === "success",
+                        message: data.message || "Unknown error",
+                        data: data,
+                        requestId: requestId
+                    };
+                } catch (error) {
+                    console.error('Error processing data request:', error);
+                    return {
+                        success: false,
+                        message: error.message || "Failed to process request",
+                        error: error
+                    };
+                }
+            }
+        };
+        
+        // Update Request with API Integration
+        async function updateRequest() {
+            try {
+                showLoading();
+                
+                const requestIdValue = document.getElementById('request-id').value;
+                const status = requestStatus.value;
+                const notes = requestNotes.value;
+                
+                // Get request data
+                const requestDoc = await db.collection('dataRequests').doc(requestIdValue).get();
+                if (!requestDoc.exists) {
+                    throw new Error('Request not found');
+                }
+                
+                const requestData = requestDoc.data();
+                let apiResponse = null;
+                
+                // If status is being changed to completed, process through API
+                if (status === 'completed' && requestData.status !== 'completed') {
+                    // Get plan details
+                    const planDoc = await db.collection('dataPlans').doc(requestData.planId).get();
+                    if (!planDoc.exists) {
+                        throw new Error('Plan not found');
+                    }
+                    
+                    const planData = planDoc.data();
+                    
+                    // Process through API
+                    apiResponse = await N3T_DATA_API.processDataRequest({
+                        provider: planData.provider,
+                        phoneNumber: requestData.phoneNumber,
+                        apiId: planData.apiId
+                    });
+                    
+                    if (!apiResponse.success) {
+                        throw new Error(`API Error: ${apiResponse.message}`);
+                    }
+                }
+                
+                // Update request in database
+                const updateData = {
+                    status: status,
+                    adminNotes: notes,
+                    processedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Add API response if available
+                if (apiResponse) {
+                    updateData.apiResponse = apiResponse;
+                }
+                
+                await db.collection('dataRequests').doc(requestIdValue).update(updateData);
+                
+                // Reload requests
+                await loadDataRequests();
+                
+                // Close modal
+                closeRequestModal();
+                
+                showToast('Request updated successfully', 'success');
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error updating request:', error);
+                showToast('Failed to update request: ' + error.message, 'error');
+                hideLoading();
+            }
+        }
+        
+        // Load Networks
+        async function loadNetworks() {
+            try {
+                // Get all networks
+                const networksSnapshot = await db.collection('networks').get();
+                const networks = [];
+                
+                networksSnapshot.forEach(doc => {
+                    networks.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                return networks;
+            } catch (error) {
+                console.error('Error loading networks:', error);
+                throw error;
+            }
+        }
+        
+        // Render Plan Types with Network Information
+        async function renderPlanTypes(planTypes) {
+            try {
+                const planTypesTableBody = document.getElementById('plan-types-table-body');
+                planTypesTableBody.innerHTML = '';
+                
+                if (planTypes.length === 0) {
+                    planTypesTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No plan types found</td></tr>';
+                    return;
+                }
+                
+                // Load networks for reference
+                const networks = await loadNetworks();
+                const networkMap = {};
+                networks.forEach(network => {
+                    networkMap[network.id] = network.name;
+                });
+                
+                planTypes.forEach(planType => {
+                    const row = document.createElement('tr');
+                    
+                    const statusClass = planType.active ? 'status-active' : 'status-inactive';
+                    const statusText = planType.active ? 'Active' : 'Inactive';
+                    const buttonText = planType.active ? 'Deactivate' : 'Activate';
+                    const buttonClass = planType.active ? 'btn-danger' : 'btn-primary';
+                    
+                    // Get network name from ID or use the network property directly
+                    let networkName = 'Unknown';
+                    if (planType.networkId && networkMap[planType.networkId]) {
+                        networkName = networkMap[planType.networkId];
+                    } else if (planType.network) {
+                        networkName = planType.network;
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${planType.id}</td>
+                        <td>${planType.name}</td>
+                        <td>${networkName}</td>
+                        <td><span class="status ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn ${buttonClass} btn-sm toggle-plan-type" data-id="${planType.id}" data-active="${planType.active}">
+                                ${buttonText}
+                            </button>
+                        </td>
+                    `;
+                    
+                    planTypesTableBody.appendChild(row);
+                    
+                    // Add event listener to toggle status button
+                    const toggleBtn = row.querySelector('.toggle-plan-type');
+                    toggleBtn.addEventListener('click', function() {
+                        const planTypeId = this.getAttribute('data-id');
+                        const currentStatus = this.getAttribute('data-active') === 'true';
+                        togglePlanTypeStatus(planTypeId, !currentStatus);
+                    });
+                });
+            } catch (error) {
+                console.error('Error rendering plan types:', error);
+                showToast('Failed to render plan types: ' + error.message, 'error');
+            }
+        }
+        
+        // Add Default Plan Types with Network IDs
+        async function addDefaultPlanTypes() {
+            try {
+                // First, load networks to get their IDs
+                const networks = await loadNetworks();
+                const networkMap = {};
+                
+                // Create a map of network names to IDs
+                networks.forEach(network => {
+                    networkMap[network.name.toLowerCase()] = network.id;
+                });
+                
+                const batch = db.batch();
+                
+                // Updated default plan types with network IDs
+                const updatedPlanTypes = defaultPlanTypes.map(planType => {
+                    const networkName = planType.network.toLowerCase();
+                    return {
+                        ...planType,
+                        networkId: networkMap[networkName] || null
+                    };
+                });
+                
+                updatedPlanTypes.forEach(planType => {
+                    const planTypeRef = db.collection('planTypes').doc(planType.id);
+                    batch.set(planTypeRef, planType);
+                });
+                
+                await batch.commit();
+            } catch (error) {
+                console.error('Error adding default plan types:', error);
+                throw error;
+            }
+        }
+        
+        // Save Plan with improved error handling
+        async function savePlan() {
+            try {
+                // Validate form
+                if (!planForm.checkValidity()) {
+                    planForm.reportValidity();
+                    return;
+                }
+                
+                showLoading();
+                
+                const planData = {
+                    provider: planProvider.value,
+                    category: planCategory.value,
+                    name: planName.value,
+                    data: planData.value,
+                    price: Number(planPrice.value),
+                    validity: planValidity.value,
+                    status: planStatus.checked
+                };
+                
+                // Add API ID if provided
+                if (planApiId.value) {
+                    planData.apiId = Number(planApiId.value);
+                }
+                
+                // Add manual data specific fields
+                if (planProvider.value === 'manual') {
+                    if (planOriginalPrice.value) {
+                        planData.originalPrice = Number(planOriginalPrice.value);
+                    }
+                    
+                    if (planBadge.value) {
+                        planData.badge = planBadge.value;
+                    }
+                }
+                
+                const planIdValue = document.getElementById('plan-id').value;
+                
+                if (planIdValue) {
+                    // Update existing plan
+                    await db.collection('dataPlans').doc(planIdValue).update(planData);
+                    showToast('Plan updated successfully', 'success');
+                } else {
+                    // Add new plan
+                    await db.collection('dataPlans').add(planData);
+                    showToast('Plan added successfully', 'success');
+                }
+                
+                // Reload plans
+                await loadDataPlans();
+                
+                // Close modal
+                closePlanModal();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error saving plan:', error);
+                showToast('Failed to save plan: ' + error.message, 'error');
+                hideLoading();
             }
         }
         
@@ -3154,7 +3695,7 @@
                     window.location.href = 'login.html';
                 }).catch((error) => {
                     console.error('Error signing out:', error);
-                    showToast('Failed to logout', 'error');
+                    showToast('Failed to logout: ' + error.message, 'error');
                 }).finally(() => {
                     isSigningOut = false;
                 });
