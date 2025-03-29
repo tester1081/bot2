@@ -1797,6 +1797,28 @@
                     { id: 105, name: "15GB", price: 3700, validity: "1Month Awoof Data" },
                 ]
             },
+            "MANUAL": {
+                "1-DAY OFFERS": [
+                    { id: 201, name: "1GB", price: 200, validity: "1 Day" },
+                    { id: 202, name: "2GB", price: 300, validity: "1 Day" },
+                    { id: 203, name: "3GB", price: 400, validity: "1 Day" }
+                ],
+                "7-DAY OFFERS": [
+                    { id: 204, name: "1GB", price: 300, validity: "7 Days" },
+                    { id: 205, name: "2GB", price: 500, validity: "7 Days" },
+                    { id: 206, name: "5GB", price: 1000, validity: "7 Days" }
+                ],
+                "14-DAY OFFERS": [
+                    { id: 207, name: "2GB", price: 600, validity: "14 Days" },
+                    { id: 208, name: "5GB", price: 1200, validity: "14 Days" },
+                    { id: 209, name: "10GB", price: 2000, validity: "14 Days" }
+                ],
+                "30-DAY OFFERS": [
+                    { id: 210, name: "5GB", price: 1500, validity: "30 Days" },
+                    { id: 211, name: "10GB", price: 2500, validity: "30 Days" },
+                    { id: 212, name: "20GB", price: 4000, validity: "30 Days" }
+                ]
+            },
             "GLO": {
                 "COOPERATE GIFTING": [
                     { id: 57, name: "200MB", price: 100, validity: "1 Month" },
@@ -1872,7 +1894,10 @@
             { id: "glo-cooperate", name: "COOPERATE GIFTING", network: "GLO", active: true },
             { id: "9mobile-gifting", name: "GIFTING", network: "9MOBILE", active: true },
             { id: "9mobile-cooperate", name: "COOPERATE GIFTING", network: "9MOBILE", active: true },
-            { id: "manual", name: "MANUAL", network: "MTN", active: true },
+            { id: "manual-1day", name: "1-DAY OFFERS", network: "MTN", active: true },
+            { id: "manual-7day", name: "7-DAY OFFERS", network: "MTN", active: true },
+            { id: "manual-14day", name: "14-DAY OFFERS", network: "MTN", active: true },
+            { id: "manual-30day", name: "30-DAY OFFERS", network: "MTN", active: true },
         ];
         
         // Check if user is logged in
@@ -2218,12 +2243,20 @@
             try {
                 showLoading();
                 
+                // First, fetch all networks to get their names by ID
+                const networksMap = {};
+                const networksSnapshot = await db.collection('networks').get();
+                
+                networksSnapshot.forEach(doc => {
+                    networksMap[doc.id] = doc.data().name || 'Unknown';
+                });
+                
                 // Check if plan types collection exists and has documents
                 const planTypesSnapshot = await db.collection('planTypes').get();
                 
                 if (planTypesSnapshot.empty) {
                     // If no plan types exist, add default plan types
-                    await addDefaultPlanTypes();
+                    await addDefaultPlanTypes(networksMap);
                     showToast('Default plan types have been added', 'success');
                 }
                 
@@ -2232,12 +2265,16 @@
                 const planTypes = [];
                 
                 updatedPlanTypesSnapshot.forEach(doc => {
-                    // Ensure all required fields exist with defaults if missing
+                    // Get the network name from the map using the network ID reference
                     const data = doc.data();
+                    const networkId = data.networkId || '';
+                    const networkName = networksMap[networkId] || data.network || 'Unknown';
+                    
                     planTypes.push({
                         id: doc.id,
                         name: data.name || 'Unknown',
-                        network: data.network || 'Unknown',
+                        network: networkName,
+                        networkId: networkId,
                         active: typeof data.active === 'boolean' ? data.active : true
                     });
                 });
@@ -2263,9 +2300,24 @@
                 for (const [network, categories] of Object.entries(defaultDataPlans)) {
                     for (const [category, plans] of Object.entries(categories)) {
                         plans.forEach(plan => {
-                            const categoryKey = network.toLowerCase() + '-' + category.toLowerCase().replace(' ', '-');
+                            let categoryKey;
+                            let provider;
+                            
+                            if (network === "MANUAL") {
+                                provider = "manual";
+                                // For manual plans, use specific category keys
+                                if (category === "1-DAY OFFERS") categoryKey = "manual-1day";
+                                else if (category === "7-DAY OFFERS") categoryKey = "manual-7day";
+                                else if (category === "14-DAY OFFERS") categoryKey = "manual-14day";
+                                else if (category === "30-DAY OFFERS") categoryKey = "manual-30day";
+                                else categoryKey = "manual";
+                            } else {
+                                provider = network.toLowerCase();
+                                categoryKey = network.toLowerCase() + '-' + category.toLowerCase().replace(' ', '-');
+                            }
+                            
                             flattenedPlans.push({
-                                provider: network.toLowerCase(),
+                                provider: provider,
                                 category: categoryKey,
                                 name: `${network} ${category} ${plan.name}`,
                                 data: plan.name,
@@ -2291,20 +2343,85 @@
         }
         
         // Add Default Plan Types
-        async function addDefaultPlanTypes() {
+        async function addDefaultPlanTypes(networksMap) {
             try {
+                // First, ensure we have the network IDs
+                let mtnId = '', airtelId = '', gloId = '', nineMobileId = '';
+                
+                // Find network IDs by name
+                for (const [id, name] of Object.entries(networksMap)) {
+                    const nameLower = name.toLowerCase();
+                    if (nameLower === 'mtn') mtnId = id;
+                    else if (nameLower === 'airtel') airtelId = id;
+                    else if (nameLower === 'glo') gloId = id;
+                    else if (nameLower === '9mobile') nineMobileId = id;
+                }
+                
+                // If networks don't exist, create them
+                if (!mtnId) {
+                    const mtnRef = await db.collection('networks').add({
+                        name: 'MTN',
+                        status: true,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    mtnId = mtnRef.id;
+                }
+                
+                if (!airtelId) {
+                    const airtelRef = await db.collection('networks').add({
+                        name: 'Airtel',
+                        status: true,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    airtelId = airtelRef.id;
+                }
+                
+                if (!gloId) {
+                    const gloRef = await db.collection('networks').add({
+                        name: 'Glo',
+                        status: true,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    gloId = gloRef.id;
+                }
+                
+                if (!nineMobileId) {
+                    const nineMobileRef = await db.collection('networks').add({
+                        name: '9Mobile',
+                        status: true,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    nineMobileId = nineMobileRef.id;
+                }
+                
+                // Now create the plan types with proper network references
+                const updatedDefaultPlanTypes = [
+                    { id: "mtn-sme", name: "SME", networkId: mtnId, network: "MTN", active: true },
+                    { id: "mtn-gifting", name: "GIFTING", networkId: mtnId, network: "MTN", active: true },
+                    { id: "mtn-cooperate", name: "COOPERATE GIFTING", networkId: mtnId, network: "MTN", active: true },
+                    { id: "airtel-sme", name: "SME", networkId: airtelId, network: "AIRTEL", active: true },
+                    { id: "airtel-gifting", name: "GIFTING", networkId: airtelId, network: "AIRTEL", active: true },
+                    { id: "airtel-cooperate", name: "COOPERATE GIFTING", networkId: airtelId, network: "AIRTEL", active: true },
+                    { id: "glo-gifting", name: "GIFTING", networkId: gloId, network: "GLO", active: true },
+                    { id: "glo-cooperate", name: "COOPERATE GIFTING", networkId: gloId, network: "GLO", active: true },
+                    { id: "9mobile-gifting", name: "GIFTING", networkId: nineMobileId, network: "9MOBILE", active: true },
+                    { id: "9mobile-cooperate", name: "COOPERATE GIFTING", networkId: nineMobileId, network: "9MOBILE", active: true },
+                    { id: "manual-1day", name: "1-DAY OFFERS", networkId: mtnId, network: "MTN", active: true },
+                    { id: "manual-7day", name: "7-DAY OFFERS", networkId: mtnId, network: "MTN", active: true },
+                    { id: "manual-14day", name: "14-DAY OFFERS", networkId: mtnId, network: "MTN", active: true },
+                    { id: "manual-30day", name: "30-DAY OFFERS", networkId: mtnId, network: "MTN", active: true },
+                ];
+                
                 const batch = db.batch();
                 
-                defaultPlanTypes.forEach(planType => {
-                    // Ensure all required fields are present
-                    const planTypeData = {
-                        name: planType.name || 'Unknown',
-                        network: planType.network || 'Unknown',
-                        active: typeof planType.active === 'boolean' ? planType.active : true
-                    };
-                    
+                updatedDefaultPlanTypes.forEach(planType => {
                     const planTypeRef = db.collection('planTypes').doc(planType.id);
-                    batch.set(planTypeRef, planTypeData);
+                    batch.set(planTypeRef, {
+                        name: planType.name,
+                        networkId: planType.networkId,
+                        network: planType.network,
+                        active: planType.active
+                    });
                 });
                 
                 await batch.commit();
