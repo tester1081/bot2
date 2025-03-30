@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeltraWave - Website Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #2D7FF9;
+            --primary-light: #5A9DFF;
+            --primary-dark: #0D5ED6;
+            --secondary: #8C52FF;
+            --accent: #FF5E8A;
+            --accent-green: #00E1A0;
+            --accent-yellow: #FFB547;
+            --background: #0A0F1E;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --surface: rgba(255, 255, 255, 0.12);
+            --text: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --success: #00E1A0;
+            --warning: #FFB547;
+            --error: #FF5E7D;
+            --nigeria-green: #008751;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 100px;
+        }
+        
+        /* Liquid Blob Background */
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .liquid-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--primary);
+            top: -200px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+        
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--nigeria-green);
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -5s;
+        }
+        
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            top: 40%;
+            right: 20%;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(5%, 5%) scale(1.05);
+            }
+            50% {
+                transform: translate(0, 10%) scale(0.95);
+            }
+            75% {
+                transform: translate(-5%, 5%) scale(1.05);
+            }
+        }
+        
+        /* Header */
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-icon {
+            margin-right: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+            background: var(--surface);
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 0 20px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--primary-light), var(--nigeria-green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .page-description {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 700px;
+            font-size: 1.1rem;
+        }
+        
+        /* Category Tabs */
+        .category-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        .category-tabs::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        
+        .category-tab {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            position: relative;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        
+        .category-tab:hover {
+            color: var(--text);
+        }
+        
+        .category-tab.active {
+            color: var(--primary-light);
+        }
+        
+        .category-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary-light);
+            border-radius: 3px 3px 0 0;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 32px;
+            align-items: center;
+        }
+        
+        .filter-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .filter-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .filter-pill {
+            background: var(--surface);
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .filter-pill:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .filter-pill.active {
+            background: rgba(45, 127, 249, 0.2);
+            border-color: var(--primary-light);
+            color: var(--primary-light);
+        }
+        
+        .search-container {
+            margin-left: auto;
+            position: relative;
+        }
+        
+        .search-input {
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 10px 16px 10px 40px;
+            color: var(--text);
+            font-size: 0.9rem;
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            width: 300px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Template Grid */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        .template-card {
+            background: linear-gradient(135deg, rgba(45, 127, 249, 0.1), rgba(140, 82, 255, 0.1));
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .template-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .template-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .template-type {
+            display: inline-block;
+            background: rgba(0, 135, 81, 0.2);
+            color: var(--success);
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .template-type.frontend {
+            background: rgba(45, 127, 249, 0.2);
+            color: var(--primary-light);
+        }
+        
+        .template-type.backend {
+            background: rgba(140, 82, 255, 0.2);
+            color: var(--secondary);
+        }
+        
+        .template-type.fullstack {
+            background: rgba(255, 94, 138, 0.2);
+            color: var(--accent);
+        }
+        
+        .template-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .template-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            flex-grow: 1;
+        }
+        
+        .template-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .template-price {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--success);
+        }
+        
+        .template-price.free {
+            color: var(--accent-green);
+        }
+        
+        .template-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--warning);
+        }
+        
+        .template-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .template-button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .preview-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        
+        .preview-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .buy-button {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        
+        .buy-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(45, 127, 249, 0.3);
+        }
+        
+        .template-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--accent);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 20px;
+            z-index: 2;
+        }
+        
+        .template-badge.popular {
+            background: var(--warning);
+        }
+        
+        .template-badge.new {
+            background: var(--success);
+        }
+        
+        /* Nigerian Flair Elements */
+        .naija-accent {
+            position: relative;
+        }
+        
+        .naija-accent::after {
+            content: "🇳🇬";
+            position: absolute;
+            font-size: 1.2rem;
+            margin-left: 8px;
+            top: -5px;
+        }
+        
+        .naija-slang {
+            font-style: italic;
+            color: var(--accent-yellow);
+            font-weight: 500;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 8px;
+        }
+        
+        .page-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--surface);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .page-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .page-item.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Custom Request Section */
+        .custom-request-section {
+            background: linear-gradient(135deg, rgba(0, 135, 81, 0.15), rgba(45, 127, 249, 0.15));
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: none; /* Hidden by default, shown when tab is active */
+        }
+        
+        .custom-request-section.active {
+            display: block;
+        }
+        
+        .custom-request-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .custom-request-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .custom-request-info {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .custom-request-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--success), var(--primary-light));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .custom-request-description {
+            color: var(--text);
+            font-size: 1.1rem;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        
+        .custom-request-features {
+            margin-bottom: 30px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .feature-item i {
+            color: var(--success);
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .custom-request-form {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 0 20px 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        @media (max-width: 768px) {
+            .custom-request-form {
+                border-radius: 0 0 20px 20px;
+            }
+        }
+        
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.2);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .form-submit {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .form-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(45, 127, 249, 0.3);
+        }
+        
+        .whatsapp-option {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .whatsapp-link {
+            color: #25D366;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 5px;
+        }
+        
+        .whatsapp-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Templates Section */
+        .templates-section {
+            display: none; /* Hidden by default, shown when tab is active */
+        }
+        
+        .templates-section.active {
+            display: block;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-around;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            color: var(--text-secondary);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .nav-item span {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: var(--background);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: var(--text);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-preview {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            object-fit: cover;
+        }
+        
+        .modal-description {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .features-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .features-list li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .features-list li i {
+            color: var(--success);
+            margin-right: 10px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-button {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: none;
+        }
+        
+        .modal-button.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .modal-button.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+        }
+        
+        .modal-button.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(45, 127, 249, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Liquid Background -->
+    <div class="liquid-bg">
+        <div class="liquid-blob blob-1"></div>
+        <div class="liquid-blob blob-2"></div>
+        <div class="liquid-blob blob-3"></div>
+    </div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-water"></i>
+            </div>
+            VeltraWave
+        </div>
+        <button class="back-button" onclick="window.location.href='index.html'">
+            <i class="fas fa-arrow-left"></i>
+            Back to Home
+        </button>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="page-title naija-accent">Website Development Services</h1>
+        <p class="page-description">Discover our premium website solutions and services. From stunning frontends to powerful backends, we've got everything you need to establish your online presence. <span class="naija-slang">No wahala!</span></p>
+        
+        <!-- Category Tabs -->
+        <div class="category-tabs">
+            <div class="category-tab active" data-tab="templates">Ready-made Templates</div>
+            <div class="category-tab" data-tab="custom">Custom Development</div>
+            <div class="category-tab" data-tab="maintenance">Maintenance & Support</div>
+            <div class="category-tab" data-tab="hosting">Hosting Solutions</div>
+        </div>
+        
+        <!-- Templates Section -->
+        <div class="templates-section active" id="templates-section">
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-label">Filter by:</div>
+                <div class="filter-pills">
+                    <div class="filter-pill active" data-filter="all">All</div>
+                    <div class="filter-pill" data-filter="frontend">Frontend</div>
+                    <div class="filter-pill" data-filter="backend">Backend</div>
+                    <div class="filter-pill" data-filter="fullstack">Full Stack</div>
+                    <div class="filter-pill" data-filter="free">Free</div>
+                </div>
+                
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search templates...">
+                </div>
+            </div>
+            
+            <!-- Template Grid -->
+            <div class="template-grid">
+                <!-- Template 1 -->
+                <div class="template-card" data-type="frontend">
+                    <div class="template-badge popular">Popular</div>
+                    <img src="https://via.placeholder.com/600x400/2D7FF9/FFFFFF?text=Lagos+E-Commerce" class="template-image" alt="Lagos E-Commerce Template">
+                    <div class="template-content">
+                        <span class="template-type frontend">Frontend</span>
+                        <h3 class="template-title">Lagos E-Commerce</h3>
+                        <p class="template-description">A modern, responsive e-commerce template with smooth animations and a user-friendly interface. Perfect for fashion and retail businesses.</p>
+                        <div class="template-meta">
+                            <div class="template-price">₦15,000</div>
+                            <div class="template-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.8</span>
+                            </div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="template-button preview-button" onclick="openPreviewModal('lagos-ecommerce')">
+                                <i class="fas fa-eye"></i>
+                                Preview
+                            </button>
+                            <button class="template-button buy-button">
+                                <i class="fas fa-shopping-cart"></i>
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Template 2 -->
+                <div class="template-card" data-type="backend">
+                    <img src="https://via.placeholder.com/600x400/8C52FF/FFFFFF?text=Abuja+API+Suite" class="template-image" alt="Abuja API Suite">
+                    <div class="template-content">
+                        <span class="template-type backend">Backend</span>
+                        <h3 class="template-title">Abuja API Suite</h3>
+                        <p class="template-description">A comprehensive backend solution with RESTful APIs, authentication, and database integration. Built with Node.js and Express.</p>
+                        <div class="template-meta">
+                            <div class="template-price">₦25,000</div>
+                            <div class="template-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.7</span>
+                            </div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="template-button preview-button" onclick="openPreviewModal('abuja-api')">
+                                <i class="fas fa-eye"></i>
+                                Preview
+                            </button>
+                            <button class="template-button buy-button">
+                                <i class="fas fa-shopping-cart"></i>
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Template 3 -->
+                <div class="template-card" data-type="fullstack">
+                    <div class="template-badge new">New</div>
+                    <img src="https://via.placeholder.com/600x400/FF5E8A/FFFFFF?text=Naija+Blog+Platform" class="template-image" alt="Naija Blog Platform">
+                    <div class="template-content">
+                        <span class="template-type fullstack">Full Stack</span>
+                        <h3 class="template-title">Naija Blog Platform</h3>
+                        <p class="template-description">A complete blog solution with a beautiful frontend and powerful CMS backend. Features user authentication, comments, and analytics.</p>
+                        <div class="template-meta">
+                            <div class="template-price">₦35,000</div>
+                            <div class="template-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.9</span>
+                            </div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="template-button preview-button" onclick="openPreviewModal('naija-blog')">
+                                <i class="fas fa-eye"></i>
+                                Preview
+                            </button>
+                            <button class="template-button buy-button">
+                                <i class="fas fa-shopping-cart"></i>
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Template 4 -->
+                <div class="template-card" data-type="frontend">
+                    <img src="https://via.placeholder.com/600x400/00E1A0/FFFFFF?text=Eko+Portfolio" class="template-image" alt="Eko Portfolio">
+                    <div class="template-content">
+                        <span class="template-type frontend">Frontend</span>
+                        <h3 class="template-title">Eko Portfolio</h3>
+                        <p class="template-description">A sleek, modern portfolio template for creatives and professionals. Features smooth scrolling, project showcases, and contact forms.</p>
+                        <div class="template-meta">
+                            <div class="template-price free">Free</div>
+                            <div class="template-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.5</span>
+                            </div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="template-button preview-button" onclick="openPreviewModal('eko-portfolio')">
+                                <i class="fas fa-eye"></i>
+                                Preview
+                            </button>
+                            <button class="template-button buy-button">
+                                <i class="fas fa-download"></i>
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Template 5 -->
+                <div class="template-card" data-type="backend">
+                    <img src="https://via.placeholder.com/600x400/FFB547/FFFFFF?text=Calabar+Auth+System" class="template-image" alt="Calabar Auth System">
+                    <div class="template-content">
+                        <span class="template-type backend">Backend</span>
+                        <h3 class="template-title">Calabar Auth System</h3>
+                        <p class="template-description">A secure authentication system with JWT, social login, and role-based access control. Easy to integrate with any frontend.</p>
+                        <div class="template-meta">
+                            <div class="template-price">₦18,000</div>
+                            <div class="template-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.6</span>
+                            </div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="template-button preview-button" onclick="openPreviewModal('calabar-auth')">
+                                <i class="fas fa-eye"></i>
+                                Preview
+                            </button>
+                            <button class="template-button buy-button">
+                                <i class="fas fa-shopping-cart"></i>
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Template 6 -->
+                <div class="template-card" data-type="fullstack">
+                    <img src="https://via.placeholder.com/600x400/008751/FFFFFF?text=Enugu+Dashboard" class="template-image" alt="Enugu Dashboard">
+                    <div class="template-content">
+                        <span class="template-type fullstack">Full Stack</span>
+                        <h3 class="template-title">Enugu Dashboard</h3>
+                        <p class="template-description">A complete admin dashboard solution with analytics, user management, and data visualization. Built with React and Node.js.</p>
+                        <div class="template-meta">
+                            <div class="template-price">₦30,000</div>
+                            <div class="template-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.8</span>
+                            </div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="template-button preview-button" onclick="openPreviewModal('enugu-dashboard')">
+                                <i class="fas fa-eye"></i>
+                                Preview
+                            </button>
+                            <button class="template-button buy-button">
+                                <i class="fas fa-shopping-cart"></i>
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="page-item active">1</div>
+                <div class="page-item">2</div>
+                <div class="page-item">3</div>
+                <div class="page-item">
+                    <i class="fas fa-ellipsis-h"></i>
+                </div>
+                <div class="page-item">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Custom Development Section -->
+        <div class="custom-request-section" id="custom-section">
+            <div class="custom-request-container">
+                <div class="custom-request-info">
+                    <h2 class="custom-request-title">Custom Development Solutions</h2>
+                    <p class="custom-request-description">Need something unique? Our team of expert developers can build custom websites, apps, or backend solutions specifically tailored to your business requirements.</p>
+                    
+                    <div class="custom-request-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Personalized consultation with our expert team</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Custom design that matches your brand identity</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Scalable solutions that grow with your business</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Ongoing support and maintenance options</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Competitive pricing with flexible payment plans</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="custom-request-form">
+                    <h3 class="form-title">Tell us about your project</h3>
+                    <form id="customRequestForm">
+                        <div class="form-group">
+                            <label for="name">Your Name</label>
+                            <input type="text" id="name" placeholder="Enter your full name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="Enter your email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" placeholder="Enter your phone number" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="projectType">Project Type</label>
+                            <select id="projectType" required>
+                                <option value="" disabled selected>Select project type</option>
+                                <option value="website">Website</option>
+                                <option value="ecommerce">E-Commerce</option>
+                                <option value="webapp">Web Application</option>
+                                <option value="mobile">Mobile App</option>
+                                <option value="api">API/Backend</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="budget">Budget Range (₦)</label>
+                            <select id="budget" required>
+                                <option value="" disabled selected>Select your budget range</option>
+                                <option value="under50k">Under ₦50,000</option>
+                                <option value="50k-100k">₦50,000 - ₦100,000</option>
+                                <option value="100k-200k">₦100,000 - ₦200,000</option>
+                                <option value="200k-500k">₦200,000 - ₦500,000</option>
+                                <option value="over500k">Over ₦500,000</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Project Description</label>
+                            <textarea id="description" placeholder="Tell us about your project requirements, features needed, timeline, etc." required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="form-submit">
+                            <i class="fas fa-paper-plane"></i>
+                            Submit Request
+                        </button>
+                    </form>
+                    
+                    <div class="whatsapp-option">
+                        Prefer to chat directly?
+                        <a href="https://wa.me/2348123456789" class="whatsapp-link" target="_blank">
+                            <i class="fab fa-whatsapp"></i>
+                            Contact us on WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Maintenance Section (Placeholder) -->
+        <div class="templates-section" id="maintenance-section">
+            <h2 class="section-title">Maintenance & Support Services</h2>
+            <p class="section-description">Coming soon! Our maintenance and support services will be available shortly.</p>
+        </div>
+        
+        <!-- Hosting Section (Placeholder) -->
+        <div class="templates-section" id="hosting-section">
+            <h2 class="section-title">Hosting Solutions</h2>
+            <p class="section-description">Coming soon! Our hosting solutions will be available shortly.</p>
+        </div>
+    </div>
+    
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Template Preview</h2>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img src="https://via.placeholder.com/800x600/2D7FF9/FFFFFF?text=Template+Preview" class="modal-preview" id="modalImage" alt="Template Preview">
+                <p class="modal-description" id="modalDescription"></p>
+                <h4>Features:</h4>
+                <ul class="features-list" id="modalFeatures">
+                    <!-- Features will be added dynamically -->
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-button secondary" id="modalLiveDemo">
+                    <i class="fas fa-external-link-alt"></i>
+                    Live Demo
+                </button>
+                <button class="modal-button primary" id="modalBuy">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="modalBuyText">Buy Now</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="site.html" class="nav-item active">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Service</span>
+        </a>
+        <a href="games.html" class="nav-item">
+            <i class="fas fa-gamepad"></i>
+            <span>Games</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+    
+    <script>
+        // Template Data
+        const templates = {
+            'lagos-ecommerce': {
+                title: 'Lagos E-Commerce',
+                image: 'https://via.placeholder.com/800x600/2D7FF9/FFFFFF?text=Lagos+E-Commerce',
+                description: 'A modern, responsive e-commerce template with smooth animations and a user-friendly interface. Perfect for fashion and retail businesses in Nigeria and beyond. Features a clean design that highlights your products and encourages conversions.',
+                price: '₦15,000',
+                isFree: false,
+                features: [
+                    'Responsive design for all devices',
+                    'Product gallery with zoom functionality',
+                    'Shopping cart and checkout process',
+                    'User account management',
+                    'Product filtering and search',
+                    'Payment gateway integration ready'
+                ]
+            },
+            'abuja-api': {
+                title: 'Abuja API Suite',
+                image: 'https://via.placeholder.com/800x600/8C52FF/FFFFFF?text=Abuja+API+Suite',
+                description: 'A comprehensive backend solution with RESTful APIs, authentication, and database integration. Built with Node.js and Express, this template provides a solid foundation for your web application\'s backend needs.',
+                price: '₦25,000',
+                isFree: false,
+                features: [
+                    'RESTful API architecture',
+                    'JWT authentication system',
+                    'MongoDB integration',
+                    'User management endpoints',
+                    'File upload functionality',
+                    'Comprehensive documentation'
+                ]
+            },
+            'naija-blog': {
+                title: 'Naija Blog Platform',
+                image: 'https://via.placeholder.com/800x600/FF5E8A/FFFFFF?text=Naija+Blog+Platform',
+                description: 'A complete blog solution with a beautiful frontend and powerful CMS backend. Features user authentication, comments, and analytics. Perfect for content creators, news sites, and corporate blogs.',
+                price: '₦35,000',
+                isFree: false,
+                features: [
+                    'Responsive blog frontend',
+                    'Admin dashboard for content management',
+                    'SEO optimized structure',
+                    'Comment system with moderation',
+                    'Social media sharing integration',
+                    'Analytics dashboard'
+                ]
+            },
+            'eko-portfolio': {
+                title: 'Eko Portfolio',
+                image: 'https://via.placeholder.com/800x600/00E1A0/FFFFFF?text=Eko+Portfolio',
+                description: 'A sleek, modern portfolio template for creatives and professionals. Features smooth scrolling, project showcases, and contact forms. Perfect for designers, developers, photographers, and other creative professionals.',
+                price: 'Free',
+                isFree: true,
+                features: [
+                    'Responsive design',
+                    'Project showcase gallery',
+                    'Animated page transitions',
+                    'Contact form with validation',
+                    'Skills and services sections',
+                    'Testimonials carousel'
+                ]
+            },
+            'calabar-auth': {
+                title: 'Calabar Auth System',
+                image: 'https://via.placeholder.com/800x600/FFB547/FFFFFF?text=Calabar+Auth+System',
+                description: 'A secure authentication system with JWT, social login, and role-based access control. Easy to integrate with any frontend. This system provides a robust security layer for your web applications.',
+                price: '₦18,000',
+                isFree: false,
+                features: [
+                    'JWT authentication',
+                    'Social login (Google, Facebook, Twitter)',
+                    'Role-based access control',
+                    'Password reset functionality',
+                    'Email verification',
+                    'Two-factor authentication'
+                ]
+            },
+            'enugu-dashboard': {
+                title: 'Enugu Dashboard',
+                image: 'https://via.placeholder.com/800x600/008751/FFFFFF?text=Enugu+Dashboard',
+                description: 'A complete admin dashboard solution with analytics, user management, and data visualization. Built with React and Node.js, this template provides everything you need to manage your application\'s backend.',
+                price: '₦30,000',
+                isFree: false,
+                features: [
+                    'Responsive admin interface',
+                    'Real-time data visualization',
+                    'User management system',
+                    'Activity logs and audit trails',
+                    'Customizable dashboard widgets',
+                    'Dark and light theme options'
+                ]
+            }
+        };
+        
+        // DOM Elements
+        const previewModal = document.getElementById('previewModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalImage = document.getElementById('modalImage');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalFeatures = document.getElementById('modalFeatures');
+        const modalClose = document.getElementById('modalClose');
+        const modalLiveDemo = document.getElementById('modalLiveDemo');
+        const modalBuy = document.getElementById('modalBuy');
+        const modalBuyText = document.getElementById('modalBuyText');
+        
+        const filterPills = document.querySelectorAll('.filter-pill');
+        const templateCards = document.querySelectorAll('.template-card');
+        const searchInput = document.querySelector('.search-input');
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        
+        // Tab Switching
+        categoryTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                categoryTabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Hide all sections
+                document.getElementById('templates-section').classList.remove('active');
+                document.getElementById('custom-section').classList.remove('active');
+                document.getElementById('maintenance-section').classList.remove('active');
+                document.getElementById('hosting-section').classList.remove('active');
+                
+                // Show selected section
+                const tabId = tab.getAttribute('data-tab');
+                if (tabId === 'templates') {
+                    document.getElementById('templates-section').classList.add('active');
+                } else if (tabId === 'custom') {
+                    document.getElementById('custom-section').classList.add('active');
+                } else if (tabId === 'maintenance') {
+                    document.getElementById('maintenance-section').classList.add('active');
+                } else if (tabId === 'hosting') {
+                    document.getElementById('hosting-section').classList.add('active');
+                }
+            });
+        });
+        
+        // Open Preview Modal
+        function openPreviewModal(templateId) {
+            const template = templates[templateId];
+            if (!template) return;
+            
+            modalTitle.textContent = template.title;
+            modalImage.src = template.image;
+            modalImage.alt = template.title;
+            modalDescription.textContent = template.description;
+            
+            // Clear and populate features
+            modalFeatures.innerHTML = '';
+            template.features.forEach(feature => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-check-circle"></i> ${feature}`;
+                modalFeatures.appendChild(li);
+            });
+            
+            // Update buy button
+            if (template.isFree) {
+                modalBuyText.textContent = 'Download';
+                modalBuy.querySelector('i').className = 'fas fa-download';
+            } else {
+                modalBuyText.textContent = 'Buy Now';
+                modalBuy.querySelector('i').className = 'fas fa-shopping-cart';
+            }
+            
+            // Show modal
+            previewModal.classList.add('show');
+            
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close Preview Modal
+        modalClose.addEventListener('click', () => {
+            previewModal.classList.remove('show');
+            document.body.style.overflow = '';
+        });
+        
+        // Close modal when clicking outside
+        previewModal.addEventListener('click', (e) => {
+            if (e.target === previewModal) {
+                previewModal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Filter Templates
+        filterPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                // Remove active class from all pills
+                filterPills.forEach(p => p.classList.remove('active'));
+                
+                // Add active class to clicked pill
+                pill.classList.add('active');
+                
+                const filter = pill.getAttribute('data-filter');
+                
+                // Filter templates
+                templateCards.forEach(card => {
+                    if (filter === 'all') {
+                        card.style.display = '';
+                    } else if (filter === 'free') {
+                        const price = card.querySelector('.template-price');
+                        if (price && price.classList.contains('free')) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    } else {
+                        const type = card.getAttribute('data-type');
+                        if (type === filter) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Search Templates
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            templateCards.forEach(card => {
+                const title = card.querySelector('.template-title').textContent.toLowerCase();
+                const description = card.querySelector('.template-description').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+        
+        // Form Submission
+        document.getElementById('customRequestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const projectType = document.getElementById('projectType').value;
+            const budget = document.getElementById('budget').value;
+            const description = document.getElementById('description').value;
+            
+            // Here you would typically send this data to your server
+            // For demo purposes, we'll just show an alert
+            alert('Thank you for your request! We will contact you shortly.');
+            
+            // Reset form
+            this.reset();
+        });
+    </script>
+</body>
+</html>
