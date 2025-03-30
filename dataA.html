@@ -1771,7 +1771,29 @@
         const refreshRequestsBtn = document.getElementById('refresh-requests-btn');
         const refreshPlanTypesBtn = document.getElementById('refresh-plan-types-btn');
         
-        // Default data plans - Updated with the provided JSON structure
+        // Default manual data plans - Updated with the provided pricing structure
+        const defaultManualDataPlans = {
+            "1-DAY OFFERS": [
+                { id: 301, name: "500MB", originalPrice: 150, price: 129, validity: "1 Day", badge: "" },
+                { id: 302, name: "600MB", originalPrice: 180, price: 159, validity: "1 Day", badge: "" },
+                { id: 303, name: "2.5GB", originalPrice: 600, price: 519, validity: "1 Day", badge: "hot" },
+                { id: 304, name: "4.5GB", originalPrice: 1500, price: 1299, validity: "1 Day", badge: "" }
+            ],
+            "7-DAY OFFERS": [
+                { id: 305, name: "13GB", originalPrice: 3000, price: 2599, validity: "7 Days", badge: "" },
+                { id: 306, name: "18GB", originalPrice: 5200, price: 4549, validity: "7 Days", badge: "" },
+                { id: 307, name: "22GB", originalPrice: 6000, price: 5199, validity: "7 Days", badge: "popular" }
+            ],
+            "14-DAY OFFERS": [
+                { id: 308, name: "30GB", originalPrice: 7500, price: 6499, validity: "14 Days", badge: "value" }
+            ],
+            "30-DAY OFFERS": [
+                { id: 309, name: "39GB", originalPrice: 9000, price: 7799, validity: "30 Days", badge: "" },
+                { id: 310, name: "53GB", originalPrice: 15000, price: 12999, validity: "30 Days", badge: "" }
+            ]
+        };
+        
+        // Default data plans - Regular plans
         const defaultDataPlans = {
             "MTN": {
                 "SME": [
@@ -1795,28 +1817,6 @@
                     { id: 103, name: "3.2GB", price: 1200, validity: "2Days Awoof Data" },
                     { id: 104, name: "5GB", price: 1700, validity: "7Days Awoof Data" },
                     { id: 105, name: "15GB", price: 3700, validity: "1Month Awoof Data" },
-                ]
-            },
-            "MANUAL": {
-                "1-DAY OFFERS": [
-                    { id: 201, name: "1GB", price: 200, validity: "1 Day" },
-                    { id: 202, name: "2GB", price: 300, validity: "1 Day" },
-                    { id: 203, name: "3GB", price: 400, validity: "1 Day" }
-                ],
-                "7-DAY OFFERS": [
-                    { id: 204, name: "1GB", price: 300, validity: "7 Days" },
-                    { id: 205, name: "2GB", price: 500, validity: "7 Days" },
-                    { id: 206, name: "5GB", price: 1000, validity: "7 Days" }
-                ],
-                "14-DAY OFFERS": [
-                    { id: 207, name: "2GB", price: 600, validity: "14 Days" },
-                    { id: 208, name: "5GB", price: 1200, validity: "14 Days" },
-                    { id: 209, name: "10GB", price: 2000, validity: "14 Days" }
-                ],
-                "30-DAY OFFERS": [
-                    { id: 210, name: "5GB", price: 1500, validity: "30 Days" },
-                    { id: 211, name: "10GB", price: 2500, validity: "30 Days" },
-                    { id: 212, name: "20GB", price: 4000, validity: "30 Days" }
                 ]
             },
             "GLO": {
@@ -2296,25 +2296,15 @@
                 const batch = db.batch();
                 const flattenedPlans = [];
                 
-                // Convert the nested structure to flat array of plans
+                // Add regular data plans
                 for (const [network, categories] of Object.entries(defaultDataPlans)) {
                     for (const [category, plans] of Object.entries(categories)) {
                         plans.forEach(plan => {
                             let categoryKey;
                             let provider;
                             
-                            if (network === "MANUAL") {
-                                provider = "manual";
-                                // For manual plans, use specific category keys
-                                if (category === "1-DAY OFFERS") categoryKey = "manual-1day";
-                                else if (category === "7-DAY OFFERS") categoryKey = "manual-7day";
-                                else if (category === "14-DAY OFFERS") categoryKey = "manual-14day";
-                                else if (category === "30-DAY OFFERS") categoryKey = "manual-30day";
-                                else categoryKey = "manual";
-                            } else {
-                                provider = network.toLowerCase();
-                                categoryKey = network.toLowerCase() + '-' + category.toLowerCase().replace(' ', '-');
-                            }
+                            provider = network.toLowerCase();
+                            categoryKey = network.toLowerCase() + '-' + category.toLowerCase().replace(' ', '-');
                             
                             flattenedPlans.push({
                                 provider: provider,
@@ -2328,6 +2318,32 @@
                             });
                         });
                     }
+                }
+                
+                // Add manual data plans with special pricing
+                for (const [category, plans] of Object.entries(defaultManualDataPlans)) {
+                    plans.forEach(plan => {
+                        let categoryKey;
+                        
+                        if (category === "1-DAY OFFERS") categoryKey = "manual-1day";
+                        else if (category === "7-DAY OFFERS") categoryKey = "manual-7day";
+                        else if (category === "14-DAY OFFERS") categoryKey = "manual-14day";
+                        else if (category === "30-DAY OFFERS") categoryKey = "manual-30day";
+                        else categoryKey = "manual";
+                        
+                        flattenedPlans.push({
+                            provider: "manual",
+                            category: categoryKey,
+                            name: `MTN Special ${plan.name}`,
+                            data: plan.name,
+                            originalPrice: plan.originalPrice,
+                            price: plan.price,
+                            validity: plan.validity,
+                            badge: plan.badge,
+                            apiId: plan.id,
+                            status: true
+                        });
+                    });
                 }
                 
                 flattenedPlans.forEach(plan => {
@@ -2559,7 +2575,7 @@
                     openDeleteModal(planId);
                 });
             });
-}
+        }
         
         // Render Plan Types
         function renderPlanTypes(planTypes) {
@@ -2772,7 +2788,7 @@
                 
                 hideLoading();
             } catch (error) {
-                console.error('Error opening edit plan modal:', error);
+                console.error('Error opening request modal:', error);
                 showToast('Failed to load plan details', 'error');
                 hideLoading();
             }
@@ -2905,77 +2921,77 @@
         
         // Save Plan
         async function savePlan() {
-    try {
-        // Validate form
-        if (!planForm.checkValidity()) {
-            planForm.reportValidity();
-            return;
-        }
-        
-        showLoading();
-        
-        // Get values from form
-        const planIdValue = document.getElementById('plan-id').value;
-        const providerValue = planProvider.value;
-        const categoryValue = planCategory.value;
-        const nameValue = planName.value;
-        const dataValue = document.getElementById('plan-data').value;
-        const priceValue = Number(planPrice.value);
-        const validityValue = planValidity.value;
-        const statusValue = planStatus.checked;
-        
-        // Create plan data object - renamed to formData to avoid conflict
-        const formData = {
-            provider: providerValue,
-            category: categoryValue,
-            name: nameValue,
-            data: dataValue,
-            price: priceValue,
-            validity: validityValue,
-            status: statusValue
-        };
-        
-        // Add API ID if provided
-        if (planApiId.value) {
-            formData.apiId = Number(planApiId.value);
-        }
-        
-        // Add manual data specific fields
-        if (providerValue === 'manual') {
-            if (planOriginalPrice.value) {
-                formData.originalPrice = Number(planOriginalPrice.value);
+            try {
+                // Validate form
+                if (!planForm.checkValidity()) {
+                    planForm.reportValidity();
+                    return;
+                }
+                
+                showLoading();
+                
+                // Get values from form
+                const planIdValue = document.getElementById('plan-id').value;
+                const providerValue = planProvider.value;
+                const categoryValue = planCategory.value;
+                const nameValue = planName.value;
+                const dataValue = document.getElementById('plan-data').value;
+                const priceValue = Number(planPrice.value);
+                const validityValue = planValidity.value;
+                const statusValue = planStatus.checked;
+                
+                // Create plan data object - renamed to formData to avoid conflict
+                const formData = {
+                    provider: providerValue,
+                    category: categoryValue,
+                    name: nameValue,
+                    data: dataValue,
+                    price: priceValue,
+                    validity: validityValue,
+                    status: statusValue
+                };
+                
+                // Add API ID if provided
+                if (planApiId.value) {
+                    formData.apiId = Number(planApiId.value);
+                }
+                
+                // Add manual data specific fields
+                if (providerValue === 'manual') {
+                    if (planOriginalPrice.value) {
+                        formData.originalPrice = Number(planOriginalPrice.value);
+                    }
+                    
+                    if (planBadge.value) {
+                        formData.badge = planBadge.value;
+                    }
+                }
+                
+                console.log("Saving plan data:", formData); // Debug log
+                
+                if (planIdValue) {
+                    // Update existing plan
+                    await db.collection('dataPlans').doc(planIdValue).update(formData);
+                    showToast('Plan updated successfully', 'success');
+                } else {
+                    // Add new plan
+                    await db.collection('dataPlans').add(formData);
+                    showToast('Plan added successfully', 'success');
+                }
+                
+                // Reload plans
+                await loadDataPlans();
+                
+                // Close modal
+                closePlanModal();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error saving plan:', error);
+                showToast('Failed to save plan: ' + error.message, 'error');
+                hideLoading();
             }
-            
-            if (planBadge.value) {
-                formData.badge = planBadge.value;
-            }
         }
-        
-        console.log("Saving plan data:", formData); // Debug log
-        
-        if (planIdValue) {
-            // Update existing plan
-            await db.collection('dataPlans').doc(planIdValue).update(formData);
-            showToast('Plan updated successfully', 'success');
-        } else {
-            // Add new plan
-            await db.collection('dataPlans').add(formData);
-            showToast('Plan added successfully', 'success');
-        }
-        
-        // Reload plans
-        await loadDataPlans();
-        
-        // Close modal
-        closePlanModal();
-        
-        hideLoading();
-    } catch (error) {
-        console.error('Error saving plan:', error);
-        showToast('Failed to save plan: ' + error.message, 'error');
-        hideLoading();
-    }
-}
         
         // Update Request
         async function updateRequest() {
@@ -3230,6 +3246,7 @@
                 showLoading();
                 
                 const plansSnapshot = await db.collection('dataPlans').get();
+                
                 const batch = db.batch();
                 
                 plansSnapshot.forEach(doc => {
