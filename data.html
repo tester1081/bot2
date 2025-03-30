@@ -2,16 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buy Data - VeltraWave</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>N3TData - Buy Data</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-    
+    /* Reset and Base Styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Outfit', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+    }
+
     :root {
         --primary: #2D7FF9;
         --primary-light: #5A9DFF;
@@ -31,21 +35,15 @@
         --glo-green: #00AB4E;
         --etisalat-green: #006F53;
     }
-    
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Outfit', sans-serif;
-    }
-    
+
     body {
         background-color: var(--background);
         color: var(--text);
         min-height: 100vh;
-        overflow-x: hidden;
+        position: relative;
+        padding-bottom: 80px; /* Space for bottom nav */
     }
-    
+
     /* Liquid Blob Background */
     .liquid-bg {
         position: fixed;
@@ -56,7 +54,7 @@
         z-index: -1;
         overflow: hidden;
     }
-    
+
     .liquid-blob {
         position: absolute;
         border-radius: 50%;
@@ -64,7 +62,7 @@
         opacity: 0.15;
         animation: float 20s infinite ease-in-out;
     }
-    
+
     .blob-1 {
         width: 600px;
         height: 600px;
@@ -73,7 +71,7 @@
         right: -100px;
         animation-delay: 0s;
     }
-    
+
     .blob-2 {
         width: 500px;
         height: 500px;
@@ -82,7 +80,7 @@
         left: -100px;
         animation-delay: -5s;
     }
-    
+
     .blob-3 {
         width: 300px;
         height: 300px;
@@ -91,7 +89,7 @@
         right: 20%;
         animation-delay: -10s;
     }
-    
+
     @keyframes float {
         0%, 100% {
             transform: translate(0, 0) scale(1);
@@ -106,17 +104,25 @@
             transform: translate(-5%, 5%) scale(1.05);
         }
     }
-    
-    /* Header */
-    .header {
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+
+    /* Data Page Styles */
+    .data-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        padding-bottom: 80px;
         position: relative;
-        z-index: 10;
+        z-index: 1;
     }
-    
+
+    /* Header Styles */
+    .page-header {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem 0;
+        margin-bottom: 1.5rem;
+    }
+
     .back-button {
         width: 40px;
         height: 40px;
@@ -128,649 +134,304 @@
         cursor: pointer;
         backdrop-filter: blur(10px);
         transition: all 0.3s ease;
+        border: none;
+        color: var(--text);
+        margin-right: 1rem;
     }
-    
+
     .back-button:hover {
         background: rgba(255, 255, 255, 0.2);
     }
-    
+
     .page-title {
         font-size: 1.5rem;
         font-weight: 600;
     }
-    
-    /* Main Content */
-    .main-content {
-        padding: 0 20px 100px;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    
-    /* Mode Switcher (iPhone Style) */
-    .mode-switcher-container {
-        margin-bottom: 24px;
-    }
-    
-    .mode-switcher {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 4px;
+
+    /* Balance Display */
+    .balance-display {
+        background: rgba(45, 127, 249, 0.1);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 20px;
         display: flex;
-        position: relative;
+        align-items: center;
+        justify-content: space-between;
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        max-width: 500px;
-        margin: 0 auto;
     }
-    
-    .mode-option {
-        flex: 1;
-        padding: 12px 16px;
-        text-align: center;
-        font-weight: 500;
-        cursor: pointer;
-        position: relative;
-        z-index: 2;
-        transition: color 0.3s ease;
-        border-radius: 12px;
-    }
-    
-    .mode-indicator {
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        height: calc(100% - 8px);
-        width: calc(33.33% - 4px);
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border-radius: 12px;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        z-index: 1;
-    }
-    
-    .mode-option.active {
-        color: white;
-    }
-    
-    .mode-option:not(.active) {
+
+    .balance-label {
+        font-size: 0.9rem;
         color: var(--text-secondary);
     }
-    
+
+    .balance-value {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--success);
+    }
+
     /* Network Selection */
-    .network-selection {
-        margin-bottom: 24px;
+    .network-slider-container {
+        margin-bottom: 2rem;
+        position: relative;
     }
-    
-    .section-title {
-        font-size: 1.1rem;
-        font-weight: 500;
-        margin-bottom: 12px;
-        color: var(--text-secondary);
+
+    .slider-indicators {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
     }
-    
-    .networks-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
+
+    .indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.2);
+        margin: 0 4px;
+        transition: all 0.3s ease;
+        cursor: pointer;
     }
-    
-    .network-card {
-        background: var(--card-bg);
-        border-radius: 16px;
-        padding: 16px 12px;
+
+    .indicator.active {
+        background-color: var(--primary);
+        width: 20px;
+        border-radius: 4px;
+    }
+
+    .network-slider {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0.5rem 0;
+    }
+
+    .network-slider::-webkit-scrollbar {
+        display: none;
+    }
+
+    .network-option {
+        flex: 0 0 100%;
+        min-width: 100%;
+        scroll-snap-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        cursor: pointer;
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: 1.5rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
+        cursor: pointer;
+        user-select: none;
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.05);
     }
-    
-    .network-card.active {
+
+    .network-option:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .network-option.selected {
         border-color: var(--primary);
         background: rgba(45, 127, 249, 0.1);
     }
-    
-    .network-card.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-    
-    .network-card:not(.disabled):hover {
-        transform: translateY(-3px);
-        background: rgba(255, 255, 255, 0.12);
-    }
-    
-    .network-logo {
-        width: 40px;
-        height: 40px;
+
+    .network-image {
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 8px;
-        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+        overflow: hidden;
     }
-    
-    .network-logo.mtn {
-        background: var(--mtn-yellow);
+
+    .network-option.mtn .network-image {
+        background-color: var(--mtn-yellow);
+    }
+
+    .network-option.glo .network-image {
+        background-color: var(--glo-green);
+    }
+
+    .network-option.airtel .network-image {
+        background-color: var(--airtel-red);
+    }
+
+    .network-option.mobile9 .network-image {
+        background-color: var(--etisalat-green);
+    }
+
+    .network-logo {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 2rem;
+    }
+
+    .network-option.mtn .network-logo {
         color: black;
     }
-    
-    .network-logo.airtel {
-        background: var(--airtel-red);
-        color: white;
-    }
-    
-    .network-logo.glo {
-        background: var(--glo-green);
-        color: white;
-    }
-    
-    .network-logo.etisalat {
-        background: var(--etisalat-green);
-        color: white;
-    }
-    
+
     .network-name {
-        font-size: 0.9rem;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 1.2rem;
+        color: var(--text);
     }
-    
-    .coming-soon-badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        font-size: 0.6rem;
-        padding: 2px 6px;
-        border-radius: 10px;
+
+    /* Form Styles */
+    .form-container {
+        background: var(--card-bg);
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
-    
-    /* Form Elements */
+
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 1.5rem;
     }
-    
+
     .form-label {
-        font-size: 0.9rem;
-        margin-bottom: 8px;
         display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
         color: var(--text-secondary);
     }
-    
-    .form-select, .form-input {
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+
+    .form-input, .form-select {
         width: 100%;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        color: white;
-        padding: 14px 16px;
+        border-radius: 0.75rem;
+        color: var(--text);
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
         font-size: 1rem;
         transition: all 0.3s ease;
-        appearance: none;
-        -webkit-appearance: none;
         backdrop-filter: blur(10px);
     }
-    
-    .form-select {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 16px center;
-        background-size: 16px;
-    }
-    
-    .form-select:focus, .form-input:focus {
+
+    .form-input:focus, .form-select:focus {
         outline: none;
         border-color: var(--primary);
         box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.2);
     }
-    
+
+    .form-input.network-display {
+        background-color: rgba(255, 255, 255, 0.05);
+        font-weight: 600;
+    }
+
+    .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1rem;
+    }
+
     .form-select option {
         background: #1A2035;
         color: white;
     }
-    
+
+    .form-select:disabled, .form-input:disabled {
+        background-color: rgba(255, 255, 255, 0.03);
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
     .form-input::placeholder {
         color: rgba(255, 255, 255, 0.4);
     }
-    
-    .primary-btn {
-        width: 100%;
+
+    .btn {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .btn-primary {
         background: linear-gradient(135deg, var(--primary), var(--primary-dark));
         color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 16px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: all 0.3s ease;
     }
-    
-    .primary-btn:hover {
+
+    .btn-primary:hover {
         transform: translateY(-2px);
         box-shadow: 0 10px 20px rgba(45, 127, 249, 0.3);
     }
-    
-    .primary-btn:disabled {
+
+    .btn-primary:active {
+        transform: scale(0.98);
+    }
+
+    .btn-primary:disabled {
         opacity: 0.7;
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
     }
-    
-    /* Manual Data Plans */
-    .manual-content {
-        display: none;
-    }
-    
-    .manual-content.active {
+
+    .btn-block {
         display: block;
-        animation: fadeIn 0.5s ease;
-    }
-    
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .info-card {
-        background: linear-gradient(135deg, rgba(45, 127, 249, 0.1), rgba(140, 82, 255, 0.1));
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 24px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .info-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
         width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
-        z-index: 0;
     }
-    
-    .info-card-content {
-        position: relative;
-        z-index: 1;
-    }
-    
-    .info-card-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 12px;
-        color: var(--mtn-yellow);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .info-card-subtitle {
-        font-size: 0.95rem;
-        margin-bottom: 16px;
-        color: var(--text);
-    }
-    
-    .info-list {
-        list-style: none;
-        margin-bottom: 0;
-    }
-    
-    .info-list-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-        margin-bottom: 8px;
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-    }
-    
-    .info-list-item i {
-        color: var(--mtn-yellow);
-        margin-top: 4px;
-    }
-    
-    .plan-category {
-        margin-bottom: 24px;
-    }
-    
-    .category-header {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-    
-    .category-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 4px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .category-title i {
-        color: var(--primary);
-    }
-    
-    .category-description {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-    
-    .plans-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-    
-    @media (min-width: 768px) {
-        .plans-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-    
-    .plan-card {
-        background: var(--card-bg);
-        border-radius: 16px;
-        padding: 16px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    .plan-card.active {
-        border-color: var(--primary);
-        background: rgba(45, 127, 249, 0.1);
-    }
-    
-    .plan-card:hover:not(.active) {
-        transform: translateY(-3px);
-        background: rgba(255, 255, 255, 0.1);
-    }
-    
-    .plan-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
-        z-index: 0;
-    }
-    
-    .plan-data {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 4px;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .plan-validity {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        margin-bottom: 12px;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .plan-price {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        position: relative;
-        z-index: 1;
-    }
-    
-    .price-old {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        text-decoration: line-through;
-    }
-    
-    .price-new {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--success);
-    }
-    
-    .badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: var(--primary);
+
+    .btn-danger {
+        background: linear-gradient(135deg, var(--error), #b91c1c);
         color: white;
-        font-size: 0.7rem;
-        font-weight: 600;
-        padding: 3px 8px;
-        border-radius: 8px;
-        z-index: 2;
     }
-    
-    .badge.hot {
-        background: var(--error);
+
+    .btn-warning {
+        background: linear-gradient(135deg, var(--warning), #d97706);
+        color: white;
     }
-    
-    .badge.popular {
-        background: var(--warning);
+
+    .btn-danger:hover, .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     }
-    
-    .badge.value {
-        background: var(--success);
-    }
-    
-    .order-section {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        padding: 20px;
-        margin-top: 32px;
-        backdrop-filter: blur(10px);
-    }
-    
-    .order-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .selected-plan-display {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 20px;
-        text-align: center;
-        color: var(--text-secondary);
-    }
-    
-    .selected-plan-display.active {
-        color: var(--text);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .admin-note {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        padding: 16px;
-        margin-top: 20px;
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    
-    .admin-note i {
-        color: var(--primary);
-        font-size: 1.2rem;
-        margin-top: 2px;
-    }
-    
-    .admin-note-text {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-    
-    /* Automatic Content */
-    .automatic-content {
-        display: none;
-    }
-    
-    .automatic-content.active {
-        display: block;
-        animation: fadeIn 0.5s ease;
-    }
-    
-    /* Requests Content */
-    .requests-content {
-        display: none;
-    }
-    
-    .requests-content.active {
-        display: block;
-        animation: fadeIn 0.5s ease;
-    }
-    
-    .request-card {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 16px;
-        border-left: 3px solid var(--primary);
-    }
-    
-    .request-card.pending {
-        border-left-color: var(--warning);
-    }
-    
-    .request-card.completed {
-        border-left-color: var(--success);
-    }
-    
-    .request-card.failed {
-        border-left-color: var(--error);
-    }
-    
-    .request-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 12px;
-    }
-    
-    .request-title {
-        font-weight: 600;
-    }
-    
-    .request-status {
-        font-size: 0.8rem;
-        padding: 2px 8px;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.1);
-    }
-    
-    .request-status.pending {
-        background: rgba(255, 181, 71, 0.2);
-        color: var(--warning);
-    }
-    
-    .request-status.completed {
-        background: rgba(0, 225, 160, 0.2);
-        color: var(--success);
-    }
-    
-    .request-status.failed {
-        background: rgba(255, 94, 125, 0.2);
-        color: var(--error);
-    }
-    
-    .request-details {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-    
-    .request-detail {
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .request-detail-label {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-    }
-    
-    .request-detail-value {
-        font-size: 0.9rem;
-    }
-    
-    .request-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-    }
-    
-    .request-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        color: var(--text);
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .request-btn:hover {
-        background: rgba(255, 255, 255, 0.15);
-    }
-    
-    .request-btn.primary {
-        background: rgba(45, 127, 249, 0.2);
-        color: var(--primary);
-    }
-    
-    .request-btn.primary:hover {
-        background: rgba(45, 127, 249, 0.3);
-    }
-    
-    /* Navigation Bar */
-    .nav-container {
+
+    /* Bottom Navigation */
+    .bottom-nav {
         position: fixed;
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
         width: calc(100% - 40px);
         max-width: 500px;
-        z-index: 100;
-    }
-    
-    .nav-bar {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(20px);
         border-radius: 20px;
@@ -779,10 +440,9 @@
         justify-content: space-around;
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        position: relative;
-        overflow: hidden;
+        z-index: 1000;
     }
-    
+
     .nav-item {
         display: flex;
         flex-direction: column;
@@ -796,48 +456,82 @@
         text-decoration: none;
         color: var(--text-secondary);
     }
-    
+
     .nav-item.active {
         color: var(--primary);
     }
-    
+
     .nav-item i {
         font-size: 1.2rem;
         margin-bottom: 4px;
     }
-    
+
     .nav-item span {
         font-size: 0.8rem;
         font-weight: 500;
     }
-    
-    .nav-indicator {
-        position: absolute;
-        height: calc(100% - 24px);
-        border-radius: 16px;
+
+    /* Toast Notification */
+    .toast {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 20px;
+        padding: 16px;
         background: rgba(255, 255, 255, 0.1);
-        z-index: 1;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        color: var(--text);
+        font-size: 0.9rem;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease-in-out;
+        max-width: 90%;
+        width: 350px;
+        display: flex;
+        align-items: center;
+        border-left: 4px solid var(--primary);
+        opacity: 0;
+        visibility: hidden;
     }
-    
-    /* Ripple Effect */
-    .ripple {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: scale(0);
-        animation: ripple 0.8s linear;
-        pointer-events: none;
+
+    .toast.show {
+        opacity: 1;
+        visibility: visible;
     }
-    
-    @keyframes ripple {
-        to {
-            transform: scale(2);
-            opacity: 0;
-        }
+
+    .toast.success {
+        border-left-color: var(--success);
     }
-    
-    /* Confirmation Modal */
+
+    .toast.error {
+        border-left-color: var(--error);
+    }
+
+    .toast.warning {
+        border-left-color: var(--warning);
+    }
+
+    .toast-icon {
+        margin-right: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .toast.success .toast-icon {
+        color: var(--success);
+    }
+
+    .toast.error .toast-icon {
+        color: var(--error);
+    }
+
+    .toast.warning .toast-icon {
+        color: var(--warning);
+    }
+
+    /* Custom Modal */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -854,755 +548,311 @@
         visibility: hidden;
         transition: all 0.3s ease;
     }
-    
-    .modal-overlay.show {
+
+    .modal-overlay.active {
         opacity: 1;
         visibility: visible;
     }
-    
+
     .modal {
         background: linear-gradient(135deg, rgba(45, 127, 249, 0.2), rgba(140, 82, 255, 0.2));
         border-radius: 24px;
         padding: 24px;
         max-width: 90%;
         width: 400px;
-        position: relative;
         backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         transform: scale(0.9);
         transition: transform 0.3s ease;
     }
-    
-    .modal-overlay.show .modal {
+
+    .modal-overlay.active .modal {
         transform: scale(1);
     }
-    
-    .modal-close {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: background 0.3s ease;
-    }
-    
-    .modal-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-    
-    .modal-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 20px;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.8rem;
-        color: white;
-        margin: 0 auto 16px;
-    }
-    
-    .modal-title {
-        font-size: 1.5rem;
+
+    .modal-header {
+        font-size: 1.2rem;
         font-weight: 600;
-        margin-bottom: 8px;
-        text-align: center;
+        margin-bottom: 1.5rem;
+        color: var(--text);
     }
-    
-    .modal-description {
+
+    .modal-body {
+        margin-bottom: 1.5rem;
         color: var(--text-secondary);
-        text-align: center;
-        margin-bottom: 16px;
     }
-    
-    .confirmation-details {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 24px;
-    }
-    
-    .confirmation-item {
+
+    .modal-body .summary-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 8px;
+        margin-bottom: 0.75rem;
     }
-    
-    .confirmation-item:last-child {
-        margin-bottom: 0;
-        padding-top: 8px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .confirmation-label {
-        color: var(--text-secondary);
-    }
-    
-    .confirmation-value {
+
+    .modal-body .summary-label {
         font-weight: 500;
+        color: var(--text-secondary);
     }
-    
-    .modal-actions {
-        display: flex;
-        gap: 12px;
-    }
-    
-    .modal-btn {
-        flex: 1;
-        padding: 12px;
-        border-radius: 12px;
-        border: none;
+
+    .modal-body .summary-value {
         font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-    }
-    
-    .modal-btn.cancel {
-        background: rgba(255, 255, 255, 0.1);
         color: var(--text);
     }
-    
-    .modal-btn.confirm {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-    }
-    
-    .modal-btn:hover {
-        transform: translateY(-2px);
-    }
-    
-    /* Toast Notifications */
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
+
+    .modal-footer {
         display: flex;
-        flex-direction: column;
-        gap: 10px;
-        max-width: 350px;
+        justify-content: space-between;
+        gap: 0.5rem;
     }
-    
-    .toast {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        padding: 16px;
-        color: var(--text);
-        font-size: 0.9rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        transform: translateX(120%);
-        animation: slide-in 0.3s forwards, fade-out 0.5s forwards 5s;
-        border-left: 4px solid var(--primary);
+
+    .modal-footer .btn {
+        padding: 0.75rem 1rem;
+        flex: 1;
     }
-    
-    .toast.success {
-        border-left-color: var(--success);
-    }
-    
-    .toast.error {
-        border-left-color: var(--error);
-    }
-    
-    .toast.warning {
-        border-left-color: var(--warning);
-    }
-    
-    .toast-icon {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    
-    .toast.success .toast-icon {
-        background: rgba(0, 225, 160, 0.2);
-        color: var(--success);
-    }
-    
-    .toast.error .toast-icon {
-        background: rgba(255, 94, 125, 0.2);
-        color: var(--error);
-    }
-    
-    .toast.warning .toast-icon {
+
+    .warning-message {
         background: rgba(255, 181, 71, 0.2);
+        border-left: 4px solid var(--warning);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
         color: var(--warning);
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    
-    .toast-content {
-        flex: 1;
+
+    .error-message {
+        background: rgba(255, 94, 125, 0.2);
+        border-left: 4px solid var(--error);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        color: var(--error);
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    
-    .toast-title {
-        font-weight: 600;
-        margin-bottom: 4px;
-    }
-    
-    .toast-message {
-        color: var(--text-secondary);
-    }
-    
-    .toast-close {
-        color: var(--text-secondary);
-        cursor: pointer;
-        font-size: 0.8rem;
-        padding: 4px;
-    }
-    
-    @keyframes slide-in {
-        to {
-            transform: translateX(0);
-        }
-    }
-    
-    @keyframes fade-out {
-        0%, 80% {
-            opacity: 1;
-        }
-        100% {
-            opacity: 0;
-            visibility: hidden;
-        }
-    }
-    
+
     /* Loading Spinner */
-    .loading-spinner {
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .loading {
         display: inline-block;
-        width: 20px;
-        height: 20px;
+        width: 1rem;
+        height: 1rem;
         border: 2px solid rgba(255, 255, 255, 0.3);
         border-radius: 50%;
         border-top-color: white;
         animation: spin 1s ease-in-out infinite;
+        margin-right: 0.5rem;
     }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: var(--text-secondary);
-    }
-    
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 16px;
-        opacity: 0.5;
-    }
-    
-    /* Admin Note Display */
-    .admin-note-display {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-        padding: 12px;
-        margin-top: 10px;
-        margin-bottom: 12px;
-        border-left: 3px solid var(--secondary);
-    }
-    
-    .admin-note-display-title {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--secondary);
-        margin-bottom: 4px;
-    }
-    
-    .admin-note-display-content {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-    
-    /* Balance Display */
-    .balance-display {
-        background: rgba(45, 127, 249, 0.1);
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    
-    .balance-label {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-    
-    .balance-value {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--success);
-    }
-    
-    /* Toggle Switch */
-    .toggle-container {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-    
-    .toggle-label {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        margin-right: 10px;
-    }
-    
-    .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 24px;
-    }
-    
-    .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-    
-    .toggle-slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(255, 255, 255, 0.1);
-        transition: .4s;
-        border-radius: 24px;
-    }
-    
-    .toggle-slider:before {
-        position: absolute;
-        content: "";
-        height: 18px;
-        width: 18px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-    
-    input:checked + .toggle-slider {
-        background-color: var(--primary);
-    }
-    
-    input:checked + .toggle-slider:before {
-        transform: translateX(26px);
-    }
-    
+
     /* Responsive Adjustments */
-    @media (max-width: 768px) {
-        .networks-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
     @media (max-width: 480px) {
         .nav-item span {
-            display: none;
-        }
-        
-        .nav-item i {
-            margin-bottom: 0;
-        }
-        
-        .plans-grid {
-            grid-template-columns: 1fr;
+            font-size: 0.7rem;
         }
     }
 </style>
 </head>
 <body>
-<!-- Liquid Background -->
+<!-- Liquid Blob Background -->
 <div class="liquid-bg">
     <div class="liquid-blob blob-1"></div>
     <div class="liquid-blob blob-2"></div>
     <div class="liquid-blob blob-3"></div>
 </div>
 
-<!-- Header -->
-<header class="header">
-    <div class="back-button" id="back-button">
-        <i class="fas fa-arrow-left"></i>
+<div class="data-container">
+    <div class="page-header">
+        <button class="back-button" onclick="window.location.href='dashboard.html'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"></path>
+                <path d="M12 19l-7-7 7-7"></path>
+            </svg>
+        </button>
+        <h1 class="page-title">Buy Data</h1>
     </div>
-    <div class="page-title">Buy Data</div>
-    <div class="network-indicator" id="network-indicator">
-        <i class="fas fa-signal"></i> MTN
-    </div>
-</header>
-
-<!-- Main Content -->
-<div class="main-content">
+    
     <!-- Balance Display -->
-    <div class="balance-display" id="balance-display">
-        <div class="balance-label">Your Balance:</div>
-        <div class="balance-value" id="balance-value">₦410.00</div>
+    <div class="balance-display">
+        <div class="balance-label">Wallet Balance</div>
+        <div class="balance-value" id="userBalance">Loading...</div>
     </div>
     
-    <!-- Mode Switcher -->
-    <div class="mode-switcher-container">
-        <div class="mode-switcher">
-            <div class="mode-indicator"></div>
-            <div class="mode-option active" data-mode="automatic">Automatic</div>
-            <div class="mode-option" data-mode="manual">Manual</div>
-            <div class="mode-option" data-mode="requests">Requests</div>
+    <div class="network-slider-container">
+        <div class="slider-indicators" id="sliderIndicators">
+            <div class="indicator active" data-index="0"></div>
+            <div class="indicator" data-index="1"></div>
+            <div class="indicator" data-index="2"></div>
+            <div class="indicator" data-index="3"></div>
+        </div>
+        <div class="network-slider" id="networkSlider">
+            <div class="network-option mtn" data-network="MTN" data-network-id="1">
+                <div class="network-image">
+                    <div class="network-logo">M</div>
+                </div>
+                <div class="network-name">MTN</div>
+            </div>
+            
+            <div class="network-option airtel" data-network="AIRTEL" data-network-id="2">
+                <div class="network-image">
+                    <div class="network-logo">A</div>
+                </div>
+                <div class="network-name">Airtel</div>
+            </div>
+            
+            <div class="network-option glo" data-network="GLO" data-network-id="3">
+                <div class="network-image">
+                    <div class="network-logo">G</div>
+                </div>
+                <div class="network-name">Glo</div>
+            </div>
+            
+            <div class="network-option mobile9" data-network="9MOBILE" data-network-id="4">
+                <div class="network-image">
+                    <div class="network-logo">9</div>
+                </div>
+                <div class="network-name">9mobile</div>
+            </div>
         </div>
     </div>
     
-    <!-- Automatic Content -->
-    <div class="automatic-content active" id="automatic-content">
-        <!-- Network Selection -->
-        <div class="network-selection">
-            <div class="section-title">Select Network</div>
-            <div class="networks-grid" id="networks-grid">
-                <div class="network-card active" data-network="MTN" data-network-id="1">
-                    <div class="network-logo mtn">
-                        <i class="fas fa-signal"></i>
-                    </div>
-                    <div class="network-name">MTN</div>
-                </div>
-                <div class="network-card" data-network="AIRTEL" data-network-id="2">
-                    <div class="network-logo airtel">
-                        <i class="fas fa-signal"></i>
-                    </div>
-                    <div class="network-name">Airtel</div>
-                </div>
-                <div class="network-card" data-network="GLO" data-network-id="3">
-                    <div class="network-logo glo">
-                        <i class="fas fa-signal"></i>
-                    </div>
-                    <div class="network-name">Glo</div>
-                </div>
-                <div class="network-card" data-network="9MOBILE" data-network-id="4">
-                    <div class="network-logo etisalat">
-                        <i class="fas fa-signal"></i>
-                    </div>
-                    <div class="network-name">9mobile</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Data Purchase Form -->
-        <form id="data-form">
+    <div class="form-container">
+        <form id="dataForm">
             <div class="form-group">
-                <label class="form-label">Plan Type</label>
-                <select class="form-select" id="plan-type" required>
-                    <option value="" selected disabled>Select Plan Type</option>
-                    <option value="SME">SME</option>
-                    <option value="GIFTING">GIFTING</option>
-                    <option value="COOPERATE GIFTING">COOPERATE GIFTING</option>
-                </select>
+                <label for="selectedNetwork" class="form-label">Selected Network</label>
+                <div class="input-wrapper">
+                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v2"></path>
+                        <path d="M12 20v2"></path>
+                        <path d="m4.93 4.93 1.41 1.41"></path>
+                        <path d="m17.66 17.66 1.41 1.41"></path>
+                        <path d="M2 12h2"></path>
+                        <path d="M20 12h2"></path>
+                        <path d="m6.34 17.66-1.41 1.41"></path>
+                        <path d="m19.07 4.93-1.41 1.41"></path>
+                    </svg>
+                    <input type="text" id="selectedNetwork" class="form-input network-display" readonly placeholder="Select a network above">
+                </div>
             </div>
             
             <div class="form-group">
-                <label class="form-label">Select Data Plan</label>
-                <select class="form-select" id="data-plan" required disabled>
-                    <option value="" selected disabled>Select Data Plan</option>
-                    <!-- Plans will be loaded dynamically based on plan type -->
-                </select>
+                <label for="planType" class="form-label">Plan Type</label>
+                <div class="input-wrapper">
+                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                    </svg>
+                    <select id="planType" class="form-select" disabled>
+                        <option value="" selected disabled>Select Plan Type</option>
+                    </select>
+                </div>
             </div>
             
             <div class="form-group">
-                <label class="form-label">Phone Number</label>
-                <input type="tel" class="form-input" id="phone-number" placeholder="Enter 11-digit phone number" pattern="[0-9]{11}" required>
+                <label for="dataPlan" class="form-label">Data Plan</label>
+                <div class="input-wrapper">
+                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                        <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                    </svg>
+                    <select id="dataPlan" class="form-select" disabled>
+                        <option value="" selected disabled>Select Data Plan</option>
+                    </select>
+                </div>
             </div>
-            
-            <div class="toggle-container">
-                <label class="toggle-label">Bypass API Verification:</label>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="bypass-toggle">
-                    <span class="toggle-slider"></span>
-                </label>
+
+            <div class="form-group">
+                <label for="phoneNumber" class="form-label">Phone Number</label>
+                <div class="input-wrapper">
+                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                    <input type="text" id="phoneNumber" class="form-input" placeholder="Enter 11-digit phone number" maxlength="11">
+                </div>
             </div>
-            
-            <button type="submit" class="primary-btn" id="buy-data-btn" disabled>
-                <span id="buttonText"><i class="fas fa-shopping-cart"></i> Buy Now</span>
+
+            <button type="submit" id="submitButton" class="btn btn-primary btn-block" disabled>
+                <span id="buttonText">Buy Now</span>
             </button>
         </form>
     </div>
-    
-    <!-- Manual Content -->
-    <div class="manual-content" id="manual-content">
-        <!-- Info Card -->
-        <div class="info-card">
-            <div class="info-card-content">
-                <div class="info-card-title">
-                    <i class="fas fa-signal"></i>
-                    VeltraWave Exclusive MTN Special Data Plans
-                </div>
-                <div class="info-card-subtitle">
-                    The cheapest MTN data plans available anywhere - exclusively for VeltraWave customers!
-                </div>
-                <ul class="info-list">
-                    <li class="info-list-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Premium quality data with full network coverage</span>
-                    </li>
-                    <li class="info-list-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Fast delivery - data will be delivered within 30 minutes</span>
-                    </li>
-                    <li class="info-list-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Large plans (5GB+) may be delivered in multiple transfers</span>
-                    </li>
-                    <li class="info-list-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Plans expire after validity period (no rollover)</span>
-                    </li>
-                    <li class="info-list-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Works on all MTN SIM cards and supports hotspot/tethering</span>
-                    </li>
-                </ul>
-            </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast">
+    <div class="toast-icon" id="toastIcon"></div>
+    <div id="toastMessage"></div>
+</div>
+
+<!-- Custom Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <div class="modal-header">Confirm Purchase</div>
+        <div class="modal-body" id="modalBody">
+            <!-- Purchase details will be inserted here -->
         </div>
-        
-        <!-- Plan Categories -->
-        <div class="plan-category">
-            <div class="category-header">
-                <div class="category-title">
-                    <i class="fas fa-clock"></i>
-                    1-Day Offers (24 Hours Validity)
-                </div>
-                <div class="category-description">
-                    Best for: Quick browsing, social media, and light streaming.
-                </div>
-            </div>
-            
-            <div class="plans-grid" id="daily-plans-grid">
-                <!-- Plans will be loaded dynamically -->
-            </div>
-        </div>
-        
-        <div class="plan-category">
-            <div class="category-header">
-                <div class="category-title">
-                    <i class="fas fa-calendar-week"></i>
-                    7-Day Offers (1 Week Validity)
-                </div>
-                <div class="category-description">
-                    Best for: Heavy users, movie streaming, gaming, and hotspot sharing.
-                </div>
-            </div>
-            
-            <div class="plans-grid" id="weekly-plans-grid">
-                <!-- Plans will be loaded dynamically -->
-            </div>
-        </div>
-        
-        <div class="plan-category">
-            <div class="category-header">
-                <div class="category-title">
-                    <i class="fas fa-calendar-check"></i>
-                    30-Day Offers (1 Month Validity)
-                </div>
-                <div class="category-description">
-                    Best for: Long-term users, multiple device connections, video streaming, and online businesses.
-                </div>
-            </div>
-            
-            <div class="plans-grid" id="monthly-plans-grid">
-                <!-- Plans will be loaded dynamically -->
-            </div>
-        </div>
-        
-        <!-- Order Section -->
-        <div class="order-section">
-            <div class="order-title">Order Your MTN Data Plan</div>
-            
-            <div class="form-group">
-                <label class="form-label">Selected Plan</label>
-                <div class="selected-plan-display" id="selected-plan-display">
-                    Select a plan above
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">MTN Phone Number</label>
-                <input type="tel" class="form-input" id="manual-phone-number" placeholder="Enter your MTN number" pattern="[0-9]{11}" required>
-                <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 4px; display: block;">This is the number where the data will be sent.</small>
-            </div>
-            
-            <button type="button" class="primary-btn" id="place-order-btn" disabled>
-                <i class="fas fa-shopping-cart"></i>
-                Place Order Now
-            </button>
-            
-            <div class="admin-note">
-                <i class="fas fa-info-circle"></i>
-                <div class="admin-note-text">
-                    Your order will be sent to our admin dashboard for processing. Data will be delivered within 30 minutes during business hours.
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Requests Content -->
-    <div class="requests-content" id="requests-content">
-        <div class="section-title">Your Data Purchase Requests</div>
-        
-        <div id="requests-container">
-            <!-- Requests will be loaded dynamically -->
-            <div class="empty-state" id="empty-requests">
-                <i class="fas fa-history"></i>
-                <p>You haven't made any data purchase requests yet.</p>
-                <button class="primary-btn" style="max-width: 200px; margin: 20px auto 0;" onclick="document.querySelector('.mode-option[data-mode=\'automatic\']').click()">
-                    Buy Data Now
-                </button>
-            </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="confirmPurchase">Confirm</button>
+            <button class="btn btn-danger" id="cancelPurchase">Cancel</button>
         </div>
     </div>
 </div>
 
-<!-- Navigation Bar -->
-<div class="nav-container">
-<div class="nav-bar">
-    <div class="nav-indicator"></div>
-    <div class="nav-item" data-page="home">
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+    <a href="dashboard.html" class="nav-item">
         <i class="fas fa-home"></i>
         <span>Home</span>
-    </div>
-    <div class="nav-item active" data-page="services">
-        <i class="fas fa-th-large"></i>
-        <span>Services</span>
-    </div>
-    <div class="nav-item" data-page="transactions">
-        <i class="fas fa-exchange-alt"></i>
-        <span>Transactions</span>
-    </div>
-    <div class="nav-item" data-page="account">
+    </a>
+    <a href="service.html" class="nav-item active">
+        <i class="fas fa-bolt"></i>
+        <span>Service</span>
+    </a>
+    <a href="games.html" class="nav-item">
+        <i class="fas fa-gamepad"></i>
+        <span>Games</span>
+    </a>
+    <a href="profile.html" class="nav-item">
         <i class="fas fa-user"></i>
-        <span>Account</span>
-    </div>
-</div>
-</div>
-
-<!-- Confirmation Modal -->
-<div class="modal-overlay" id="confirmation-modal">
-    <div class="modal">
-        <div class="modal-close" id="close-modal">
-            <i class="fas fa-times"></i>
-        </div>
-        <div class="modal-icon">
-            <i class="fas fa-wifi"></i>
-        </div>
-        <div class="modal-title">Confirm Purchase</div>
-        <div class="modal-description">
-            Please review your data purchase details
-        </div>
-        
-        <div class="confirmation-details">
-            <div class="confirmation-item">
-                <div class="confirmation-label">Network</div>
-                <div class="confirmation-value" id="confirm-network">MTN</div>
-            </div>
-            <div class="confirmation-item">
-                <div class="confirmation-label">Data Plan</div>
-                <div class="confirmation-value" id="confirm-plan">2.5GB - 1 Day</div>
-            </div>
-            <div class="confirmation-item">
-                <div class="confirmation-label">Phone Number</div>
-                <div class="confirmation-value" id="confirm-number">08012345678</div>
-            </div>
-            <div class="confirmation-item">
-                <div class="confirmation-label">Amount</div>
-                <div class="confirmation-value" id="confirm-amount">₦519</div>
-            </div>
-            <div class="confirmation-item">
-                <div class="confirmation-label">Your Balance</div>
-                <div class="confirmation-value" id="confirm-balance">₦410.00</div>
-            </div>
-            <div class="confirmation-item" id="bypass-info-container" style="display: none;">
-                <div class="confirmation-label">Bypass Verification</div>
-                <div class="confirmation-value" id="bypass-info">Yes</div>
-            </div>
-        </div>
-        
-        <div class="modal-actions">
-            <button class="modal-btn cancel" id="cancel-purchase">
-                Cancel
-            </button>
-            <button class="modal-btn confirm" id="confirm-purchase">
-                <i class="fas fa-check-circle"></i>
-                Confirm
-            </button>
-        </div>
-    </div>
+        <span>Profile</span>
+    </a>
 </div>
 
-<!-- Insufficient Balance Modal -->
-<div class="modal-overlay" id="insufficient-balance-modal">
-    <div class="modal">
-        <div class="modal-close" id="close-insufficient-modal">
-            <i class="fas fa-times"></i>
-        </div>
-        <div class="modal-icon" style="background: linear-gradient(135deg, var(--error), var(--warning));">
-            <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div class="modal-title">Insufficient Balance</div>
-        <div class="modal-description">
-            You don't have enough balance to complete this purchase.
-        </div>
-        
-        <div class="confirmation-details">
-            <div class="confirmation-item">
-                <div class="confirmation-label">Required Amount</div>
-                <div class="confirmation-value" id="required-amount">₦0.00</div>
-            </div>
-            <div class="confirmation-item">
-                <div class="confirmation-label">Your Balance</div>
-                <div class="confirmation-value" id="current-balance">₦410.00</div>
-            </div>
-            <div class="confirmation-item">
-                <div class="confirmation-label">Shortfall</div>
-                <div class="confirmation-value" id="balance-shortfall" style="color: var(--error);">₦0.00</div>
-            </div>
-        </div>
-        
-        <div class="modal-actions">
-            <button class="modal-btn cancel" id="close-insufficient-btn">
-                Close
-            </button>
-            <button class="modal-btn confirm" id="fund-wallet-btn">
-                <i class="fas fa-wallet"></i>
-                Fund Wallet
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Toast Container -->
-<div class="toast-container" id="toast-container"></div>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 <script>
     // API credentials
     const ACCESS_TOKEN = "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d";
-    
+
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
+        authDomain: "veltrawave-vtu.firebaseapp.com",
+        projectId: "veltrawave-vtu",
+        storageBucket: "veltrawave-vtu.firebasestorage.app",
+        messagingSenderId: "431351611304",
+        appId: "1:431351611304:web:7381dd659920f9f325a79d",
+        measurementId: "G-HRHN8GJCR3"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
     // Data plans by network and type
     const DATA_PLANS = {
         "MTN": {
@@ -1627,6 +877,23 @@
                 { id: 103, name: "3.2GB", price: 1200, validity: "2Days Awoof Data" },
                 { id: 104, name: "5GB", price: 1700, validity: "7Days Awoof Data" },
                 { id: 105, name: "15GB", price: 3700, validity: "1Month Awoof Data" },
+            ]
+        },
+        "GLO": {
+            "COOPERATE GIFTING": [
+                { id: 57, name: "200MB", price: 100, validity: "1 Month" },
+                { id: 58, name: "500MB", price: 215, validity: "1 Month" },
+                { id: 59, name: "1GB", price: 430, validity: "1 Month" },
+                { id: 60, name: "2GB", price: 860, validity: "1 Month" },
+                { id: 61, name: "3GB", price: 1290, validity: "1 Month" },
+                { id: 62, name: "5GB", price: 2150, validity: "1 Month" },
+                { id: 63, name: "10GB", price: 4300, validity: "1 Month" },
+            ],
+            "GIFTING": [
+                { id: 90, name: "1GB", price: 230, validity: "1Day Awoof Data" },
+                { id: 91, name: "2GB", price: 350, validity: "1Day Awoof Data" },
+                { id: 92, name: "3.5GB", price: 550, validity: "2Days Awoof Data" },
+                { id: 93, name: "15GB", price: 2300, validity: "7Days Awoof Data" },
             ]
         },
         "AIRTEL": {
@@ -1654,22 +921,7 @@
                 { id: 96, name: "1.5GB", price: 450, validity: "7 Days" },
                 { id: 97, name: "2GB", price: 650, validity: "14 Days" },
                 { id: 98, name: "5GB", price: 1400, validity: "14 Days" },
-            ]
-        },
-        "GLO": {
-            "COOPERATE GIFTING": [
-                { id: 57, name: "200MB", price: 100, validity: "1 Month" },
-                { id: 58, name: "500MB", price: 215, validity: "1 Month" },
-                { id: 59, name: "1GB", price: 430, validity: "1 Month" },
-                { id: 60, name: "2GB", price: 860, validity: "1 Month" },
-                { id: 61, name: "3GB", price: 1290, validity: "1 Month" },
-                { id: 62, name: "5GB", price: 2150, validity: "1 Month" },
-            ],
-            "GIFTING": [
-                { id: 90, name: "1GB", price: 230, validity: "1Day Awoof Data" },
-                { id: 91, name: "2GB", price: 350, validity: "1Day Awoof Data" },
-                { id: 92, name: "3.5GB", price: 550, validity: "2Days Awoof Data" },
-                { id: 93, name: "15GB", price: 2300, validity: "7Days Awoof Data" },
+                { id: 100, name: "20GB", price: 4200, validity: "30 Days" },
             ]
         },
         "9MOBILE": {
@@ -1689,319 +941,247 @@
             ]
         }
     };
-    
-    // Global variables
-    let currentUser = {
-        balance: 410,
-        uid: "5966603094"
-    };
-    let selectedNetwork = "MTN";
-    let selectedNetworkId = 1;
-    let selectedPlanType = "";
-    let selectedPlan = null;
-    let isLoading = false;
-    let bypassVerification = false;
-    
-    // DOM Elements
-    const modeOptions = document.querySelectorAll('.mode-option');
-    const modeIndicator = document.querySelector('.mode-indicator');
-    const automaticContent = document.getElementById('automatic-content');
-    const manualContent = document.getElementById('manual-content');
-    const requestsContent = document.getElementById('requests-content');
-    const planTypeSelect = document.getElementById('plan-type');
-    const dataPlanSelect = document.getElementById('data-plan');
-    const phoneNumberInput = document.getElementById('phone-number');
-    const manualPhoneNumberInput = document.getElementById('manual-phone-number');
-    const buyDataBtn = document.getElementById('buy-data-btn');
-    const placeOrderBtn = document.getElementById('place-order-btn');
-    const selectedPlanDisplay = document.getElementById('selected-plan-display');
-    const networkCards = document.querySelectorAll('.network-card');
-    const confirmationModal = document.getElementById('confirmation-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const cancelPurchaseBtn = document.getElementById('cancel-purchase');
-    const confirmPurchaseBtn = document.getElementById('confirm-purchase');
-    const confirmNetwork = document.getElementById('confirm-network');
-    const confirmPlan = document.getElementById('confirm-plan');
-    const confirmNumber = document.getElementById('confirm-number');
-    const confirmAmount = document.getElementById('confirm-amount');
-    const confirmBalance = document.getElementById('confirm-balance');
-    const balanceValue = document.getElementById('balance-value');
-    const insufficientBalanceModal = document.getElementById('insufficient-balance-modal');
-    const closeInsufficientModal = document.getElementById('close-insufficient-modal');
-    const closeInsufficientBtn = document.getElementById('close-insufficient-btn');
-    const fundWalletBtn = document.getElementById('fund-wallet-btn');
-    const requiredAmount = document.getElementById('required-amount');
-    const currentBalance = document.getElementById('current-balance');
-    const balanceShortfall = document.getElementById('balance-shortfall');
-    const backButton = document.getElementById('back-button');
+
+    // DOM elements
+    const networkSlider = document.getElementById('networkSlider');
+    const sliderIndicators = document.getElementById('sliderIndicators');
+    const networkOptions = document.querySelectorAll('.network-option');
+    const selectedNetworkInput = document.getElementById('selectedNetwork');
+    const planTypeSelect = document.getElementById('planType');
+    const dataPlanSelect = document.getElementById('dataPlan');
+    const phoneNumberInput = document.getElementById('phoneNumber');
+    const submitButton = document.getElementById('submitButton');
     const buttonText = document.getElementById('buttonText');
-    const dataForm = document.getElementById('data-form');
-    const bypassToggle = document.getElementById('bypass-toggle');
-    const bypassInfoContainer = document.getElementById('bypass-info-container');
-    const bypassInfo = document.getElementById('bypass-info');
-    
-    // Navigation
-    const navItems = document.querySelectorAll('.nav-item');
-    const navIndicator = document.querySelector('.nav-indicator');
-    
-    // Initialize App
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize the app
-        initApp();
-    });
-    
-    // Initialize App
-    function initApp() {
-        // Set initial indicator position
-        setModeIndicatorPosition(document.querySelector('.mode-option.active'));
+    const dataForm = document.getElementById('dataForm');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    const toastIcon = document.getElementById('toastIcon');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalBody = document.getElementById('modalBody');
+    const confirmPurchaseBtn = document.getElementById('confirmPurchase');
+    const cancelPurchaseBtn = document.getElementById('cancelPurchase');
+    const userBalanceElement = document.getElementById('userBalance');
+
+    // State variables
+    let selectedNetwork = '';
+    let selectedNetworkId = null;
+    let selectedPlanType = '';
+    let selectedDataPlan = null;
+    let activeSlideIndex = 0;
+    let isLoading = false;
+    let startX, startScrollLeft;
+    let isDown = false;
+    let userBalance = 0;
+    let currentUser = null;
+
+    // Get user ID from URL parameter or local storage
+    // This is for Telegram integration
+    function getUserId() {
+        // Try to get from URL parameters first
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user_id');
         
-        // Initialize event listeners
-        initEventListeners();
+        if (userId) {
+            return userId;
+        }
         
-        // Set initial nav indicator position
-        setNavIndicatorPosition(document.querySelector('.nav-item.active'));
+        // If not in URL, try localStorage
+        const storedUserId = localStorage.getItem('telegram_user_id');
+        if (storedUserId) {
+            return storedUserId;
+        }
         
-        // Update balance display
-        updateBalanceDisplay();
-        
-        // Load manual plans
-        loadManualPlans();
-        
-        // Show welcome toast
-        showToast('success', 'Welcome', 'Buy data at the best prices with VeltraWave');
+        // Default test user ID if nothing is found
+        return "5966603094"; // Default test user
     }
+
+    // Initialize with user ID
+    const userId = getUserId();
+    currentUser = { uid: userId };
     
-    // Initialize Event Listeners
-    function initEventListeners() {
-        // Mode switcher
-        modeOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                // Remove active class from all options
-                modeOptions.forEach(opt => {
-                    opt.classList.remove('active');
-                });
+    // Fetch user balance directly without auth check
+    fetchUserBalance();
+
+    // Fetch user balance from Firestore
+    async function fetchUserBalance() {
+        try {
+            if (currentUser && currentUser.uid) {
+                console.log("Fetching balance for user:", currentUser.uid);
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
                 
-                // Add active class to clicked option
-                this.classList.add('active');
-                
-                // Move indicator
-                setModeIndicatorPosition(this);
-                
-                // Show/hide content based on selected mode
-                const mode = this.dataset.mode;
-                if (mode === 'automatic') {
-                    automaticContent.classList.add('active');
-                    manualContent.classList.remove('active');
-                    requestsContent.classList.remove('active');
-                } else if (mode === 'manual') {
-                    automaticContent.classList.remove('active');
-                    manualContent.classList.add('active');
-                    requestsContent.classList.remove('active');
-                } else if (mode === 'requests') {
-                    automaticContent.classList.remove('active');
-                    manualContent.classList.remove('active');
-                    requestsContent.classList.add('active');
-                    
-                    // Load requests
-                    loadRequests();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    userBalance = userData.balance || 0;
+                    userBalanceElement.textContent = formatCurrency(userBalance);
+                } else {
+                    console.error("User document not found for ID:", currentUser.uid);
+                    userBalanceElement.textContent = formatCurrency(0);
+                    showToast("User not found. Using default balance.", "warning");
                 }
-            });
-        });
-        
-        // Network Selection
-        networkCards.forEach(card => {
-            card.addEventListener('click', function() {
-                // Remove active class from all cards
-                networkCards.forEach(c => c.classList.remove('active'));
-                
-                // Add active class to clicked card
-                this.classList.add('active');
-                
-                // Update selected network
-                selectedNetwork = this.getAttribute('data-network');
-                selectedNetworkId = parseInt(this.getAttribute('data-network-id'));
-                
-                // Update network indicator
-                document.getElementById('network-indicator').innerHTML = `<i class="fas fa-signal"></i> ${selectedNetwork}`;
-                
-                // Reset plan type and data plan
-                planTypeSelect.value = '';
-                dataPlanSelect.innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
-                dataPlanSelect.disabled = true;
-                selectedPlanType = '';
-                selectedPlan = null;
-                
-                // Update plan types based on selected network
-                updatePlanTypes();
-                
-                // Update button state
-                updateSubmitButtonState();
-            });
-        });
-        
-        // Bypass toggle
-        bypassToggle.addEventListener('change', function() {
-            bypassVerification = this.checked;
-            
-            if (bypassVerification) {
-                showToast('warning', 'Bypass Enabled', 'API verification will be bypassed');
             } else {
-                showToast('info', 'Bypass Disabled', 'Normal API verification will be used');
+                console.error("No user ID available");
+                userBalanceElement.textContent = formatCurrency(0);
+                showToast("No user ID found. Using default balance.", "warning");
             }
-        });
-        
-        // Plan Type Change
-        planTypeSelect.addEventListener('change', function() {
-            selectedPlanType = this.value;
-            updateDataPlans();
-            updateSubmitButtonState();
-        });
-        
-        // Data Plan Change
-        dataPlanSelect.addEventListener('change', function() {
-            const planId = parseInt(this.value);
-            
-            if (selectedNetwork && selectedPlanType) {
-                const dataPlans = DATA_PLANS[selectedNetwork][selectedPlanType] || [];
-                selectedPlan = dataPlans.find(plan => plan.id === planId) || null;
-            }
-            
-            updateSubmitButtonState();
-        });
-        
-        // Phone Number Input
-        phoneNumberInput.addEventListener('input', function() {
-            // Allow only digits
-            this.value = this.value.replace(/\D/g, '');
-            updateSubmitButtonState();
-        });
-        
-        // Manual Phone Number Input
-        manualPhoneNumberInput.addEventListener('input', function() {
-            // Allow only digits
-            this.value = this.value.replace(/\D/g, '');
-            updateManualSubmitButtonState();
-        });
-        
-        // Data Form Submit
-        dataForm.addEventListener('submit', function(e) {
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            userBalanceElement.textContent = "Error loading balance";
+            showToast("Error loading balance. Please refresh.", "error");
+        }
+    }
+
+    // Initialize slider
+    function initSlider() {
+        // Set up mouse events for desktop
+        networkSlider.addEventListener('mousedown', (e) => {
+            isDown = true;
+            networkSlider.classList.add('active');
+            startX = e.pageX - networkSlider.offsetLeft;
+            startScrollLeft = networkSlider.scrollLeft;
             e.preventDefault();
-            
-            if (!selectedNetwork || !selectedPlanType || !selectedPlan || phoneNumberInput.value.length !== 11) {
-                showToast('error', 'Invalid Input', 'Please fill in all required fields correctly');
-                return;
-            }
-            
-            // Check if user has enough balance
-            if (currentUser.balance < selectedPlan.price) {
-                showInsufficientBalanceModal(selectedPlan.price);
-                return;
-            }
-            
-            // Update confirmation modal
-            confirmNetwork.textContent = selectedNetwork;
-            confirmPlan.textContent = `${selectedPlan.name} - ${selectedPlan.validity}`;
-            confirmNumber.textContent = phoneNumberInput.value;
-            confirmAmount.textContent = `₦${selectedPlan.price.toLocaleString()}`;
-            confirmBalance.textContent = `₦${currentUser.balance.toLocaleString()}`;
-            
-            // Show bypass info if enabled
-            if (bypassVerification) {
-                bypassInfoContainer.style.display = 'flex';
-                bypassInfo.textContent = 'Yes';
-            } else {
-                bypassInfoContainer.style.display = 'none';
-            }
-            
-            // Show confirmation modal
-            confirmationModal.classList.add('show');
+        });
+
+        networkSlider.addEventListener('mouseleave', () => {
+            isDown = false;
+            networkSlider.classList.remove('active');
+        });
+
+        networkSlider.addEventListener('mouseup', () => {
+            isDown = false;
+            networkSlider.classList.remove('active');
+            snapToClosestSlide();
+        });
+
+        networkSlider.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - networkSlider.offsetLeft;
+            const walk = (x - startX) * 2; // Scroll speed multiplier
+            networkSlider.scrollLeft = startScrollLeft - walk;
+        });
+
+        // Set up touch events for mobile
+        networkSlider.addEventListener('touchstart', (e) => {
+            isDown = true;
+            networkSlider.classList.add('active');
+            startX = e.touches[0].pageX - networkSlider.offsetLeft;
+            startScrollLeft = networkSlider.scrollLeft;
+        }, { passive: true });
+
+        networkSlider.addEventListener('touchend', () => {
+            isDown = false;
+            networkSlider.classList.remove('active');
+            snapToClosestSlide();
+        });
+
+        networkSlider.addEventListener('touchmove', (e) => {
+            if (!isDown) return;
+            const x = e.touches[0].pageX - networkSlider.offsetLeft;
+            const walk = (x - startX) * 2;
+            networkSlider.scrollLeft = startScrollLeft - walk;
+        }, { passive: true });
+
+        // Set up scroll event to update active slide
+        networkSlider.addEventListener('scroll', handleSliderScroll);
+        
+        // Set up indicator clicks
+        const indicators = document.querySelectorAll('.indicator');
+        indicators.forEach(indicator => {
+            indicator.addEventListener('click', () => {
+                const index = parseInt(indicator.dataset.index);
+                scrollToSlide(index);
+            });
         });
         
-        // Manual Order Button
-        placeOrderBtn.addEventListener('click', function() {
-            if (!selectedPlan || manualPhoneNumberInput.value.length !== 11) {
-                showToast('error', 'Invalid Input', 'Please select a plan and enter a valid phone number');
-                return;
-            }
-            
-            // Check if user has enough balance
-            if (currentUser.balance < selectedPlan.price) {
-                showInsufficientBalanceModal(selectedPlan.price);
-                return;
-            }
-            
-            // Update confirmation modal
-            confirmNetwork.textContent = "MTN";
-            confirmPlan.textContent = `${selectedPlan.data} - ${selectedPlan.validity}`;
-            confirmNumber.textContent = manualPhoneNumberInput.value;
-            confirmAmount.textContent = `₦${selectedPlan.price.toLocaleString()}`;
-            confirmBalance.textContent = `₦${currentUser.balance.toLocaleString()}`;
-            
-            // Show confirmation modal
-            confirmationModal.classList.add('show');
-        });
-        
-        // Close Modal
-        closeModalBtn.addEventListener('click', function() {
-            confirmationModal.classList.remove('show');
-        });
-        
-        // Cancel Purchase
-        cancelPurchaseBtn.addEventListener('click', function() {
-            confirmationModal.classList.remove('show');
-        });
-        
-        // Confirm Purchase
-        confirmPurchaseBtn.addEventListener('click', function() {
-            processDataPurchase();
-        });
-        
-        // Insufficient Balance Modal
-        closeInsufficientModal.addEventListener('click', function() {
-            insufficientBalanceModal.classList.remove('show');
-        });
-        
-        closeInsufficientBtn.addEventListener('click', function() {
-            insufficientBalanceModal.classList.remove('show');
-        });
-        
-        fundWalletBtn.addEventListener('click', function() {
-            window.location.href = 'fund-wallet.html';
-        });
-        
-        // Back Button
-        backButton.addEventListener('click', function() {
-            window.location.href = 'index.html';
-        });
-        
-        // Navigation Bar
-        navItems.forEach(item => {
-            item.addEventListener('click', function() {
-                const page = this.getAttribute('data-page');
-                
-                // Remove active class from all items
-                navItems.forEach(navItem => navItem.classList.remove('active'));
-                
-                // Add active class to clicked item
-                this.classList.add('active');
-                
-                // Update indicator position
-                setNavIndicatorPosition(this);
-                
-                if (page === 'home') {
-                    window.location.href = 'index.html';
-                } else if (page === 'services') {
-                    // Already on services page
-                } else if (page === 'transactions') {
-                    window.location.href = 'transactions.html';
-                } else if (page === 'account') {
-                    window.location.href = 'profile.html';
+        // Set up network option clicks
+        networkOptions.forEach((option, index) => {
+            option.addEventListener('click', (e) => {
+                if (Math.abs(networkSlider.scrollLeft - (index * networkSlider.offsetWidth)) < 50) {
+                    const network = option.dataset.network;
+                    const networkId = parseInt(option.dataset.networkId);
+                    selectNetwork(network, networkId, option);
                 }
             });
         });
+
+        // Initialize with the first network selected
+        const firstOption = networkOptions[0];
+        selectNetwork(
+            firstOption.dataset.network,
+            parseInt(firstOption.dataset.networkId),
+            firstOption
+        );
     }
-    
-    // Update Plan Types
+
+    function snapToClosestSlide() {
+        const slideWidth = networkSlider.offsetWidth;
+        const slideIndex = Math.round(networkSlider.scrollLeft / slideWidth);
+        scrollToSlide(slideIndex);
+    }
+
+    // Handle slider scroll
+    function handleSliderScroll() {
+        const slideWidth = networkSlider.offsetWidth;
+        const newActiveSlide = Math.round(networkSlider.scrollLeft / slideWidth);
+        
+        if (newActiveSlide !== activeSlideIndex && newActiveSlide >= 0 && newActiveSlide < networkOptions.length) {
+            activeSlideIndex = newActiveSlide;
+            updateIndicators();
+            
+            // Select the network at the current slide
+            const activeOption = networkOptions[activeSlideIndex];
+            const network = activeOption.dataset.network;
+            const networkId = parseInt(activeOption.dataset.networkId);
+            selectNetwork(network, networkId, activeOption);
+        }
+    }
+
+    // Update slider indicators
+    function updateIndicators() {
+        const indicators = document.querySelectorAll('.indicator');
+        indicators.forEach((indicator, index) => {
+            if (index === activeSlideIndex) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
+    }
+
+    // Scroll to specific slide
+    function scrollToSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= networkOptions.length) index = networkOptions.length - 1;
+        
+        const slideWidth = networkSlider.offsetWidth;
+        networkSlider.scrollTo({
+            left: slideWidth * index,
+            behavior: 'smooth'
+        });
+    }
+
+    // Select network
+    function selectNetwork(network, networkId, element) {
+        // Reset previous selection
+        networkOptions.forEach(opt => opt.classList.remove('selected'));
+        
+        // Set new selection
+        element.classList.add('selected');
+        selectedNetwork = network;
+        selectedNetworkId = networkId;
+        selectedNetworkInput.value = network;
+        
+        // Update plan types
+        updatePlanTypes();
+        
+        // Reset other fields
+        resetDataPlanAndSummary();
+        
+        // Update button state
+        updateSubmitButtonState();
+    }
+
+    // Update plan types based on selected network
     function updatePlanTypes() {
         // Clear existing options
         planTypeSelect.innerHTML = '<option value="" disabled selected>Select Plan Type</option>';
@@ -2021,8 +1201,17 @@
             planTypeSelect.disabled = true;
         }
     }
-    
-    // Update Data Plans
+
+    // Reset data plan and summary
+    function resetDataPlanAndSummary() {
+        selectedPlanType = '';
+        selectedDataPlan = null;
+        planTypeSelect.value = '';
+        dataPlanSelect.innerHTML = '<option value="" disabled selected>Select Data Plan</option>';
+        dataPlanSelect.disabled = true;
+    }
+
+    // Update data plans based on selected plan type
     function updateDataPlans() {
         // Clear existing options
         dataPlanSelect.innerHTML = '<option value="" disabled selected>Select Data Plan</option>';
@@ -2034,7 +1223,7 @@
                 if (plan.id && plan.name) { // Check for valid plan data
                     const option = document.createElement('option');
                     option.value = plan.id;
-                    option.textContent = `${plan.name} - ₦${plan.price.toLocaleString()} - ${plan.validity}`;
+                    option.textContent = `${plan.name} - ${formatCurrency(plan.price)} - ${plan.validity}`;
                     dataPlanSelect.appendChild(option);
                 }
             });
@@ -2044,535 +1233,295 @@
             dataPlanSelect.disabled = true;
         }
     }
-    
-    // Update Submit Button State
+
+    // Format currency
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-NG', { 
+            style: 'currency', 
+            currency: 'NGN',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(amount);
+    }
+
+    // Update submit button state
     function updateSubmitButtonState() {
         const isFormValid = 
             selectedNetwork && 
             selectedPlanType && 
-            selectedPlan && 
+            selectedDataPlan && 
             phoneNumberInput.value.length === 11 && 
             /^\d+$/.test(phoneNumberInput.value) &&
             !isLoading;
         
-        buyDataBtn.disabled = !isFormValid;
+        submitButton.disabled = !isFormValid;
     }
-    
-    // Update Manual Submit Button State
-    function updateManualSubmitButtonState() {
-        placeOrderBtn.disabled = !(selectedPlan && manualPhoneNumberInput.value.length === 11);
-    }
-    
-    // Set Mode Indicator Position
-    function setModeIndicatorPosition(activeOption) {
-        const index = Array.from(modeOptions).indexOf(activeOption);
-        const width = 100 / modeOptions.length;
-        modeIndicator.style.transform = `translateX(${index * 100}%)`;
-        modeIndicator.style.width = `${width}%`;
-    }
-    
-    // Set Nav Indicator Position
-    function setNavIndicatorPosition(activeNavItem) {
-        const index = Array.from(navItems).indexOf(activeNavItem);
-        const width = 100 / navItems.length;
-        navIndicator.style.transform = `translateX(${index * 100}%)`;
-        navIndicator.style.width = `${width}%`;
-    }
-    
-    // Update Balance Display
-    function updateBalanceDisplay() {
-        balanceValue.textContent = `₦${currentUser.balance.toLocaleString()}`;
-        confirmBalance.textContent = `₦${currentUser.balance.toLocaleString()}`;
-        currentBalance.textContent = `₦${currentUser.balance.toLocaleString()}`;
-    }
-    
-    // Load Manual Plans
-    function loadManualPlans() {
-        const dailyPlansGrid = document.getElementById('daily-plans-grid');
-        const weeklyPlansGrid = document.getElementById('weekly-plans-grid');
-        const monthlyPlansGrid = document.getElementById('monthly-plans-grid');
-        
-        // Clear existing plans
-        dailyPlansGrid.innerHTML = '';
-        weeklyPlansGrid.innerHTML = '';
-        monthlyPlansGrid.innerHTML = '';
-        
-        // Daily plans (1 day validity)
-        const dailyPlans = [
-            { id: "daily-1", data: "500MB", validity: "1 Day", price: 129, badge: null },
-            { id: "daily-2", data: "1GB", validity: "1 Day", price: 249, badge: null },
-            { id: "daily-3", data: "2.5GB", validity: "1 Day", price: 519, badge: "hot" }
-        ];
-        
-        // Weekly plans (7 days validity)
-        const weeklyPlans = [
-            { id: "weekly-1", data: "5GB", validity: "7 Days", price: 1299, badge: null },
-            { id: "weekly-2", data: "10GB", validity: "7 Days", price: 2499, badge: "popular" }
-        ];
-        
-        // Monthly plans (30 days validity)
-        const monthlyPlans = [
-            { id: "monthly-1", data: "15GB", validity: "30 Days", price: 3999, badge: null },
-            { id: "monthly-2", data: "40GB", validity: "30 Days", price: 9999, badge: "value" }
-        ];
-        
-        // Render daily plans
-        dailyPlans.forEach(plan => {
-            renderManualPlan(dailyPlansGrid, plan);
-        });
-        
-        // Render weekly plans
-        weeklyPlans.forEach(plan => {
-            renderManualPlan(weeklyPlansGrid, plan);
-        });
-        
-        // Render monthly plans
-        monthlyPlans.forEach(plan => {
-            renderManualPlan(monthlyPlansGrid, plan);
-        });
-    }
-    
-    // Render Manual Plan
-    function renderManualPlan(container, plan) {
-        // Calculate original price (10% higher than actual price)
-        const originalPrice = Math.round(plan.price * 1.1);
-        
-        const planCard = document.createElement('div');
-        planCard.className = 'plan-card';
-        planCard.setAttribute('data-plan-id', plan.id);
-        planCard.setAttribute('data-plan-data', plan.data);
-        planCard.setAttribute('data-plan-validity', plan.validity);
-        planCard.setAttribute('data-plan-price', plan.price);
-        
-        let badgeHTML = '';
-        if (plan.badge) {
-            const badgeText = plan.badge === 'hot' ? 'HOT!' :
-                            plan.badge === 'popular' ? 'MOST POPULAR' :
-                            'BEST VALUE';
-            badgeHTML = `<div class="badge ${plan.badge}">${badgeText}</div>`;
-        }
-        
-        planCard.innerHTML = `
-            ${badgeHTML}
-            <div class="plan-data">${plan.data}</div>
-            <div class="plan-validity">${plan.validity}</div>
-            <div class="plan-price">
-                <div class="price-old">₦${originalPrice.toLocaleString()}</div>
-                <div class="price-new">₦${plan.price.toLocaleString()}</div>
-            </div>
-        `;
-        
-        container.appendChild(planCard);
-        
-        // Add click event
-        planCard.addEventListener('click', function() {
-            // Update active plan
-            document.querySelectorAll('.plan-card').forEach(card => {
-                card.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            // Get plan details
-            const planData = this.getAttribute('data-plan-data');
-            const planValidity = this.getAttribute('data-plan-validity');
-            const planPrice = this.getAttribute('data-plan-price');
-            
-            // Update selected plan display
-            selectedPlanDisplay.textContent = `${planData} - ${planValidity} - ₦${parseInt(planPrice).toLocaleString()}`;
-            selectedPlanDisplay.classList.add('active');
-            
-            // Store selected plan
-            selectedPlan = {
-                id: this.getAttribute('data-plan-id'),
-                data: planData,
-                validity: planValidity,
-                price: parseInt(planPrice)
-            };
-            
-            // Enable order button
-            updateManualSubmitButtonState();
-            
-            showToast('success', 'Plan Selected', `Selected ${planData} plan for ${planValidity}`);
-        });
-    }
-    
-    // Show Insufficient Balance Modal
-    function showInsufficientBalanceModal(requiredAmount) {
-        const userBalance = currentUser.balance;
-        const shortfall = requiredAmount - userBalance;
-        
-        document.getElementById('required-amount').textContent = `₦${requiredAmount.toLocaleString()}`;
-        document.getElementById('current-balance').textContent = `₦${userBalance.toLocaleString()}`;
-        document.getElementById('balance-shortfall').textContent = `₦${shortfall.toLocaleString()}`;
-        
-        insufficientBalanceModal.classList.add('show');
-    }
-    
-    // Process Data Purchase
-    function processDataPurchase() {
-        const isManual = document.querySelector('.mode-option.active').dataset.mode === 'manual';
-        const phoneNum = isManual ? manualPhoneNumberInput.value : phoneNumberInput.value;
-        
-        // Set loading state
-        setLoading(true);
-        
-        // Generate request ID
-        const requestId = `Data_${Date.now()}`;
-        
-        if (isManual) {
-            // For manual data, just save to database and deduct balance
-            processManualRequest(phoneNum, selectedPlan, requestId);
-        } else {
-            // For automatic data, make API call
-            processAutomaticRequest(phoneNum, selectedPlan, requestId);
-        }
-    }
-    
-    // Process Manual Request
-    function processManualRequest(phoneNumber, plan, requestId) {
-        // Create request data
-        const requestData = {
-            userId: currentUser.uid,
-            phoneNumber: phoneNumber,
-            planName: `${plan.data} - ${plan.validity}`,
-            networkName: "MTN",
-            amount: plan.price,
-            status: 'pending',
-            timestamp: new Date(),
-            requestId: requestId
-        };
-        
-        // Simulate saving to database
-        setTimeout(() => {
-            // Deduct amount from user's balance
-            currentUser.balance -= plan.price;
-            
-            // Update balance display
-            updateBalanceDisplay();
-            
-            // Close modal
-            confirmationModal.classList.remove('show');
-            
-            // Show success toast
-            showToast('success', 'Order Placed', 'Your data purchase request has been submitted and will be processed by admin');
-            
-            // Reset form
-            manualPhoneNumberInput.value = '';
-            document.querySelectorAll('.plan-card').forEach(card => {
-                card.classList.remove('active');
-            });
-            selectedPlanDisplay.textContent = 'Select a plan above';
-            selectedPlanDisplay.classList.remove('active');
-            placeOrderBtn.disabled = true;
-            selectedPlan = null;
-            
-            // Add to requests
-            addToRequests(requestData);
-            
-            // Reset loading state
-            setLoading(false);
-        }, 1500);
-    }
-    
-    // Process Automatic Request
-    function processAutomaticRequest(phoneNumber, plan, requestId) {
-        // Create payload for API
-        const payload = {
-            network: selectedNetworkId,
-            phone: phoneNumber, // Don't convert to international format
-            data_plan: plan.id,
-            bypass: bypassVerification,
-            "request-id": requestId
-        };
-        
-        console.log("Sending API request:", payload);
-        
-        // Make the API call
-        fetch('https://n3tdata.com/api/data', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Token ${ACCESS_TOKEN}`
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("API Response:", data);
-            
-            if (data.status === 'success') {
-                // Deduct amount from user's balance
-                currentUser.balance -= plan.price;
-                
-                // Update balance display
-                updateBalanceDisplay();
-                
-                // Close modal
-                confirmationModal.classList.remove('show');
-                
-                // Show success toast
-                showToast('success', 'Purchase Successful', `${plan.name} data bundle has been purchased for ${phoneNumber}`);
-                
-                // Reset form
-                phoneNumberInput.value = '';
-                planTypeSelect.value = '';
-                dataPlanSelect.innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
-                dataPlanSelect.disabled = true;
-                buyDataBtn.disabled = true;
-                selectedPlan = null;
-                selectedPlanType = '';
-                
-                // Add to requests with completed status
-                const requestData = {
-                    userId: currentUser.uid,
-                    phoneNumber: phoneNumber,
-                    planName: `${plan.name} - ${plan.validity}`,
-                    networkName: selectedNetwork,
-                    amount: plan.price,
-                    status: 'completed',
-                    timestamp: new Date(),
-                    requestId: requestId,
-                    apiResponse: data
-                };
-                
-                addToRequests(requestData);
-            } else {
-                // Show error toast
-                showToast('error', 'Purchase Failed', data.message || 'Failed to process your request');
-                
-                // Add to requests with failed status
-                const requestData = {
-                    userId: currentUser.uid,
-                    phoneNumber: phoneNumber,
-                    planName: `${plan.name} - ${plan.validity}`,
-                    networkName: selectedNetwork,
-                    amount: plan.price,
-                    status: 'failed',
-                    timestamp: new Date(),
-                    requestId: requestId,
-                    error: data.message || 'Unknown error',
-                    apiResponse: data
-                };
-                
-                addToRequests(requestData);
-            }
-        })
-        .catch(error => {
-            console.error("API Error:", error);
-            
-            // Show error toast
-            showToast('error', 'API Error', error.message || 'Failed to connect to the server');
-            
-            // Add to requests with failed status
-            const requestData = {
-                userId: currentUser.uid,
-                phoneNumber: phoneNumber,
-                planName: `${plan.name} - ${plan.validity}`,
-                networkName: selectedNetwork,
-                amount: plan.price,
-                status: 'failed',
-                timestamp: new Date(),
-                requestId: requestId,
-                error: error.message || 'Network error'
-            };
-            
-            addToRequests(requestData);
-        })
-        .finally(() => {
-            // Reset loading state
-            setLoading(false);
-            
-            // Close modal
-            confirmationModal.classList.remove('show');
-        });
-    }
-    
-    // Set Loading State
+
+    // Set loading state
     function setLoading(loading) {
         isLoading = loading;
         
         if (loading) {
-            buttonText.innerHTML = '<div class="loading-spinner"></div> Processing...';
-            confirmPurchaseBtn.innerHTML = '<div class="loading-spinner"></div> Processing...';
-            confirmPurchaseBtn.disabled = true;
+            buttonText.innerHTML = '<span class="loading"></span>Processing...';
         } else {
-            buttonText.innerHTML = '<i class="fas fa-shopping-cart"></i> Buy Now';
-            confirmPurchaseBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm';
-            confirmPurchaseBtn.disabled = false;
+            buttonText.innerHTML = 'Buy Now';
         }
-    }
-    
-    // Add to Requests
-    function addToRequests(requestData) {
-        // Store in localStorage for demo purposes
-        const requests = JSON.parse(localStorage.getItem('dataRequests') || '[]');
-        requests.push(requestData);
-        localStorage.setItem('dataRequests', JSON.stringify(requests));
-    }
-    
-    // Load Requests
-    function loadRequests() {
-        const requestsContainer = document.getElementById('requests-container');
-        const emptyRequests = document.getElementById('empty-requests');
         
-        // Get requests from localStorage
-        const requests = JSON.parse(localStorage.getItem('dataRequests') || '[]');
+        submitButton.disabled = loading;
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'success') {
+        toastMessage.textContent = message;
+        toast.className = 'toast';
         
-        if (requests.length === 0) {
-            // Show empty state
-            if (emptyRequests) {
-                emptyRequests.style.display = 'block';
-                requestsContainer.innerHTML = '';
-                requestsContainer.appendChild(emptyRequests);
-            }
+        if (type === 'error') {
+            toast.classList.add('error');
+            toastIcon.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+            `;
+        } else if (type === 'warning') {
+            toast.classList.add('warning');
+            toastIcon.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            `;
+        } else {
+            toast.classList.add('success');
+            toastIcon.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            `;
+        }
+        
+        // Show toast
+        toast.classList.add('show');
+        
+        // Hide toast after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // Show modal
+    function showModal() {
+        modalOverlay.classList.add('active');
+    }
+
+    // Hide modal
+    function hideModal() {
+        modalOverlay.classList.remove('active');
+    }
+
+    // Check if user has sufficient balance
+    function checkBalance(amount) {
+        return userBalance >= amount;
+    }
+
+    // Event listeners
+    planTypeSelect.addEventListener('change', function() {
+        selectedPlanType = this.value;
+        selectedDataPlan = null;
+        updateDataPlans();
+        updateSubmitButtonState();
+    });
+
+    dataPlanSelect.addEventListener('change', function() {
+        const planId = parseInt(this.value);
+        
+        if (selectedNetwork && selectedPlanType) {
+            const dataPlans = DATA_PLANS[selectedNetwork][selectedPlanType] || [];
+            selectedDataPlan = dataPlans.find(plan => plan.id === planId) || null;
+        }
+        
+        updateSubmitButtonState();
+    });
+
+    phoneNumberInput.addEventListener('input', function() {
+        // Allow only digits
+        this.value = this.value.replace(/\D/g, '');
+        updateSubmitButtonState();
+    });
+
+    dataForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!selectedNetwork || !selectedPlanType || !selectedDataPlan || phoneNumberInput.value.length !== 11) {
+            showToast('Please fill in all required fields correctly', 'error');
+            return;
+        }
+
+        const hasSufficientBalance = checkBalance(selectedDataPlan.price);
+        
+        // Prepare modal content
+        let modalContent = `
+            <p>Are you sure you want to buy ${selectedDataPlan.name} data for ${phoneNumberInput.value}?</p>
+            <div class="summary-row">
+                <span class="summary-label">Network:</span>
+                <span class="summary-value">${selectedNetwork}</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Plan:</span>
+                <span class="summary-value">${selectedDataPlan.name}</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Validity:</span>
+                <span class="summary-value">${selectedDataPlan.validity}</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Phone Number:</span>
+                <span class="summary-value">${phoneNumberInput.value}</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Price:</span>
+                <span class="summary-value">${formatCurrency(selectedDataPlan.price)}</span>
+            </div>
+        `;
+
+        // Add warning for insufficient balance
+        if (!hasSufficientBalance) {
+            modalContent = `
+                <div class="warning-message">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    Insufficient balance. Please fund your wallet to continue.
+                </div>
+                ${modalContent}
+            `;
+
+            // Update modal buttons for insufficient balance
+            confirmPurchaseBtn.innerText = "Fund Wallet";
+            confirmPurchaseBtn.className = "btn btn-warning";
+        } else {
+            // Reset buttons if balance is sufficient
+            confirmPurchaseBtn.innerText = "Confirm";
+            confirmPurchaseBtn.className = "btn btn-primary";
+        }
+
+        modalBody.innerHTML = modalContent;
+
+        // Show modal
+        showModal();
+    });
+
+    // Confirm purchase or fund wallet
+    confirmPurchaseBtn.addEventListener('click', async function() {
+        hideModal();
+        
+        // Check if insufficient balance
+        if (!checkBalance(selectedDataPlan.price)) {
+            // Redirect to fund wallet page
+            window.location.href = 'fund-wallet.html';
             return;
         }
         
-        // Hide empty state
-        if (emptyRequests) {
-            emptyRequests.style.display = 'none';
+        setLoading(true);
+
+        try {
+            // Generate a unique request ID
+            const requestId = `Data_${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+            // Prepare the request payload
+            const payload = {
+                network: selectedNetworkId,
+                phone: phoneNumberInput.value,
+                data_plan: selectedDataPlan.id,
+                bypass: false,
+                "request-id": requestId
+            };
+
+            console.log("Sending request payload:", payload);
+
+            // Make the API call
+            const response = await fetch('https://n3tdata.com/api/data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${ACCESS_TOKEN}`
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const responseData = await response.json();
+            console.log("API Response:", responseData);
+            
+            if (responseData.status === 'success') {
+                // Deduct balance from user's account
+                await updateUserBalance(selectedDataPlan.price);
+                showToast(`${selectedDataPlan.name} data bundle has been purchased for ${phoneNumberInput.value}`);
+                
+                // Reset form
+                phoneNumberInput.value = '';
+                dataPlanSelect.value = '';
+                dataPlanSelect.disabled = true;
+                selectedDataPlan = null;
+                updateSubmitButtonState();
+            } else {
+                // Check if error is from API side
+                if (responseData.message && responseData.message.toLowerCase().includes('insufficient')) {
+                    showToast('Insufficient funds. Please contact admin.', 'error');
+                } else if (responseData.message) {
+                    showToast('Veltrawave error: ' + responseData.message + '. Contact admin.', 'error');
+                } else {
+                    showToast('Veltrawave error. Contact admin.', 'error');
+                }
+            }
+        } catch (error) {
+            console.error("Error purchasing data:", error);
+            showToast('Network error or server is unreachable. Please try again.', 'error');
+        } finally {
+            setLoading(false);
         }
-        
-        // Sort by timestamp descending
-        requests.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        
-        // Clear container
-        requestsContainer.innerHTML = '';
-        
-        // Render requests
-        requests.forEach(request => {
-            const timestamp = new Date(request.timestamp);
-            const formattedTime = formatTimestamp(timestamp);
-            
-            const requestCard = document.createElement('div');
-            requestCard.className = `request-card ${request.status || 'pending'}`;
-            
-            requestCard.innerHTML = `
-                <div class="request-header">
-                    <div class="request-title">${request.planName || 'Data Plan'}</div>
-                    <div class="request-status ${request.status || 'pending'}">${(request.status || 'pending').charAt(0).toUpperCase() + (request.status || 'pending').slice(1)}</div>
-                </div>
-                <div class="request-details">
-                    <div class="request-detail">
-                        <div class="request-detail-label">Phone Number</div>
-                        <div class="request-detail-value">${request.phoneNumber || 'N/A'}</div>
-                    </div>
-                    <div class="request-detail">
-                        <div class="request-detail-label">Amount</div>
-                        <div class="request-detail-value">₦${request.amount ? request.amount.toLocaleString() : '0'}</div>
-                    </div>
-                    <div class="request-detail">
-                        <div class="request-detail-label">Date</div>
-                        <div class="request-detail-value">${formattedTime}</div>
-                    </div>
-                    <div class="request-detail">
-                        <div class="request-detail-label">Request ID</div>
-                        <div class="request-detail-value">${request.requestId || 'N/A'}</div>
-                    </div>
-                </div>
-                <div class="request-actions">
-                    ${request.status === 'pending' ?
-                        `<button class="request-btn primary track-btn" data-id="${request.requestId}">Check Status</button>` :
-                        `<button class="request-btn primary buy-again-btn" data-id="${request.requestId}" data-phone="${request.phoneNumber}" data-plan="${request.planName}">Buy Again</button>`
+    });
+
+    // Update user balance in Firestore
+    async function updateUserBalance(amountToDeduct) {
+        try {
+            if (currentUser && currentUser.uid) {
+                const userRef = db.collection('users').doc(currentUser.uid);
+                
+                // Update balance using a transaction to ensure accuracy
+                await db.runTransaction(async (transaction) => {
+                    const userDoc = await transaction.get(userRef);
+                    if (!userDoc.exists) {
+                        throw new Error("User document does not exist!");
                     }
-                </div>
-            `;
-            
-            requestsContainer.appendChild(requestCard);
-        });
-        
-        // Add event listeners to buttons
-        document.querySelectorAll('.track-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const requestId = this.getAttribute('data-id');
-                showToast('info', 'Request Status', 'Your request is still pending. Please check back later.');
-            });
-        });
-        
-        document.querySelectorAll('.buy-again-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const phoneNumber = this.getAttribute('data-phone');
-                const planName = this.getAttribute('data-plan');
-                
-                // Switch to automatic mode
-                document.querySelector('.mode-option[data-mode="automatic"]').click();
-                
-                // Fill in the phone number
-                phoneNumberInput.value = phoneNumber;
-                
-                showToast('info', 'Buy Again', 'Previous order details loaded');
-            });
-        });
-    }
-    
-    // Format Timestamp
-    function formatTimestamp(timestamp) {
-        const now = new Date();
-        const diff = now.getTime() - timestamp.getTime();
-        const minutes = Math.floor(diff / 60000);
-        
-        if (minutes < 60) {
-            return minutes <= 1 ? 'Just now' : `${minutes} minutes ago`;
-        } else if (minutes < 1440) {
-            const hours = Math.floor(minutes / 60);
-            return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
-        } else if (minutes < 10080) { // 7 days
-            const days = Math.floor(minutes / 1440);
-            return `${days} ${days === 1 ? 'day' : 'days'} ago`;
-        } else {
-            const day = timestamp.getDate();
-            const month = timestamp.toLocaleString('default', { month: 'short' });
-            const year = timestamp.getFullYear();
-            return `${day} ${month} ${year}`;
+                    
+                    const userData = userDoc.data();
+                    const newBalance = (userData.balance || 0) - amountToDeduct;
+                    
+                    transaction.update(userRef, { balance: newBalance });
+                    
+                    // Update the local balance
+                    userBalance = newBalance;
+                    userBalanceElement.textContent = formatCurrency(newBalance);
+                });
+            }
+        } catch (error) {
+            console.error("Error updating user balance:", error);
+            showToast('Failed to update balance. Please refresh the page.', 'error');
         }
     }
-    
-    // Show Toast
-    function showToast(type, title, message) {
-        const toastContainer = document.getElementById('toast-container');
-        
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        
-        let icon;
-        switch (type) {
-            case 'success': icon = 'check-circle'; break;
-            case 'error': icon = 'times-circle'; break;
-            case 'warning': icon = 'exclamation-triangle'; break;
-            default: icon = 'info-circle';
-        }
-        
-        toast.innerHTML = `
-            <div class="toast-icon">
-                <i class="fas fa-${icon}"></i>
-            </div>
-            <div class="toast-content">
-                <div class="toast-title">${title}</div>
-                <div class="toast-message">${message}</div>
-            </div>
-            <div class="toast-close">
-                <i class="fas fa-times"></i>
-            </div>
-        `;
-        
-        toastContainer.appendChild(toast);
-        
-        // Add click event to close button
-        toast.querySelector('.toast-close').addEventListener('click', function() {
-            toast.remove();
-        });
-        
-        // Auto remove toast after animation completes
-        setTimeout(() => {
-            toast.remove();
-        }, 5500);
-    }
+
+    // Cancel purchase
+    cancelPurchaseBtn.addEventListener('click', function() {
+        hideModal();
+    });
+
+    // Initialize the page
+    initSlider();
 </script>
 </body>
 </html>
-
