@@ -3,664 +3,1019 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>N3TData - Buy Data</title>
+<title>VeltraWave - Buy Data</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    /* Reset and Base Styles */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Outfit', sans-serif;
-        -webkit-tap-highlight-color: transparent;
-    }
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
 
-    :root {
-        --primary: #2D7FF9;
-        --primary-light: #5A9DFF;
-        --primary-dark: #0D5ED6;
-        --secondary: #8C52FF;
-        --accent: #FF5E8A;
-        --background: #0A0F1E;
-        --card-bg: rgba(255, 255, 255, 0.08);
-        --surface: rgba(255, 255, 255, 0.12);
-        --text: #FFFFFF;
-        --text-secondary: rgba(255, 255, 255, 0.7);
-        --success: #00E1A0;
-        --warning: #FFB547;
-        --error: #FF5E7D;
-        --mtn-yellow: #FFCC00;
-        --airtel-red: #FF0000;
-        --glo-green: #00AB4E;
-        --etisalat-green: #006F53;
-    }
+:root {
+    --primary: #2D7FF9;
+    --primary-light: #5A9DFF;
+    --primary-dark: #0D5ED6;
+    --secondary: #8C52FF;
+    --accent: #FF5E8A;
+    --background: #0A0F1E;
+    --card-bg: rgba(255, 255, 255, 0.08);
+    --surface: rgba(255, 255, 255, 0.12);
+    --text: #FFFFFF;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --success: #00E1A0;
+    --warning: #FFB547;
+    --error: #FF5E7D;
+    --mtn-yellow: #FFCC00;
+    --airtel-red: #FF0000;
+    --glo-green: #00AB4E;
+    --etisalat-green: #006F53;
+}
 
-    body {
-        background-color: var(--background);
-        color: var(--text);
-        min-height: 100vh;
-        position: relative;
-        padding-bottom: 80px; /* Space for bottom nav */
-    }
+body {
+    background-color: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 80px; /* Space for bottom nav */
+}
 
-    /* Liquid Blob Background */
-    .liquid-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        overflow: hidden;
-    }
+/* Liquid Blob Background */
+.liquid-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
 
-    .liquid-blob {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(60px);
-        opacity: 0.15;
-        animation: float 20s infinite ease-in-out;
-    }
+.liquid-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.15;
+    animation: float 20s infinite ease-in-out;
+}
 
-    .blob-1 {
-        width: 600px;
-        height: 600px;
-        background: var(--primary);
-        top: -200px;
-        right: -100px;
-        animation-delay: 0s;
-    }
+.blob-1 {
+    width: 600px;
+    height: 600px;
+    background: var(--primary);
+    top: -200px;
+    right: -100px;
+    animation-delay: 0s;
+}
 
-    .blob-2 {
-        width: 500px;
-        height: 500px;
-        background: var(--secondary);
-        bottom: -150px;
-        left: -100px;
-        animation-delay: -5s;
-    }
+.blob-2 {
+    width: 500px;
+    height: 500px;
+    background: var(--secondary);
+    bottom: -150px;
+    left: -100px;
+    animation-delay: -5s;
+}
 
-    .blob-3 {
-        width: 300px;
-        height: 300px;
-        background: var(--accent);
-        top: 40%;
-        right: 20%;
-        animation-delay: -10s;
-    }
+.blob-3 {
+    width: 300px;
+    height: 300px;
+    background: var(--accent);
+    top: 40%;
+    right: 20%;
+    animation-delay: -10s;
+}
 
-    @keyframes float {
-        0%, 100% {
-            transform: translate(0, 0) scale(1);
-        }
-        25% {
-            transform: translate(5%, 5%) scale(1.05);
-        }
-        50% {
-            transform: translate(0, 10%) scale(0.95);
-        }
-        75% {
-            transform: translate(-5%, 5%) scale(1.05);
-        }
+@keyframes float {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
     }
-
-    /* Data Page Styles */
-    .data-container {
-        max-width: 500px;
-        margin: 0 auto;
-        padding: 0 1rem;
-        padding-bottom: 80px;
-        position: relative;
-        z-index: 1;
+    25% {
+        transform: translate(5%, 5%) scale(1.05);
     }
-
-    /* Header Styles */
-    .page-header {
-        display: flex;
-        align-items: center;
-        padding: 1.5rem 0;
-        margin-bottom: 1.5rem;
+    50% {
+        transform: translate(0, 10%) scale(0.95);
     }
-
-    .back-button {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--surface);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
-        border: none;
-        color: var(--text);
-        margin-right: 1rem;
+    75% {
+        transform: translate(-5%, 5%) scale(1.05);
     }
+}
 
-    .back-button:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
+/* Data Page Styles */
+.data-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    padding-bottom: 80px;
+    position: relative;
+    z-index: 1;
+}
 
-    .page-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
+/* Header Styles */
+.page-header {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+}
 
-    /* Balance Display */
-    .balance-display {
-        background: rgba(45, 127, 249, 0.1);
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
+.back-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    border: none;
+    color: var(--text);
+    margin-right: 1rem;
+}
 
-    .balance-label {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
 
-    .balance-value {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--success);
-    }
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
 
-    /* Network Selection */
-    .network-slider-container {
-        margin-bottom: 2rem;
-        position: relative;
-    }
+/* Balance Display */
+.balance-display {
+    background: rgba(45, 127, 249, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-    .slider-indicators {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 1rem;
-    }
+.balance-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
 
-    .indicator {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: rgba(255, 255, 255, 0.2);
-        margin: 0 4px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
+.balance-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--success);
+}
 
-    .indicator.active {
-        background-color: var(--primary);
-        width: 20px;
-        border-radius: 4px;
-    }
+/* Mode Selection Tabs */
+.mode-tabs-container {
+    background: rgba(45, 127, 249, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-    .network-slider {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        padding: 0.5rem 0;
-    }
+.mode-tabs-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 12px;
+}
 
-    .network-slider::-webkit-scrollbar {
-        display: none;
-    }
+.mode-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 4px;
+    position: relative;
+}
 
-    .network-option {
-        flex: 0 0 100%;
-        min-width: 100%;
-        scroll-snap-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 2rem;
-        background: var(--card-bg);
-        border-radius: 1.5rem;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        cursor: pointer;
-        user-select: none;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
+.mode-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: color 0.3s ease;
+    border-radius: 8px;
+    font-weight: 500;
+}
 
-    .network-option:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.12);
-    }
+.mode-tab.active {
+    color: var(--background);
+}
 
-    .network-option.selected {
-        border-color: var(--primary);
-        background: rgba(45, 127, 249, 0.1);
-    }
+.mode-tab-indicator {
+    position: absolute;
+    height: calc(100% - 8px);
+    width: calc(50% - 4px);
+    background: var(--primary);
+    border-radius: 6px;
+    top: 4px;
+    left: 4px;
+    transition: transform 0.3s ease;
+}
 
-    .network-image {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-        position: relative;
-        overflow: hidden;
-    }
+.mode-tab-indicator.manual {
+    transform: translateX(100%);
+}
 
-    .network-option.mtn .network-image {
-        background-color: var(--mtn-yellow);
-    }
+/* Network Selection */
+.network-slider-container {
+    margin-bottom: 2rem;
+    position: relative;
+    display: none;
+}
 
-    .network-option.glo .network-image {
-        background-color: var(--glo-green);
-    }
+.network-slider-container.show {
+    display: block;
+}
 
-    .network-option.airtel .network-image {
-        background-color: var(--airtel-red);
-    }
+.slider-indicators {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
 
-    .network-option.mobile9 .network-image {
-        background-color: var(--etisalat-green);
-    }
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    margin: 0 4px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
 
-    .network-logo {
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 2rem;
-    }
+.indicator.active {
+    background-color: var(--primary);
+    width: 20px;
+    border-radius: 4px;
+}
 
-    .network-option.mtn .network-logo {
-        color: black;
-    }
+.network-slider {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0.5rem 0;
+}
 
-    .network-name {
-        font-weight: 600;
-        font-size: 1.2rem;
-        color: var(--text);
-    }
+.network-slider::-webkit-scrollbar {
+    display: none;
+}
 
-    /* Form Styles */
-    .form-container {
-        background: var(--card-bg);
-        border-radius: 1.5rem;
-        padding: 1.5rem;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1.5rem;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
+.network-option {
+    flex: 0 0 100%;
+    min-width: 100%;
+    scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background: var(--card-bg);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
+.network-option:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.12);
+}
 
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-    }
+.network-option.selected {
+    border-color: var(--primary);
+    background: rgba(45, 127, 249, 0.1);
+}
 
-    .input-wrapper {
-        position: relative;
-    }
+.network-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+}
 
-    .input-icon {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-secondary);
-    }
+.network-option.mtn .network-image {
+    background-color: var(--mtn-yellow);
+}
 
-    .form-input, .form-select {
-        width: 100%;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 0.75rem;
-        color: var(--text);
-        padding: 0.75rem 1rem 0.75rem 2.5rem;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-    }
+.network-option.glo .network-image {
+    background-color: var(--glo-green);
+}
 
-    .form-input:focus, .form-select:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.2);
-    }
+.network-option.airtel .network-image {
+    background-color: var(--airtel-red);
+}
 
-    .form-input.network-display {
-        background-color: rgba(255, 255, 255, 0.05);
-        font-weight: 600;
-    }
+.network-option.mobile9 .network-image {
+    background-color: var(--etisalat-green);
+}
 
-    .form-select {
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 1rem center;
-        background-size: 1rem;
-    }
+.network-logo {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 2rem;
+}
 
-    .form-select option {
-        background: #1A2035;
-        color: white;
-    }
+.network-option.mtn .network-logo {
+    color: black;
+}
 
-    .form-select:disabled, .form-input:disabled {
-        background-color: rgba(255, 255, 255, 0.03);
-        cursor: not-allowed;
-        opacity: 0.7;
-    }
+.network-name {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--text);
+}
 
-    .form-input::placeholder {
-        color: rgba(255, 255, 255, 0.4);
-    }
+/* Form Styles */
+.form-container {
+    background: var(--card-bg);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-    .btn {
-        display: inline-block;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 0.75rem;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
-    }
+.form-group {
+    margin-bottom: 1.5rem;
+}
 
-    .btn-primary {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-    }
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
 
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(45, 127, 249, 0.3);
-    }
+.input-wrapper {
+    position: relative;
+}
 
-    .btn-primary:active {
-        transform: scale(0.98);
-    }
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
 
-    .btn-primary:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
+.form-input, .form-select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    color: var(--text);
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
 
-    .btn-block {
-        display: block;
-        width: 100%;
-    }
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.2);
+}
 
-    .btn-danger {
-        background: linear-gradient(135deg, var(--error), #b91c1c);
-        color: white;
-    }
+.form-input.network-display {
+    background-color: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+}
 
-    .btn-warning {
-        background: linear-gradient(135deg, var(--warning), #d97706);
-        color: white;
-    }
+.form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+}
 
-    .btn-danger:hover, .btn-warning:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    }
+.form-select option {
+    background: #1A2035;
+    color: white;
+}
 
-    /* Bottom Navigation */
-    .bottom-nav {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: calc(100% - 40px);
-        max-width: 500px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 12px;
-        display: flex;
-        justify-content: space-around;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-    }
+.form-select:disabled, .form-input:disabled {
+    background-color: rgba(255, 255, 255, 0.03);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
 
-    .nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 10px 16px;
-        border-radius: 16px;
-        cursor: pointer;
-        position: relative;
-        z-index: 2;
-        transition: color 0.3s ease;
-        text-decoration: none;
-        color: var(--text-secondary);
-    }
+.form-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
 
-    .nav-item.active {
-        color: var(--primary);
-    }
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
 
-    .nav-item i {
-        font-size: 1.2rem;
-        margin-bottom: 4px;
-    }
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
 
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(45, 127, 249, 0.3);
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--error), #b91c1c);
+    color: white;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning), #d97706);
+    color: white;
+}
+
+.btn-danger:hover, .btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Auto-detect Section */
+.auto-detect-section {
+    display: none;
+    margin-bottom: 1.5rem;
+}
+
+.auto-detect-section.show {
+    display: block;
+}
+
+.auto-detect-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.auto-detect-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.auto-detect-status {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.auto-detect-status.detecting {
+    color: var(--warning);
+}
+
+.auto-detect-status.success {
+    color: var(--success);
+}
+
+.auto-detect-status.error {
+    color: var(--error);
+}
+
+.auto-detect-button {
+    background: rgba(45, 127, 249, 0.2);
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.auto-detect-button:hover {
+    background: rgba(45, 127, 249, 0.3);
+}
+
+.auto-detect-button i {
+    margin-right: 0.5rem;
+}
+
+.auto-detect-button.detecting {
+    background: rgba(255, 181, 71, 0.2);
+    cursor: not-allowed;
+}
+
+.auto-detect-button.success {
+    background: rgba(0, 225, 160, 0.2);
+}
+
+/* MTN Special Data Plans Section */
+.mtn-special-plans {
+    background: linear-gradient(135deg, rgba(255, 204, 0, 0.15) 0%, rgba(255, 204, 0, 0.3) 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 204, 0, 0.3);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    display: none; /* Hidden by default, shown when MTN is selected */
+}
+
+.mtn-special-plans.show {
+    display: block;
+}
+
+.section-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    opacity: 0.15;
+    background-color: var(--mtn-yellow);
+}
+
+.shape-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    top: -40px;
+    right: -40px;
+}
+
+.shape-square {
+    width: 60px;
+    height: 60px;
+    bottom: 20px;
+    left: 10%;
+    transform: rotate(45deg);
+}
+
+.shape-triangle {
+    width: 0;
+    height: 0;
+    border-left: 50px solid transparent;
+    border-right: 50px solid transparent;
+    border-bottom: 80px solid var(--mtn-yellow);
+    bottom: -40px;
+    right: 15%;
+    opacity: 0.1;
+}
+
+.section-content {
+    position: relative;
+    z-index: 1;
+}
+
+.section-title {
+    color: var(--mtn-yellow);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.section-tagline {
+    color: var(--mtn-yellow);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.important-notes {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.important-notes h3 {
+    color: var(--mtn-yellow);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.important-notes ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.important-notes li {
+    margin-bottom: 0.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.important-notes li i {
+    color: var(--mtn-yellow);
+    margin-right: 0.5rem;
+    font-size: 0.85rem;
+}
+
+/* Manual Data Plans */
+.manual-data-section {
+    display: none;
+    margin-bottom: 1.5rem;
+}
+
+.manual-data-section.show {
+    display: block;
+}
+
+.plan-category {
+    margin-bottom: 1.5rem;
+}
+
+.category-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--primary-light);
+}
+
+.category-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.plan-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.plan-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.plan-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+}
+
+.plan-card.selected {
+    border-color: var(--primary);
+    background: rgba(45, 127, 249, 0.1);
+}
+
+.plan-data {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.plan-validity {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.plan-price {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--success);
+}
+
+.plan-original-price {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-decoration: line-through;
+    margin-right: 5px;
+}
+
+.plan-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--warning);
+    color: var(--background);
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-bottom-left-radius: 8px;
+}
+
+.plan-badge.hot {
+    background: var(--error);
+}
+
+.plan-badge.popular {
+    background: var(--secondary);
+}
+
+.plan-badge.value {
+    background: var(--success);
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 40px);
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-around;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 16px;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: color 0.3s ease;
+    text-decoration: none;
+    color: var(--text-secondary);
+}
+
+.nav-item.active {
+    color: var(--primary);
+}
+
+.nav-item i {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+}
+
+.nav-item span {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 0.9rem;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    max-width: 90%;
+    width: 350px;
+    display: flex;
+    align-items: center;
+    border-left: 4px solid var(--primary);
+    opacity: 0;
+    visibility: hidden;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.toast.success {
+    border-left-color: var(--success);
+}
+
+.toast.error {
+    border-left-color: var(--error);
+}
+
+.toast.warning {
+    border-left-color: var(--warning);
+}
+
+.toast-icon {
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast.success .toast-icon {
+    color: var(--success);
+}
+
+.toast.error .toast-icon {
+    color: var(--error);
+}
+
+.toast.warning .toast-icon {
+    color: var(--warning);
+}
+
+/* Custom Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 15, 30, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    15,30,0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background: linear-gradient(135deg, rgba(45, 127, 249, 0.2), rgba(140, 82, 255, 0.2));
+    border-radius: 24px;
+    padding: 24px;
+    max-width: 90%;
+    width: 400px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal {
+    transform: scale(1);
+}
+
+.modal-header {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+}
+
+.modal-body {
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.modal-body .summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.modal-body .summary-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.modal-body .summary-value {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.modal-footer .btn {
+    padding: 0.75rem 1rem;
+    flex: 1;
+}
+
+.warning-message {
+    background: rgba(255, 181, 71, 0.2);
+    border-left: 4px solid var(--warning);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    color: var(--warning);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.error-message {
+    background: rgba(255, 94, 125, 0.2);
+    border-left: 4px solid var(--error);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    color: var(--error);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
     .nav-item span {
-        font-size: 0.8rem;
-        font-weight: 500;
+        font-size: 0.7rem;
     }
-
-    /* Toast Notification */
-    .toast {
-        position: fixed;
-        left: 50%;
-        transform: translateX(-50%);
-        top: 20px;
-        padding: 16px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        color: var(--text);
-        font-size: 0.9rem;
-        z-index: 1000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        transition: all 0.3s ease-in-out;
-        max-width: 90%;
-        width: 350px;
-        display: flex;
-        align-items: center;
-        border-left: 4px solid var(--primary);
-        opacity: 0;
-        visibility: hidden;
+    
+    .plan-cards {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
-
-    .toast.show {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .toast.success {
-        border-left-color: var(--success);
-    }
-
-    .toast.error {
-        border-left-color: var(--error);
-    }
-
-    .toast.warning {
-        border-left-color: var(--warning);
-    }
-
-    .toast-icon {
-        margin-right: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .toast.success .toast-icon {
-        color: var(--success);
-    }
-
-    .toast.error .toast-icon {
-        color: var(--error);
-    }
-
-    .toast.warning .toast-icon {
-        color: var(--warning);
-    }
-
-    /* Custom Modal */
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(10, 15, 30, 0.8);
-        backdrop-filter: blur(5px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .modal-overlay.active {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .modal {
-        background: linear-gradient(135deg, rgba(45, 127, 249, 0.2), rgba(140, 82, 255, 0.2));
-        border-radius: 24px;
-        padding: 24px;
-        max-width: 90%;
-        width: 400px;
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transform: scale(0.9);
-        transition: transform 0.3s ease;
-    }
-
-    .modal-overlay.active .modal {
-        transform: scale(1);
-    }
-
-    .modal-header {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        color: var(--text);
-    }
-
-    .modal-body {
-        margin-bottom: 1.5rem;
-        color: var(--text-secondary);
-    }
-
-    .modal-body .summary-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.75rem;
-    }
-
-    .modal-body .summary-label {
-        font-weight: 500;
-        color: var(--text-secondary);
-    }
-
-    .modal-body .summary-value {
-        font-weight: 600;
-        color: var(--text);
-    }
-
-    .modal-footer {
-        display: flex;
-        justify-content: space-between;
-        gap: 0.5rem;
-    }
-
-    .modal-footer .btn {
-        padding: 0.75rem 1rem;
-        flex: 1;
-    }
-
-    .warning-message {
-        background: rgba(255, 181, 71, 0.2);
-        border-left: 4px solid var(--warning);
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        color: var(--warning);
-        font-size: 0.9rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .error-message {
-        background: rgba(255, 94, 125, 0.2);
-        border-left: 4px solid var(--error);
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        color: var(--error);
-        font-size: 0.9rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    /* Loading Spinner */
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    .loading {
-        display: inline-block;
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s ease-in-out infinite;
-        margin-right: 0.5rem;
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 480px) {
-        .nav-item span {
-            font-size: 0.7rem;
-        }
-    }
+}
 </style>
 </head>
+
 <body>
 <!-- Liquid Blob Background -->
 <div class="liquid-bg">
@@ -671,7 +1026,7 @@
 
 <div class="data-container">
     <div class="page-header">
-        <button class="back-button" onclick="window.location.href='dashboard.html'">
+        <button class="back-button" onclick="window.location.href='index.html'">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5"></path>
                 <path d="M12 19l-7-7 7-7"></path>
@@ -686,7 +1041,18 @@
         <div class="balance-value" id="userBalance">Loading...</div>
     </div>
     
-    <div class="network-slider-container">
+    <!-- Mode Selection Tabs -->
+    <div class="mode-tabs-container">
+        <div class="mode-tabs-title">Purchase Mode</div>
+        <div class="mode-tabs">
+            <div class="mode-tab automatic active" data-mode="automatic">Automatic</div>
+            <div class="mode-tab manual" data-mode="manual">Manual</div>
+            <div class="mode-tab-indicator"></div>
+        </div>
+    </div>
+    
+    <!-- Network Selection (shown in automatic mode) -->
+    <div class="network-slider-container show" id="automaticNetworkSection">
         <div class="slider-indicators" id="sliderIndicators">
             <div class="indicator active" data-index="0"></div>
             <div class="indicator" data-index="1"></div>
@@ -694,7 +1060,7 @@
             <div class="indicator" data-index="3"></div>
         </div>
         <div class="network-slider" id="networkSlider">
-            <div class="network-option mtn" data-network="MTN" data-network-id="1">
+            <div class="network-option mtn selected" data-network="MTN" data-network-id="1">
                 <div class="network-image">
                     <div class="network-logo">M</div>
                 </div>
@@ -724,9 +1090,74 @@
         </div>
     </div>
     
+    
+    <!-- MTN Special Data Plans Section (shown in automatic mode when MTN is selected) -->
+    <div class="mtn-special-plans" id="mtnSpecialPlans">
+        <div class="section-shapes">
+            <div class="shape shape-circle"></div>
+            <div class="shape shape-square"></div>
+            <div class="shape shape-triangle"></div>
+        </div>
+        <div class="section-content">
+            <h2 class="section-title">VeltraWave Exclusive MTN Special Data Plans</h2>
+            <p class="section-tagline">The cheapest MTN data plans available anywhere - exclusively for VeltraWave customers!</p>
+            
+            <div class="important-notes">
+                <h3>Important Notes:</h3>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Premium quality data with full network coverage</li>
+                    <li><i class="fas fa-bolt"></i> Fast delivery - data will be delivered within 30 minutes</li>
+                    <li><i class="fas fa-layer-group"></i> Large plans (5GB+) may be delivered in multiple transfers</li>
+                    <li><i class="fas fa-calendar-alt"></i> Plans expire after validity period (no rollover)</li>
+                    <li><i class="fas fa-sim-card"></i> Works on all MTN SIM cards and supports hotspot/tethering</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Manual Data Plans Section (shown when MTN is selected in manual mode) -->
+    <div class="manual-data-section" id="manualDataSection">
+        <!-- 1-Day Offers -->
+        <div class="plan-category">
+            <h3 class="category-title">1-Day Offers (24 Hours Validity)</h3>
+            <p class="category-description">Best for: Quick browsing, social media, and light streaming.</p>
+            <div class="plan-cards" id="oneDayPlans">
+                <!-- Plans will be loaded dynamically -->
+            </div>
+        </div>
+        
+        <!-- 7-Day Offers -->
+        <div class="plan-category">
+            <h3 class="category-title">7-Day Offers (1 Week Validity)</h3>
+            <p class="category-description">Best for: Heavy users, movie streaming, gaming, and hotspot sharing.</p>
+            <div class="plan-cards" id="sevenDayPlans">
+                <!-- Plans will be loaded dynamically -->
+            </div>
+        </div>
+        
+        <!-- 14-Day Offers -->
+        <div class="plan-category">
+            <h3 class="category-title">14-Day Offers (2 Weeks Validity)</h3>
+            <p class="category-description">Best for: Remote work, gaming, frequent downloads, and social media content creators.</p>
+            <div class="plan-cards" id="fourteenDayPlans">
+                <!-- Plans will be loaded dynamically -->
+            </div>
+        </div>
+        
+        <!-- 30-Day Offers -->
+        <div class="plan-category">
+            <h3 class="category-title">30-Day Offers (1 Month Validity)</h3>
+            <p class="category-description">Best for: Long-term users, multiple device connections, video streaming, and online businesses.</p>
+            <div class="plan-cards" id="thirtyDayPlans">
+                <!-- Plans will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Form Container -->
     <div class="form-container">
         <form id="dataForm">
-            <div class="form-group">
+            <div class="form-group" id="networkDisplayGroup">
                 <label for="selectedNetwork" class="form-label">Selected Network</label>
                 <div class="input-wrapper">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -743,31 +1174,51 @@
                 </div>
             </div>
             
-            <div class="form-group">
-                <label for="planType" class="form-label">Plan Type</label>
-                <div class="input-wrapper">
-                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                    </svg>
-                    <select id="planType" class="form-select" disabled>
-                        <option value="" selected disabled>Select Plan Type</option>
-                    </select>
+            <!-- Automatic Mode Fields -->
+            <div id="automaticModeFields">
+                <div class="form-group">
+                    <label for="planType" class="form-label">Plan Type</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        </svg>
+                        <select id="planType" class="form-select" disabled>
+                            <option value="" selected disabled>Select Plan Type</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="dataPlan" class="form-label">Data Plan</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                        </svg>
+                        <select id="dataPlan" class="form-select" disabled>
+                            <option value="" selected disabled>Select Data Plan</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
-            <div class="form-group">
-                <label for="dataPlan" class="form-label">Data Plan</label>
-                <div class="input-wrapper">
-                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                        <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
-                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
-                    </svg>
-                    <select id="dataPlan" class="form-select" disabled>
-                        <option value="" selected disabled>Select Data Plan</option>
-                    </select>
+            <!-- Manual Mode Fields -->
+            <div id="manualModeFields" style="display: none;">
+                <input type="hidden" id="selectedManualPlan">
+                <div class="form-group">
+                    <label for="selectedPlanDisplay" class="form-label">Selected Plan</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                        </svg>
+                        <input type="text" id="selectedPlanDisplay" class="form-input" readonly placeholder="Select a plan above">
+                    </div>
                 </div>
             </div>
 
@@ -810,12 +1261,12 @@
 
 <!-- Bottom Navigation -->
 <div class="bottom-nav">
-    <a href="dashboard.html" class="nav-item">
+    <a href="index.html" class="nav-item">
         <i class="fas fa-home"></i>
         <span>Home</span>
     </a>
     <a href="service.html" class="nav-item active">
-        <i class="fas fa-bolt"></i>
+        <i class="fas fa-shopping-cart"></i>
         <span>Service</span>
     </a>
     <a href="games.html" class="nav-item">
@@ -836,7 +1287,7 @@
 <script>
     // API credentials
     const ACCESS_TOKEN = "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d";
-
+    
     // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
@@ -847,13 +1298,13 @@
         appId: "1:431351611304:web:7381dd659920f9f325a79d",
         measurementId: "G-HRHN8GJCR3"
     };
-
+    
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-
-    // Data plans by network and type
+    
+    // Default data plans by network and type (for automatic mode)
     const DATA_PLANS = {
         "MTN": {
             "SME": [
@@ -941,8 +1392,31 @@
             ]
         }
     };
-
+    
+    // Default manual data plans (will be replaced with data from Firestore)
+    const DEFAULT_MANUAL_PLANS = {
+        "1day": [
+            { id: "1day-1", data: "500MB", price: 129, originalPrice: 150, validity: "1 Day", badge: "" },
+            { id: "1day-2", data: "600MB", price: 159, originalPrice: 180, validity: "1 Day", badge: "" },
+            { id: "1day-3", data: "2.5GB", price: 519, originalPrice: 600, validity: "1 Day", badge: "hot" },
+            { id: "1day-4", data: "4.5GB", price: 1299, originalPrice: 1500, validity: "1 Day", badge: "" }
+        ],
+        "7day": [
+            { id: "7day-1", data: "13GB", price: 2599, originalPrice: 3000, validity: "7 Days", badge: "" },
+            { id: "7day-2", data: "18GB", price: 4549, originalPrice: 5200, validity: "7 Days", badge: "" },
+            { id: "7day-3", data: "22GB", price: 5199, originalPrice: 6000, validity: "7 Days", badge: "popular" }
+        ],
+        "14day": [
+            { id: "14day-1", data: "30GB", price: 6499, originalPrice: 7500, validity: "14 Days", badge: "value" }
+        ],
+        "30day": [
+            { id: "30day-1", data: "39GB", price: 7799, originalPrice: 9000, validity: "30 Days", badge: "" },
+            { id: "30day-2", data: "53GB", price: 12999, originalPrice: 15000, validity: "30 Days", badge: "" }
+        ]
+    };
+    
     // DOM elements
+    const automaticNetworkSection = document.getElementById('automaticNetworkSection');
     const networkSlider = document.getElementById('networkSlider');
     const sliderIndicators = document.getElementById('sliderIndicators');
     const networkOptions = document.querySelectorAll('.network-option');
@@ -961,19 +1435,31 @@
     const confirmPurchaseBtn = document.getElementById('confirmPurchase');
     const cancelPurchaseBtn = document.getElementById('cancelPurchase');
     const userBalanceElement = document.getElementById('userBalance');
-
+    const mtnSpecialPlans = document.getElementById('mtnSpecialPlans');
+    const manualDataSection = document.getElementById('manualDataSection');
+    const automaticModeFields = document.getElementById('automaticModeFields');
+    const manualModeFields = document.getElementById('manualModeFields');
+    const selectedPlanDisplay = document.getElementById('selectedPlanDisplay');
+    const selectedManualPlan = document.getElementById('selectedManualPlan');
+    const modeTabs = document.querySelectorAll('.mode-tab');
+    const modeTabIndicator = document.querySelector('.mode-tab-indicator');
+    const networkDisplayGroup = document.getElementById('networkDisplayGroup');
+    
     // State variables
     let selectedNetwork = '';
     let selectedNetworkId = null;
     let selectedPlanType = '';
     let selectedDataPlan = null;
+    let selectedManualDataPlan = null;
     let activeSlideIndex = 0;
     let isLoading = false;
     let startX, startScrollLeft;
     let isDown = false;
     let userBalance = 0;
     let currentUser = null;
-
+    let isAutoMode = true; // Default to automatic mode
+    let manualDataPlans = DEFAULT_MANUAL_PLANS;
+    
     // Get user ID from URL parameter or local storage
     // This is for Telegram integration
     function getUserId() {
@@ -994,14 +1480,50 @@
         // Default test user ID if nothing is found
         return "5966603094"; // Default test user
     }
-
+    
     // Initialize with user ID
     const userId = getUserId();
     currentUser = { uid: userId };
     
-    // Fetch user balance directly without auth check
-    fetchUserBalance();
-
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch user balance
+        fetchUserBalance();
+        
+        // Fetch manual data plans from Firestore
+        fetchManualDataPlans();
+        
+        // Initialize slider
+        initSlider();
+        
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Set MTN as default network
+        const mtnOption = document.querySelector('.network-option.mtn');
+        if (mtnOption) {
+            selectNetwork('MTN', 1, mtnOption);
+        }
+        
+        // Wait for auth state before proceeding with data loading
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                await fetchUserBalance();
+                await fetchManualDataPlans();
+            } else {
+                // Handle case where user isn't logged in
+                console.log("No user logged in, using default user ID");
+                // Continue with the default user ID that was set earlier
+                fetchUserBalance();
+                fetchManualDataPlans();
+            }
+        });
+        
+        // Set automatic mode as default
+        setMode('automatic');
+    });
+    
     // Fetch user balance from Firestore
     async function fetchUserBalance() {
         try {
@@ -1029,7 +1551,210 @@
             showToast("Error loading balance. Please refresh.", "error");
         }
     }
+    
+    // Fetch manual data plans from Firestore
+    async function fetchManualDataPlans() {
+        try {
+            // Query the dataPlans collection for manual plans
+            const plansSnapshot = await db.collection('dataPlans')
+                .where('provider', '==', 'manual')
+                .where('status', '==', true)
+                .get();
+            
+            if (!plansSnapshot.empty) {
+                // Reset manual plans object
+                manualDataPlans = {
+                    "1day": [],
+                    "7day": [],
+                    "14day": [],
+                    "30day": []
+                };
+                
+                // Process each plan
+                plansSnapshot.forEach(doc => {
+                    const plan = doc.data();
+                    const planId = doc.id;
+                    
+                    // Determine which category this plan belongs to
+                    let category;
+                    if (plan.category === 'manual-1day') category = '1day';
+                    else if (plan.category === 'manual-7day') category = '7day';
+                    else if (plan.category === 'manual-14day') category = '14day';
+                    else if (plan.category === 'manual-30day') category = '30day';
+                    else return; // Skip if not in a known category
+                    
+                    // Add plan to the appropriate category
+                    manualDataPlans[category].push({
+                        id: planId,
+                        data: plan.data,
+                        price: plan.price,
+                        originalPrice: plan.originalPrice || null,
+                        validity: plan.validity,
+                        badge: plan.badge || ""
+                    });
+                });
+                
+                console.log("Fetched manual data plans:", manualDataPlans);
+            } else {
+                console.log("No manual data plans found, using defaults");
+            }
+            
+            // Render manual plans if MTN is selected and in manual mode
+            if (selectedNetwork === 'MTN' && !isAutoMode) {
+                renderManualDataPlans();
+            }
+        } catch (error) {
+            console.error("Error fetching manual data plans:", error);
+            showToast("Error loading data plans. Using default plans.", "error");
+        }
+    }
+    
+    // Set up event listeners
+    function setupEventListeners() {
+        // Mode tabs functionality
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const mode = this.getAttribute('data-mode');
+                setMode(mode);
+            });
+        });
+        
+        // Plan Type Select
+        planTypeSelect.addEventListener('change', function() {
+            selectedPlanType = this.value;
+            selectedDataPlan = null;
+            updateDataPlans();
+            updateSubmitButtonState();
+        });
+        
+        // Data Plan Select
+        dataPlanSelect.addEventListener('change', function() {
+            const planId = parseInt(this.value);
+            
+            if (selectedNetwork && selectedPlanType) {
+                const dataPlans = DATA_PLANS[selectedNetwork][selectedPlanType] || [];
+                selectedDataPlan = dataPlans.find(plan => plan.id === planId) || null;
+            }
+            
+            updateSubmitButtonState();
+        });
+        
+        // Phone Number Input
+        phoneNumberInput.addEventListener('input', function() {
+            // Allow only digits
+            this.value = this.value.replace(/\D/g, '');
+            updateSubmitButtonState();
+        });
+        
+        // Data Form Submit
+        dataForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (isAutoMode) {
+                // Validate automatic mode form
+                if (!selectedNetwork || !selectedPlanType || !selectedDataPlan || phoneNumberInput.value.length !== 11) {
+                    showToast('Please fill in all required fields correctly', 'error');
+                    return;
+                }
+                
+                showAutomaticPurchaseModal();
+            } else {
+                // Validate manual mode form
+                if (!selectedNetwork || !selectedManualDataPlan || phoneNumberInput.value.length !== 11) {
+                    showToast('Please select a network, data plan, and enter a valid phone number', 'error');
+                    return;
+                }
+                
+                showManualPurchaseModal();
+            }
+        });
+        
+        // Confirm Purchase Button
+        confirmPurchaseBtn.addEventListener('click', async function() {
+            hideModal();
+            
+            if (isAutoMode) {
+                // Handle automatic purchase
+                await processAutomaticPurchase();
+            } else {
+                // Handle manual purchase
+                await processManualPurchase();
+            }
+        });
+        
+        // Cancel Purchase Button
+        cancelPurchaseBtn.addEventListener('click', function() {
+            hideModal();
+        });
+    }
+    
+    // Make sure slider is initialized after DOM is fully loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSlider);
+    } else {
+        initSlider();
+    }
+    
+    // Set mode (automatic or manual)
+    function setMode(mode) {
+        isAutoMode = (mode === 'automatic');
+        
+        // Update active class on tabs
+        modeTabs.forEach(tab => {
+            if (tab.getAttribute('data-mode') === mode) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+        
+        // Update indicator position
+        if (isAutoMode) {
+            modeTabIndicator.classList.remove('manual');
+        } else {
+            modeTabIndicator.classList.add('manual');
+        }
+        
+        // Update UI based on selected mode
+        updateModeUI();
+        
+        // Reset form when switching modes
+        resetForm();
+    }
+    
+    // Update UI based on selected mode
+    function updateModeUI() {
+    if (isAutoMode) {
+        automaticNetworkSection.classList.add('show');
+        manualDataSection.classList.remove('show');
+        mtnSpecialPlans.classList.add('show');
+        automaticModeFields.style.display = 'block';
+        manualModeFields.style.display = 'none';
+        
+        // Set MTN as default in automatic mode
+        if (!selectedNetwork) {
+            const mtnOption = document.querySelector('.network-option.mtn');
+            if (mtnOption) {
+                selectNetwork('MTN', 1, mtnOption);
+            }
+        }
+    } else {
+        automaticNetworkSection.classList.remove('show');
+        automaticModeFields.style.display = 'none';
+        manualModeFields.style.display = 'block';
+        
+        // Show manual data section and MTN special plans
+        manualDataSection.classList.add('show');
+        mtnSpecialPlans.classList.add('show');
+        renderManualDataPlans();
+    }
 
+    // Show/hide network display group based on mode
+    if (networkDisplayGroup) {
+        networkDisplayGroup.style.display = isAutoMode ? 'block' : 'none';
+    }
+}
+    
     // Initialize slider
     function initSlider() {
         // Set up mouse events for desktop
@@ -1037,21 +1762,20 @@
             isDown = true;
             networkSlider.classList.add('active');
             startX = e.pageX - networkSlider.offsetLeft;
-            startScrollLeft = networkSlider.scrollLeft;
-            e.preventDefault();
+            startScrollLeft = e.preventDefault();
         });
-
+    
         networkSlider.addEventListener('mouseleave', () => {
             isDown = false;
             networkSlider.classList.remove('active');
         });
-
+    
         networkSlider.addEventListener('mouseup', () => {
             isDown = false;
             networkSlider.classList.remove('active');
             snapToClosestSlide();
         });
-
+    
         networkSlider.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
@@ -1059,7 +1783,7 @@
             const walk = (x - startX) * 2; // Scroll speed multiplier
             networkSlider.scrollLeft = startScrollLeft - walk;
         });
-
+    
         // Set up touch events for mobile
         networkSlider.addEventListener('touchstart', (e) => {
             isDown = true;
@@ -1067,20 +1791,20 @@
             startX = e.touches[0].pageX - networkSlider.offsetLeft;
             startScrollLeft = networkSlider.scrollLeft;
         }, { passive: true });
-
+    
         networkSlider.addEventListener('touchend', () => {
             isDown = false;
             networkSlider.classList.remove('active');
             snapToClosestSlide();
         });
-
+    
         networkSlider.addEventListener('touchmove', (e) => {
             if (!isDown) return;
             const x = e.touches[0].pageX - networkSlider.offsetLeft;
             const walk = (x - startX) * 2;
             networkSlider.scrollLeft = startScrollLeft - walk;
         }, { passive: true });
-
+    
         // Set up scroll event to update active slide
         networkSlider.addEventListener('scroll', handleSliderScroll);
         
@@ -1096,29 +1820,19 @@
         // Set up network option clicks
         networkOptions.forEach((option, index) => {
             option.addEventListener('click', (e) => {
-                if (Math.abs(networkSlider.scrollLeft - (index * networkSlider.offsetWidth)) < 50) {
-                    const network = option.dataset.network;
-                    const networkId = parseInt(option.dataset.networkId);
-                    selectNetwork(network, networkId, option);
-                }
+                const network = option.dataset.network;
+                const networkId = parseInt(option.dataset.networkId);
+                selectNetwork(network, networkId, option);
             });
         });
-
-        // Initialize with the first network selected
-        const firstOption = networkOptions[0];
-        selectNetwork(
-            firstOption.dataset.network,
-            parseInt(firstOption.dataset.networkId),
-            firstOption
-        );
     }
-
+    
     function snapToClosestSlide() {
         const slideWidth = networkSlider.offsetWidth;
         const slideIndex = Math.round(networkSlider.scrollLeft / slideWidth);
         scrollToSlide(slideIndex);
     }
-
+    
     // Handle slider scroll
     function handleSliderScroll() {
         const slideWidth = networkSlider.offsetWidth;
@@ -1135,7 +1849,7 @@
             selectNetwork(network, networkId, activeOption);
         }
     }
-
+    
     // Update slider indicators
     function updateIndicators() {
         const indicators = document.querySelectorAll('.indicator');
@@ -1147,7 +1861,7 @@
             }
         });
     }
-
+    
     // Scroll to specific slide
     function scrollToSlide(index) {
         if (index < 0) index = 0;
@@ -1159,28 +1873,57 @@
             behavior: 'smooth'
         });
     }
-
+    
     // Select network
     function selectNetwork(network, networkId, element) {
         // Reset previous selection
         networkOptions.forEach(opt => opt.classList.remove('selected'));
         
         // Set new selection
-        element.classList.add('selected');
+        if (element) element.classList.add('selected');
         selectedNetwork = network;
         selectedNetworkId = networkId;
         selectedNetworkInput.value = network;
         
-        // Update plan types
-        updatePlanTypes();
+        if (isAutoMode) {
+            // In automatic mode
+            // Show MTN special plans if MTN is selected
+            if (network === 'MTN') {
+                mtnSpecialPlans.classList.add('show');
+            } else {
+                mtnSpecialPlans.classList.remove('show');
+            }
+            
+            // Update plan types
+            updatePlanTypes();
+        } else {
+            // In manual mode
+            // Show manual data section if MTN is selected
+            if (network === 'MTN') {
+                manualDataSection.classList.add('show');
+                renderManualDataPlans();
+            } else {
+                manualDataSection.classList.remove('show');
+            }
+        }
         
         // Reset other fields
-        resetDataPlanAndSummary();
+        resetForm();
         
         // Update button state
         updateSubmitButtonState();
     }
-
+    
+    // Reset form
+    function resetForm() {
+        selectedPlanType = '';
+        selectedDataPlan = null;
+        planTypeSelect.value = '';
+        dataPlanSelect.innerHTML = '<option value="" disabled selected>Select Data Plan</option>';
+        dataPlanSelect.disabled = true;
+        updateSubmitButtonState();
+    }
+    
     // Update plan types based on selected network
     function updatePlanTypes() {
         // Clear existing options
@@ -1201,16 +1944,7 @@
             planTypeSelect.disabled = true;
         }
     }
-
-    // Reset data plan and summary
-    function resetDataPlanAndSummary() {
-        selectedPlanType = '';
-        selectedDataPlan = null;
-        planTypeSelect.value = '';
-        dataPlanSelect.innerHTML = '<option value="" disabled selected>Select Data Plan</option>';
-        dataPlanSelect.disabled = true;
-    }
-
+    
     // Update data plans based on selected plan type
     function updateDataPlans() {
         // Clear existing options
@@ -1220,12 +1954,10 @@
             const dataPlans = DATA_PLANS[selectedNetwork][selectedPlanType] || [];
             
             dataPlans.forEach(plan => {
-                if (plan.id && plan.name) { // Check for valid plan data
-                    const option = document.createElement('option');
-                    option.value = plan.id;
-                    option.textContent = `${plan.name} - ${formatCurrency(plan.price)} - ${plan.validity}`;
-                    dataPlanSelect.appendChild(option);
-                }
+                const option = document.createElement('option');
+                option.value = plan.id;
+                option.textContent = `${plan.name} - ${formatCurrency(plan.price)} - ${plan.validity}`;
+                dataPlanSelect.appendChild(option);
             });
             
             dataPlanSelect.disabled = dataPlans.length === 0;
@@ -1233,30 +1965,15 @@
             dataPlanSelect.disabled = true;
         }
     }
-
+    
     // Format currency
     function formatCurrency(amount) {
         return new Intl.NumberFormat('en-NG', { 
             style: 'currency', 
-            currency: 'NGN',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
+            currency: 'NGN' 
         }).format(amount);
     }
-
-    // Update submit button state
-    function updateSubmitButtonState() {
-        const isFormValid = 
-            selectedNetwork && 
-            selectedPlanType && 
-            selectedDataPlan && 
-            phoneNumberInput.value.length === 11 && 
-            /^\d+$/.test(phoneNumberInput.value) &&
-            !isLoading;
-        
-        submitButton.disabled = !isFormValid;
-    }
-
+    
     // Set loading state
     function setLoading(loading) {
         isLoading = loading;
@@ -1269,7 +1986,7 @@
         
         submitButton.disabled = loading;
     }
-
+    
     // Show toast notification
     function showToast(message, type = 'success') {
         toastMessage.textContent = message;
@@ -1282,15 +1999,6 @@
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="15" y1="9" x2="9" y2="15"></line>
                     <line x1="9" y1="9" x2="15" y2="15"></line>
-                </svg>
-            `;
-        } else if (type === 'warning') {
-            toast.classList.add('warning');
-            toastIcon.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
             `;
         } else {
@@ -1311,217 +2019,241 @@
             toast.classList.remove('show');
         }, 3000);
     }
-
+    
     // Show modal
     function showModal() {
         modalOverlay.classList.add('active');
     }
-
+    
     // Hide modal
     function hideModal() {
         modalOverlay.classList.remove('active');
     }
-
-    // Check if user has sufficient balance
-    function checkBalance(amount) {
-        return userBalance >= amount;
+    
+    // Render manual data plans
+    function renderManualDataPlans() {
+        // Get plan container elements
+        const oneDayPlans = document.getElementById('oneDayPlans');
+        const sevenDayPlans = document.getElementById('sevenDayPlans');
+        const fourteenDayPlans = document.getElementById('fourteenDayPlans');
+        const thirtyDayPlans = document.getElementById('thirtyDayPlans');
+        
+        // Clear existing plans
+        oneDayPlans.innerHTML = '';
+        sevenDayPlans.innerHTML = '';
+        fourteenDayPlans.innerHTML = '';
+        thirtyDayPlans.innerHTML = '';
+        
+        // Render 1-day plans
+        manualDataPlans['1day'].forEach(plan => {
+            const planCard = createPlanCard(plan);
+            oneDayPlans.appendChild(planCard);
+        });
+        
+        // Render 7-day plans
+        manualDataPlans['7day'].forEach(plan => {
+            const planCard = createPlanCard(plan);
+            sevenDayPlans.appendChild(planCard);
+        });
+        
+        // Render 14-day plans
+        manualDataPlans['14day'].forEach(plan => {
+            const planCard = createPlanCard(plan);
+            fourteenDayPlans.appendChild(planCard);
+        });
+        
+        // Render 30-day plans
+        manualDataPlans['30day'].forEach(plan => {
+            const planCard = createPlanCard(plan);
+            thirtyDayPlans.appendChild(planCard);
+        });
     }
-
-    // Event listeners
-    planTypeSelect.addEventListener('change', function() {
-        selectedPlanType = this.value;
-        selectedDataPlan = null;
-        updateDataPlans();
-        updateSubmitButtonState();
-    });
-
-    dataPlanSelect.addEventListener('change', function() {
-        const planId = parseInt(this.value);
+    
+    // Create plan card element
+    function createPlanCard(plan) {
+        const planCard = document.createElement('div');
+        planCard.className = 'plan-card';
+        planCard.setAttribute('data-plan-id', plan.id);
         
-        if (selectedNetwork && selectedPlanType) {
-            const dataPlans = DATA_PLANS[selectedNetwork][selectedPlanType] || [];
-            selectedDataPlan = dataPlans.find(plan => plan.id === planId) || null;
+        // Add badge if present
+        if (plan.badge) {
+            const badgeClass = `plan-badge ${plan.badge}`;
+            const badgeText = plan.badge.charAt(0).toUpperCase() + plan.badge.slice(1);
+            planCard.innerHTML += `<div class="${badgeClass}">${badgeText}</div>`;
         }
         
-        updateSubmitButtonState();
-    });
-
-    phoneNumberInput.addEventListener('input', function() {
-        // Allow only digits
-        this.value = this.value.replace(/\D/g, '');
-        updateSubmitButtonState();
-    });
-
-    dataForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if (!selectedNetwork || !selectedPlanType || !selectedDataPlan || phoneNumberInput.value.length !== 11) {
-            showToast('Please fill in all required fields correctly', 'error');
-            return;
-        }
-
-        const hasSufficientBalance = checkBalance(selectedDataPlan.price);
-        
-        // Prepare modal content
-        let modalContent = `
-            <p>Are you sure you want to buy ${selectedDataPlan.name} data for ${phoneNumberInput.value}?</p>
-            <div class="summary-row">
-                <span class="summary-label">Network:</span>
-                <span class="summary-value">${selectedNetwork}</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Plan:</span>
-                <span class="summary-value">${selectedDataPlan.name}</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Validity:</span>
-                <span class="summary-value">${selectedDataPlan.validity}</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Phone Number:</span>
-                <span class="summary-value">${phoneNumberInput.value}</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Price:</span>
-                <span class="summary-value">${formatCurrency(selectedDataPlan.price)}</span>
+        // Add plan details
+        planCard.innerHTML += `
+            <div class="plan-data">${plan.data}</div>
+            <div class="plan-validity">${plan.validity}</div>
+            <div class="plan-price">
+                ${plan.originalPrice ? `<span class="plan-original-price">${formatCurrency(plan.originalPrice)}</span>` : ''}
+                ${formatCurrency(plan.price)}
             </div>
         `;
-
-        // Add warning for insufficient balance
-        if (!hasSufficientBalance) {
-            modalContent = `
-                <div class="warning-message">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                    Insufficient balance. Please fund your wallet to continue.
-                </div>
-                ${modalContent}
-            `;
-
-            // Update modal buttons for insufficient balance
-            confirmPurchaseBtn.innerText = "Fund Wallet";
-            confirmPurchaseBtn.className = "btn btn-warning";
-        } else {
-            // Reset buttons if balance is sufficient
-            confirmPurchaseBtn.innerText = "Confirm";
-            confirmPurchaseBtn.className = "btn btn-primary";
-        }
-
-        modalBody.innerHTML = modalContent;
-
-        // Show modal
-        showModal();
-    });
-
-    // Confirm purchase or fund wallet
-    confirmPurchaseBtn.addEventListener('click', async function() {
-        hideModal();
         
-        // Check if insufficient balance
-        if (!checkBalance(selectedDataPlan.price)) {
-            // Redirect to fund wallet page
-            window.location.href = 'fund-wallet.html';
-            return;
-        }
-        
-        setLoading(true);
-
-        try {
-            // Generate a unique request ID
-            const requestId = `Data_${Date.now()}${Math.floor(Math.random() * 1000)}`;
-
-            // Prepare the request payload
-            const payload = {
-                network: selectedNetworkId,
-                phone: phoneNumberInput.value,
-                data_plan: selectedDataPlan.id,
-                bypass: false,
-                "request-id": requestId
-            };
-
-            console.log("Sending request payload:", payload);
-
-            // Make the API call
-            const response = await fetch('https://n3tdata.com/api/data', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${ACCESS_TOKEN}`
-                },
-                body: JSON.stringify(payload)
+        // Add click event
+        planCard.addEventListener('click', function() {
+            // Remove selected class from all plan cards
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('selected');
             });
             
-            const responseData = await response.json();
-            console.log("API Response:", responseData);
+            // Add selected class to this card
+            this.classList.add('selected');
             
-            if (responseData.status === 'success') {
-                // Deduct balance from user's account
-                await updateUserBalance(selectedDataPlan.price);
-                showToast(`${selectedDataPlan.name} data bundle has been purchased for ${phoneNumberInput.value}`);
-                
-                // Reset form
-                phoneNumberInput.value = '';
-                dataPlanSelect.value = '';
-                dataPlanSelect.disabled = true;
-                selectedDataPlan = null;
-                updateSubmitButtonState();
-            } else {
-                // Check if error is from API side
-                if (responseData.message && responseData.message.toLowerCase().includes('insufficient')) {
-                    showToast('Insufficient funds. Please contact admin.', 'error');
-                } else if (responseData.message) {
-                    showToast('Veltrawave error: ' + responseData.message + '. Contact admin.', 'error');
-                } else {
-                    showToast('Veltrawave error. Contact admin.', 'error');
-                }
+            // Set selected plan
+            selectedManualDataPlan = plan;
+            selectedPlanDisplay.value = `${plan.data} - ${formatCurrency(plan.price)} - ${plan.validity}`;
+            
+            // Update submit button state
+            updateSubmitButtonState();
+        });
+        
+        return planCard;
+    }
+    
+    // Show automatic purchase modal
+    function showAutomaticPurchaseModal() {
+        if (!selectedDataPlan) return;
+        
+        modalBody.innerHTML = `
+            <div class="warning-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                Please confirm your purchase details
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Network:</div>
+                <div class="summary-value">${selectedNetwork}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Plan Type:</div>
+                <div class="summary-value">${selectedPlanType}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Data Plan:</div>
+                <div class="summary-value">${selectedDataPlan.name} (${selectedDataPlan.validity})</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Phone Number:</div>
+                <div class="summary-value">${phoneNumberInput.value}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Amount:</div>
+                <div class="summary-value">${formatCurrency(selectedDataPlan.price)}</div>
+            </div>
+        `;
+        
+        showModal();
+    }
+    
+    // Show manual purchase modal
+    function showManualPurchaseModal() {
+        if (!selectedManualDataPlan) return;
+        
+        modalBody.innerHTML = `
+            <div class="warning-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                Please confirm your purchase details
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Network:</div>
+                <div class="summary-value">${selectedNetwork}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Data Plan:</div>
+                <div class="summary-value">${selectedManualDataPlan.data} (${selectedManualDataPlan.validity})</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Phone Number:</div>
+                <div class="summary-value">${phoneNumberInput.value}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Amount:</div>
+                <div class="summary-value">${formatCurrency(selectedManualDataPlan.price)}</div>
+            </div>
+        `;
+        
+        showModal();
+    }
+
+    // Update submit button state
+    function updateSubmitButtonState() {
+    if (isAutoMode) {
+        // In automatic mode
+        submitButton.disabled = !selectedNetwork || !selectedPlanType || !selectedDataPlan || phoneNumberInput.value.length !== 11;
+    } else {
+        // In manual mode - only need plan and phone number
+        submitButton.disabled = !selectedManualDataPlan || phoneNumberInput.value.length !== 11;
+    }
+}
+
+    // Process automatic purchase
+    async function processAutomaticPurchase() {
+        try {
+            setLoading(true);
+            
+            // Check if user has enough balance
+            if (userBalance < selectedDataPlan.price) {
+                showToast('Insufficient balance. Please top up your wallet.', 'error');
+                setLoading(false);
+                return;
             }
+            
+            // Deduct balance from user's wallet
+            await db.collection('users').doc(currentUser.uid).update({
+                balance: firebase.firestore.FieldValue.increment(-selectedDataPlan.price)
+            });
+            
+            // Refresh user balance
+            await fetchUserBalance();
+            
+            // Show success message
+            showToast('Data purchase completed successfully!', 'success');
+            
+            // Reset form
+            resetForm();
         } catch (error) {
-            console.error("Error purchasing data:", error);
-            showToast('Network error or server is unreachable. Please try again.', 'error');
+            console.error("Error processing purchase:", error);
+            showToast('An error occurred while processing your request. Please try again.', 'error');
         } finally {
             setLoading(false);
         }
-    });
-
-    // Update user balance in Firestore
-    async function updateUserBalance(amountToDeduct) {
+    }
+    
+    // Process manual purchase
+    async function processManualPurchase() {
         try {
-            if (currentUser && currentUser.uid) {
-                const userRef = db.collection('users').doc(currentUser.uid);
-                
-                // Update balance using a transaction to ensure accuracy
-                await db.runTransaction(async (transaction) => {
-                    const userDoc = await transaction.get(userRef);
-                    if (!userDoc.exists) {
-                        throw new Error("User document does not exist!");
-                    }
-                    
-                    const userData = userDoc.data();
-                    const newBalance = (userData.balance || 0) - amountToDeduct;
-                    
-                    transaction.update(userRef, { balance: newBalance });
-                    
-                    // Update the local balance
-                    userBalance = newBalance;
-                    userBalanceElement.textContent = formatCurrency(newBalance);
-                });
+            setLoading(true);
+            
+            // Check if user has enough balance
+            if (userBalance < selectedManualDataPlan.price) {
+                showToast('Insufficient balance. Please top up your wallet.', 'error');
+                setLoading(false);
+                return;
             }
+            
+            // Deduct balance from user's wallet
+            await db.collection('users').doc(currentUser.uid).update({
+                balance: firebase.firestore.FieldValue.increment(-selectedManualDataPlan.price)
+            });
+            
+            // Refresh user balance
+            await fetchUserBalance();
+            
+            // Show success message
+            showToast('Data purchase completed successfully!', 'success');
+            
+            // Reset form
+            resetForm();
         } catch (error) {
-            console.error("Error updating user balance:", error);
-            showToast('Failed to update balance. Please refresh the page.', 'error');
+            console.error("Error processing purchase:", error);
+            showToast('An error occurred while processing your request. Please try again.', 'error');
+        } finally {
+            setLoading(false);
         }
     }
-
-    // Cancel purchase
-    cancelPurchaseBtn.addEventListener('click', function() {
-        hideModal();
-    });
-
-    // Initialize the page
-    initSlider();
 </script>
 </body>
 </html>
+
