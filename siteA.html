@@ -1,0 +1,2962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Management - VeltraWave Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #2D7FF9;
+            --primary-light: #5A9DFF;
+            --primary-dark: #0D5ED6;
+            --secondary: #8C52FF;
+            --accent: #FF5E8A;
+            --background: #0A0F1E;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --surface: rgba(255, 255, 255, 0.12);
+            --text: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --success: #00E1A0;
+            --warning: #FFB547;
+            --error: #FF5E7D;
+            --nigeria-green: #008751;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            transform: translateX(0);
+        }
+        
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-sidebar:hover {
+            color: var(--text);
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-label {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+        
+        .sidebar.collapsed .menu-label {
+            display: none;
+        }
+        
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border-left-color: var(--primary);
+        }
+        
+        .menu-item i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .header-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .header-btn i {
+            font-size: 1rem;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+        }
+        
+        .tab:hover {
+            color: var(--text);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .card-content {
+            margin-bottom: 15px;
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Tables */
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .table-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th, .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .table td {
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .status-inactive {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+        
+        .status-pending {
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            padding: 5px;
+        }
+        
+        .action-btn:hover {
+            color: var(--text);
+        }
+        
+        .action-btn.edit:hover {
+            color: var(--primary);
+        }
+        
+        .action-btn.delete:hover {
+            color: var(--error);
+        }
+        
+        .action-btn.view:hover {
+            color: var(--success);
+        }
+        
+        /* Search */
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: var(--background);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: var(--text);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255, 255, 255, 0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .checkbox-input {
+            display: none;
+        }
+        
+        .checkbox-label {
+            position: relative;
+            padding-left: 30px;
+            cursor: pointer;
+        }
+        
+        .checkbox-label:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .checkbox-input:checked + .checkbox-label:before {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .checkbox-label:after {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 4px;
+            top: 0;
+            color: white;
+            font-size: 12px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .checkbox-input:checked + .checkbox-label:after {
+            opacity: 1;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #d93d5d;
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #00c48c;
+        }
+        
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+        
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            background: rgba(20, 30, 50, 0.95);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast i {
+            font-size: 1.2rem;
+        }
+        
+        .toast-success i {
+            color: var(--success);
+        }
+        
+        .toast-error i {
+            color: var(--error);
+        }
+        
+        .toast-warning i {
+            color: var(--warning);
+        }
+        
+        .toast-info i {
+            color: var(--primary);
+        }
+        
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 15, 30, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 99;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Template Preview */
+        .template-preview {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .template-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .template-preview-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .template-preview-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .template-preview-details {
+            margin-bottom: 15px;
+        }
+        
+        .template-preview-detail {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .template-preview-label {
+            width: 120px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .template-preview-value {
+            flex: 1;
+        }
+        
+        .template-preview-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Color Picker */
+        .color-picker-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .color-picker input {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: -25%;
+            left: -25%;
+            cursor: pointer;
+            opacity: 0;
+        }
+        
+        .color-preview {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* Image Upload */
+        .image-upload-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-upload-container:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .image-upload-icon {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        
+        .image-upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        
+        .image-upload-input {
+            display: none;
+        }
+        
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        /* Template Card */
+        .template-card {
+            background: linear-gradient(135deg, rgba(45, 127, 249, 0.1), rgba(140, 82, 255, 0.1));
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .template-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .template-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .template-type {
+            display: inline-block;
+            background: rgba(0, 135, 81, 0.2);
+            color: var(--success);
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .template-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .template-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+        
+        .template-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .template-price {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--success);
+        }
+        
+        .template-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .sidebar .logo span, .sidebar .menu-label, .sidebar .menu-item span {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+            
+            .main-content.expanded {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 250px;
+            }
+            
+            .sidebar.mobile-active {
+                transform: translateX(0);
+            }
+            
+            .sidebar.mobile-active .logo span, 
+            .sidebar.mobile-active .menu-label, 
+            .sidebar.mobile-active .menu-item span {
+                display: block;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.expanded {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .header-actions {
+                flex-wrap: wrap;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img src="public/logo.png" alt="VeltraWave" class="logo-image">
+                <span>VeltraWave</span>
+            </div>
+            <button class="toggle-sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-label">Main</div>
+            <a href="admin.html" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="overviewA.html" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Overview</span>
+            </a>
+            <a href="usersA.html" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            
+            <div class="menu-label">Website</div>
+            <a href="siteA.html" class="menu-item active">
+                <i class="fas fa-globe"></i>
+                <span>Website</span>
+            </a>
+            <a href="templatesA.html" class="menu-item">
+                <i class="fas fa-file-code"></i>
+                <span>Templates</span>
+            </a>
+            <a href="pagesA.html" class="menu-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Pages</span>
+            </a>
+            
+            <div class="menu-label">Management</div>
+            <a href="dataA.html" class="menu-item">
+                <i class="fas fa-wifi"></i>
+                <span>Data</span>
+            </a>
+            <a href="storeA.html" class="menu-item">
+                <i class="fas fa-store"></i>
+                <span>Store</span>
+            </a>
+            <a href="requestsA.html" class="menu-item">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Requests</span>
+            </a>
+            <a href="reviewsA.html" class="menu-item">
+                <i class="fas fa-star"></i>
+                <span>Reviews</span>
+            </a>
+            
+            <div class="menu-label">Settings</div>
+            <a href="settingsA.html" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="#" class="menu-item" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Website Management</h1>
+            <div class="header-actions">
+                <button class="header-btn" id="add-template-btn">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Template</span>
+                </button>
+                <button class="header-btn" id="add-section-btn">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <span>Add Section</span>
+                </button>
+                <button class="header-btn" id="preview-site-btn">
+                    <i class="fas fa-eye"></i>
+                    <span>Preview Site</span>
+                </button>
+                <button class="header-btn" id="publish-site-btn">
+                    <i class="fas fa-upload"></i>
+                    <span>Publish Changes</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="search-content" placeholder="Search templates, sections, pages...">
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="templates">Templates</div>
+            <div class="tab" data-tab="sections">Sections</div>
+            <div class="tab" data-tab="coming-soon">Coming Soon Pages</div>
+            <div class="tab" data-tab="settings">Site Settings</div>
+        </div>
+        
+        <!-- Templates Tab Content -->
+        <div class="tab-content active" id="templates-tab">
+            <div class="card-grid" id="templates-grid">
+                <!-- Template cards will be loaded dynamically -->
+                
+                <!-- Example Template Card -->
+                <div class="template-card" data-id="template1">
+                    <img src="https://via.placeholder.com/600x400/2D7FF9/FFFFFF?text=Lagos+E-Commerce" class="template-image" alt="Lagos E-Commerce Template">
+                    <div class="template-content">
+                        <span class="template-type">Frontend</span>
+                        <h3 class="template-title">Lagos E-Commerce</h3>
+                        <p class="template-description">A modern, responsive e-commerce template with smooth animations and a user-friendly interface.</p>
+                        <div class="template-meta">
+                            <div class="template-price">₦15,000</div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="btn btn-secondary btn-sm template-edit-btn" data-id="template1">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                            <button class="btn btn-primary btn-sm template-view-btn" data-id="template1">
+                                <i class="fas fa-eye"></i>
+                                View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Example Template Card -->
+                <div class="template-card" data-id="template2">
+                    <img src="https://via.placeholder.com/600x400/8C52FF/FFFFFF?text=Abuja+API+Suite" class="template-image" alt="Abuja API Suite">
+                    <div class="template-content">
+                        <span class="template-type" style="background: rgba(140, 82, 255, 0.2); color: var(--secondary);">Backend</span>
+                        <h3 class="template-title">Abuja API Suite</h3>
+                        <p class="template-description">A comprehensive backend solution with RESTful APIs, authentication, and database integration.</p>
+                        <div class="template-meta">
+                            <div class="template-price">₦25,000</div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="btn btn-secondary btn-sm template-edit-btn" data-id="template2">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                            <button class="btn btn-primary btn-sm template-view-btn" data-id="template2">
+                                <i class="fas fa-eye"></i>
+                                View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Example Template Card -->
+                <div class="template-card" data-id="template3">
+                    <img src="https://via.placeholder.com/600x400/FF5E8A/FFFFFF?text=Naija+Blog+Platform" class="template-image" alt="Naija Blog Platform">
+                    <div class="template-content">
+                        <span class="template-type" style="background: rgba(255, 94, 138, 0.2); color: var(--accent);">Full Stack</span>
+                        <h3 class="template-title">Naija Blog Platform</h3>
+                        <p class="template-description">A complete blog solution with a beautiful frontend and powerful CMS backend.</p>
+                        <div class="template-meta">
+                            <div class="template-price">₦35,000</div>
+                        </div>
+                        <div class="template-actions">
+                            <button class="btn btn-secondary btn-sm template-edit-btn" data-id="template3">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                            <button class="btn btn-primary btn-sm template-view-btn" data-id="template3">
+                                <i class="fas fa-eye"></i>
+                                View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sections Tab Content -->
+        <div class="tab-content" id="sections-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Website Sections</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-primary btn-sm" id="add-section-table-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Section
+                        </button>
+                    </div>
+                </div>
+                <table class="table" id="sections-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Page</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sections-table-body">
+                        <!-- Sections will be loaded dynamically -->
+                        <tr>
+                            <td>section1</td>
+                            <td>Hero Section</td>
+                            <td>Hero</td>
+                            <td>Home</td>
+                            <td><span class="status status-active">Active</span></td>
+                            <td>
+                                <button class="action-btn edit" data-id="section1">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn view" data-id="section1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn delete" data-id="section1">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>section2</td>
+                            <td>Featured Templates</td>
+                            <td>Grid</td>
+                            <td>Home</td>
+                            <td><span class="status status-active">Active</span></td>
+                            <td>
+                                <button class="action-btn edit" data-id="section2">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn view" data-id="section2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn delete" data-id="section2">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>section3</td>
+                            <td>Custom Request</td>
+                            <td>Form</td>
+                            <td>Services</td>
+                            <td><span class="status status-active">Active</span></td>
+                            <td>
+                                <button class="action-btn edit" data-id="section3">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn view" data-id="section3">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn delete" data-id="section3">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Coming Soon Pages Tab Content -->
+        <div class="tab-content" id="coming-soon-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Coming Soon Pages</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-primary btn-sm" id="add-coming-soon-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Page
+                        </button>
+                    </div>
+                </div>
+                <table class="table" id="coming-soon-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>URL</th>
+                            <th>Status</th>
+                            <th>Launch Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="coming-soon-table-body">
+                        <!-- Coming Soon Pages will be loaded dynamically -->
+                        <tr>
+                            <td>page1</td>
+                            <td>Maintenance & Support</td>
+                            <td>/maintenance</td>
+                            <td><span class="status status-pending">Coming Soon</span></td>
+                            <td>2023-12-31</td>
+                            <td>
+                                <button class="action-btn edit" data-id="page1">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn view" data-id="page1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn delete" data-id="page1">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>page2</td>
+                            <td>Hosting Solutions</td>
+                            <td>/hosting</td>
+                            <td><span class="status status-pending">Coming Soon</span></td>
+                            <td>2023-12-31</td>
+                            <td>
+                                <button class="action-btn edit" data-id="page2">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn view" data-id="page2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn delete" data-id="page2">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Site Settings Tab Content -->
+        <div class="tab-content" id="settings-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Site Settings</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-primary btn-sm" id="save-settings-btn">
+                            <i class="fas fa-save"></i>
+                            Save Settings
+                        </button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <form id="site-settings-form">
+                        <div class="form-group">
+                            <label for="site-title" class="form-label">Site Title</label>
+                            <input type="text" id="site-title" class="form-input" value="VeltraWave - Website Store" placeholder="Enter site title">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="site-description" class="form-label">Site Description</label>
+                            <textarea id="site-description" class="form-textarea" placeholder="Enter site description">Discover our premium website solutions and services. From stunning frontends to powerful backends, we've got everything you need to establish your online presence.</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Primary Color</label>
+                            <div class="color-picker-container">
+                                <div class="color-picker">
+                                    <input type="color" id="primary-color" value="#2D7FF9">
+                                    <span class="color-preview" style="background-color: #2D7FF9;"></span>
+                                </div>
+                                <input type="text" class="form-input" id="primary-color-hex" value="#2D7FF9" style="width: 120px;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Secondary Color</label>
+                            <div class="color-picker-container">
+                                <div class="color-picker">
+                                    <input type="color" id="secondary-color" value="#8C52FF">
+                                    <span class="color-preview" style="background-color: #8C52FF;"></span>
+                                </div>
+                                <input type="text" class="form-input" id="secondary-color-hex" value="#8C52FF" style="width: 120px;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Accent Color</label>
+                            <div class="color-picker-container">
+                                <div class="color-picker">
+                                    <input type="color" id="accent-color" value="#FF5E8A">
+                                    <span class="color-preview" style="background-color: #FF5E8A;"></span>
+                                </div>
+                                <input type="text" class="form-input" id="accent-color-hex" value="#FF5E8A" style="width: 120px;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Logo</label>
+                            <div class="image-upload-container" id="logo-upload-container">
+                                <i class="fas fa-cloud-upload-alt image-upload-icon"></i>
+                                <p class="image-upload-text">Click to upload logo or drag and drop</p>
+                                <input type="file" id="logo-upload" class="image-upload-input" accept="image/*">
+                                <img src="/placeholder.svg" id="logo-preview" class="image-preview">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Favicon</label>
+                            <div class="image-upload-container" id="favicon-upload-container">
+                                <i class="fas fa-cloud-upload-alt image-upload-icon"></i>
+                                <p class="image-upload-text">Click to upload favicon or drag and drop</p>
+                                <input type="file" id="favicon-upload" class="image-upload-input" accept="image/*">
+                                <img src="/placeholder.svg" id="favicon-preview" class="image-preview">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contact-email" class="form-label">Contact Email</label>
+                            <input type="email" id="contact-email" class="form-input" value="contact@veltrawave.com" placeholder="Enter contact email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contact-phone" class="form-label">Contact Phone</label>
+                            <input type="tel" id="contact-phone" class="form-input" value="+234 812 345 6789" placeholder="Enter contact phone">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="whatsapp-number" class="form-label">WhatsApp Number</label>
+                            <input type="tel" id="whatsapp-number" class="form-input" value="+234 812 345 6789" placeholder="Enter WhatsApp number">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="enable-maintenance" class="checkbox-input">
+                                <span class="checkbox-label">Enable Maintenance Mode</span>
+                            </label>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Template Modal -->
+    <div class="modal-overlay" id="template-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="template-modal-title">Add Template</h3>
+                <button class="modal-close" id="template-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="template-form">
+                    <input type="hidden" id="template-id">
+                    
+                    <div class="form-group">
+                        <label for="template-name" class="form-label">Template Name</label>
+                        <input type="text" id="template-name" class="form-input" placeholder="Enter template name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="template-type" class="form-label">Template Type</label>
+                        <select id="template-type" class="form-select" required>
+                            <option value="">Select Type</option>
+                            <option value="frontend">Frontend</option>
+                            <option value="backend">Backend</option>
+                            <option value="fullstack">Full Stack</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="template-description" class="form-label">Description</label>
+                        <textarea id="template-description" class="form-textarea" placeholder="Enter template description" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="template-price" class="form-label">Price (₦)</label>
+                        <input type="number" id="template-price" class="form-input" placeholder="Enter price" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Template Image</label>
+                        <div class="image-upload-container" id="template-image-upload-container">
+                            <i class="fas fa-cloud-upload-alt image-upload-icon"></i>
+                            <p class="image-upload-text">Click to upload image or drag and drop</p>
+                            <input type="file" id="template-image-upload" class="image-upload-input" accept="image/*">
+                            <img src="/placeholder.svg" id="template-image-preview" class="image-preview">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="template-features" class="form-label">Features (one per line)</label>
+                        <textarea id="template-features" class="form-textarea" placeholder="Enter features, one per line"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="template-status" class="checkbox-input" checked>
+                            <span class="checkbox-label">Active</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="template-featured" class="checkbox-input">
+                            <span class="checkbox-label">Featured</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="template-free" class="checkbox-input">
+                            <span class="checkbox-label">Free</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="template-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="template-modal-save">Save Template</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section Modal -->
+    <div class="modal-overlay" id="section-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="section-modal-title">Add Section</h3>
+                <button class="modal-close" id="section-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="section-form">
+                    <input type="hidden" id="section-id">
+                    
+                    <div class="form-group">
+                        <label for="section-name" class="form-label">Section Name</label>
+                        <input type="text" id="section-name" class="form-input" placeholder="Enter section name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="section-type" class="form-label">Section Type</label>
+                        <select id="section-type" class="form-select" required>
+                            <option value="">Select Type</option>
+                            <option value="hero">Hero</option>
+                            <option value="grid">Grid</option>
+                            <option value="form">Form</option>
+                            <option value="features">Features</option>
+                            <option value="testimonials">Testimonials</option>
+                            <option value="cta">Call to Action</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="section-page" class="form-label">Page</label>
+                        <select id="section-page" class="form-select" required>
+                            <option value="">Select Page</option>
+                            <option value="home">Home</option>
+                            <option value="services">Services</option>
+                            <option value="about">About</option>
+                            <option value="contact">Contact</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="section-content" class="form-label">Content (HTML)</label>
+                        <textarea id="section-content" class="form-textarea" placeholder="Enter section content (HTML)" rows="10"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="section-order" class="form-label">Display Order</label>
+                        <input type="number" id="section-order" class="form-input" placeholder="Enter display order" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="section-status" class="checkbox-input" checked>
+                            <span class="checkbox-label">Active</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="section-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="section-modal-save">Save Section</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Coming Soon Page Modal -->
+    <div class="modal-overlay" id="coming-soon-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="coming-soon-modal-title">Add Coming Soon Page</h3>
+                <button class="modal-close" id="coming-soon-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="coming-soon-form">
+                    <input type="hidden" id="coming-soon-id">
+                    
+                    <div class="form-group">
+                        <label for="coming-soon-name" class="form-label">Page Name</label>
+                        <input type="text" id="coming-soon-name" class="form-input" placeholder="Enter page name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coming-soon-url" class="form-label">URL Path</label>
+                        <input type="text" id="coming-soon-url" class="form-input" placeholder="Enter URL path (e.g., /maintenance)" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coming-soon-description" class="form-label">Description</label>
+                        <textarea id="coming-soon-description" class="form-textarea" placeholder="Enter page description"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coming-soon-launch-date" class="form-label">Launch Date</label>
+                        <input type="date" id="coming-soon-launch-date" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Background Image</label>
+                        <div class="image-upload-container" id="coming-soon-image-upload-container">
+                            <i class="fas fa-cloud-upload-alt image-upload-icon"></i>
+                            <p class="image-upload-text">Click to upload image or drag and drop</p>
+                            <input type="file" id="coming-soon-image-upload" class="image-upload-input" accept="image/*">
+                            <img src="/placeholder.svg" id="coming-soon-image-preview" class="image-preview">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="coming-soon-status" class="checkbox-input" checked>
+                            <span class="checkbox-label">Active</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="coming-soon-show-countdown" class="checkbox-input" checked>
+                            <span class="checkbox-label">Show Countdown Timer</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coming-soon-cta-text" class="form-label">Call to Action Text</label>
+                        <input type="text" id="coming-soon-cta-text" class="form-input" placeholder="Enter CTA text (e.g., Notify Me)" value="Notify Me">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coming-soon-cta-url" class="form-label">Call to Action URL</label>
+                        <input type="text" id="coming-soon-cta-url" class="form-input" placeholder="Enter CTA URL (e.g., #notify-form)" value="#notify-form">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="coming-soon-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="coming-soon-modal-save">Save Page</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="delete-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Delete</h3>
+                <button class="modal-close" id="delete-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+                <input type="hidden" id="delete-item-id">
+                <input type="hidden" id="delete-item-type">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="delete-modal-cancel">Cancel</button>
+                <button class="btn btn-danger" id="delete-modal-confirm">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.firebasestorage.app",
+            messagingSenderId: "431351611304",
+            appId: "1:431351611304:web:7381dd659920f9f325a79d",
+            measurementId: "G-HRHN8GJCR3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const storage = firebase.storage();
+        
+        // Flag to prevent auth state change loop
+        let isCheckingAdmin = false;
+        let isSigningOut = false;
+        
+        // DOM Elements
+        const sidebar = document.querySelector('.sidebar');
+        const toggleSidebarBtn = document.querySelector('.toggle-sidebar');
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mainContent = document.querySelector('.main-content');
+        const logoutBtn = document.getElementById('logout-btn');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const searchInput = document.getElementById('search-content');
+        
+        // Button Elements
+        const addTemplateBtn = document.getElementById('add-template-btn');
+        const addSectionBtn = document.getElementById('add-section-btn');
+        const addSectionTableBtn = document.getElementById('add-section-table-btn');
+        const previewSiteBtn = document.getElementById('preview-site-btn');
+        const publishSiteBtn = document.getElementById('publish-site-btn');
+        const addComingSoonBtn = document.getElementById('add-coming-soon-btn');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        
+        // Modal Elements
+        const templateModalOverlay = document.getElementById('template-modal-overlay');
+        const templateModalClose = document.getElementById('template-modal-close');
+        const templateModalCancel = document.getElementById('template-modal-cancel');
+        const templateModalSave = document.getElementById('template-modal-save');
+        const templateModalTitle = document.getElementById('template-modal-title');
+        
+        const sectionModalOverlay = document.getElementById('section-modal-overlay');
+        const sectionModalClose = document.getElementById('section-modal-close');
+        const sectionModalCancel = document.getElementById('section-modal-cancel');
+        const sectionModalSave = document.getElementById('section-modal-save');
+        const sectionModalTitle = document.getElementById('section-modal-title');
+        
+        const comingSoonModalOverlay = document.getElementById('coming-soon-modal-overlay');
+        const comingSoonModalClose = document.getElementById('coming-soon-modal-close');
+        const comingSoonModalCancel = document.getElementById('coming-soon-modal-cancel');
+        const comingSoonModalSave = document.getElementById('coming-soon-modal-save');
+        const comingSoonModalTitle = document.getElementById('coming-soon-modal-title');
+        
+        const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+        const deleteModalClose = document.getElementById('delete-modal-close');
+        const deleteModalCancel = document.getElementById('delete-modal-cancel');
+        const deleteModalConfirm = document.getElementById('delete-modal-confirm');
+        
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            showLoading();
+            
+            auth.onAuthStateChanged(user => {
+                // Skip if we're in the process of checking admin status or signing out
+                if (isCheckingAdmin || isSigningOut) {
+                    hideLoading();
+                    return;
+                }
+                
+                if (!user) {
+                    // User is not logged in, redirect to login page
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Set flag to prevent loop
+                isCheckingAdmin = true;
+                
+                // Check if user is an admin
+                db.collection('admins').doc(user.uid).get()
+                    .then(doc => {
+                        if (!doc.exists) {
+                            // User is not an admin, redirect to login page
+                            isSigningOut = true;
+                            return auth.signOut().then(() => {
+                                window.location.href = 'login.html';
+                            });
+                        } else {
+                            // User is an admin, initialize the app
+                            initApp();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking admin status:', error);
+                        showToast('Error checking admin status: ' + error.message, 'error');
+                        
+                        // Redirect to login page on error
+                        isSigningOut = true;
+                        auth.signOut().then(() => {
+                            window.location.href = 'login.html';
+                        });
+                    })
+                    .finally(() => {
+                        isCheckingAdmin = false;
+                        isSigningOut = false;
+                        hideLoading();
+                    });
+            });
+        });
+        
+        // Initialize App
+        async function initApp() {
+            try {
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Load templates
+                await loadTemplates();
+                
+                // Load sections
+                await loadSections();
+                
+                // Load coming soon pages
+                await loadComingSoonPages();
+                
+                // Load site settings
+                await loadSiteSettings();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                showToast('Failed to initialize the app', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Toggle Sidebar
+            toggleSidebarBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            });
+            
+            // Mobile Menu Toggle
+            mobileMenuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-active');
+            });
+            
+            // Logout Button
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+            
+            // Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // Search
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                filterContent(searchTerm);
+            });
+            
+            // Add Template Button
+            addTemplateBtn.addEventListener('click', function() {
+                openAddTemplateModal();
+            });
+            
+            // Add Section Button
+            addSectionBtn.addEventListener('click', function() {
+                openAddSectionModal();
+            });
+            
+            // Add Section Table Button
+            addSectionTableBtn.addEventListener('click', function() {
+                openAddSectionModal();
+            });
+            
+            // Preview Site Button
+            previewSiteBtn.addEventListener('click', function() {
+                window.open('site.html', '_blank');
+            });
+            
+            // Publish Site Button
+            publishSiteBtn.addEventListener('click', function() {
+                publishSite();
+            });
+            
+            // Add Coming Soon Button
+            addComingSoonBtn.addEventListener('click', function() {
+                openAddComingSoonModal();
+            });
+            
+            // Save Settings Button
+            saveSettingsBtn.addEventListener('click', function() {
+                saveSiteSettings();
+            });
+            
+            // Template Modal
+            templateModalClose.addEventListener('click', function() {
+                closeTemplateModal();
+            });
+            
+            templateModalCancel.addEventListener('click', function() {
+                closeTemplateModal();
+            });
+            
+            templateModalSave.addEventListener('click', function() {
+                saveTemplate();
+            });
+            
+            // Section Modal
+            sectionModalClose.addEventListener('click', function() {
+                closeSectionModal();
+            });
+            
+            sectionModalCancel.addEventListener('click', function() {
+                closeSectionModal();
+            });
+            
+            sectionModalSave.addEventListener('click', function() {
+                saveSection();
+            });
+            
+            // Coming Soon Modal
+            comingSoonModalClose.addEventListener('click', function() {
+                closeComingSoonModal();
+            });
+            
+            comingSoonModalCancel.addEventListener('click', function() {
+                closeComingSoonModal();
+            });
+            
+            comingSoonModalSave.addEventListener('click', function() {
+                saveComingSoonPage();
+            });
+            
+            // Delete Modal
+            deleteModalClose.addEventListener('click', function() {
+                closeDeleteModal();
+            });
+            
+            deleteModalCancel.addEventListener('click', function() {
+                closeDeleteModal();
+            });
+            
+            deleteModalConfirm.addEventListener('click', function() {
+                confirmDelete();
+            });
+            
+            // Image Upload Previews
+            setupImageUploadPreviews();
+            
+            // Color Picker Sync
+            setupColorPickers();
+            
+            // Template Edit/View Buttons
+            document.querySelectorAll('.template-edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const templateId = this.getAttribute('data-id');
+                    openEditTemplateModal(templateId);
+                });
+            });
+            
+            document.querySelectorAll('.template-view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const templateId = this.getAttribute('data-id');
+                    viewTemplate(templateId);
+                });
+            });
+            
+            // Section Action Buttons
+            document.querySelectorAll('#sections-table-body .edit').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('data-id');
+                    openEditSectionModal(sectionId);
+                });
+            });
+            
+            document.querySelectorAll('#sections-table-body .view').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('data-id');
+                    viewSection(sectionId);
+                });
+            });
+            
+            document.querySelectorAll('#sections-table-body .delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('data-id');
+                    openDeleteModal(sectionId, 'section');
+                });
+            });
+            
+            // Coming Soon Action Buttons
+            document.querySelectorAll('#coming-soon-table-body .edit').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-id');
+                    openEditComingSoonModal(pageId);
+                });
+            });
+            
+            document.querySelectorAll('#coming-soon-table-body .view').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-id');
+                    viewComingSoonPage(pageId);
+                });
+            });
+            
+            document.querySelectorAll('#coming-soon-table-body .delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-id');
+                    openDeleteModal(pageId, 'coming-soon');
+                });
+            });
+        }
+        
+        // Setup Image Upload Previews
+        function setupImageUploadPreviews() {
+            // Logo Upload
+            const logoUpload = document.getElementById('logo-upload');
+            const logoPreview = document.getElementById('logo-preview');
+            const logoContainer = document.getElementById('logo-upload-container');
+            
+            if (logoUpload && logoPreview && logoContainer) {
+                logoContainer.addEventListener('click', function() {
+                    logoUpload.click();
+                });
+                
+                logoUpload.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            logoPreview.src = e.target.result;
+                            logoPreview.style.display = 'block';
+                        };
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+            
+            // Favicon Upload
+            const faviconUpload = document.getElementById('favicon-upload');
+            const faviconPreview = document.getElementById('favicon-preview');
+            const faviconContainer = document.getElementById('favicon-upload-container');
+            
+            if (faviconUpload && faviconPreview && faviconContainer) {
+                faviconContainer.addEventListener('click', function() {
+                    faviconUpload.click();
+                });
+                
+                faviconUpload.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            faviconPreview.src = e.target.result;
+                            faviconPreview.style.display = 'block';
+                        };
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+            
+            // Template Image Upload
+            const templateImageUpload = document.getElementById('template-image-upload');
+            const templateImagePreview = document.getElementById('template-image-preview');
+            const templateImageContainer = document.getElementById('template-image-upload-container');
+            
+            if (templateImageUpload && templateImagePreview && templateImageContainer) {
+                templateImageContainer.addEventListener('click', function() {
+                    templateImageUpload.click();
+                });
+                
+                templateImageUpload.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            templateImagePreview.src = e.target.result;
+                            templateImagePreview.style.display = 'block';
+                        };
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+            
+            // Coming Soon Image Upload
+            const comingSoonImageUpload = document.getElementById('coming-soon-image-upload');
+            const comingSoonImagePreview = document.getElementById('coming-soon-image-preview');
+            const comingSoonImageContainer = document.getElementById('coming-soon-image-upload-container');
+            
+            if (comingSoonImageUpload && comingSoonImagePreview && comingSoonImageContainer) {
+                comingSoonImageContainer.addEventListener('click', function() {
+                    comingSoonImageUpload.click();
+                });
+                
+                comingSoonImageUpload.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            comingSoonImagePreview.src = e.target.result;
+                            comingSoonImagePreview.style.display = 'block';
+                        };
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+        }
+        
+        // Setup Color Pickers
+        function setupColorPickers() {
+            // Primary Color
+            const primaryColorPicker = document.getElementById('primary-color');
+            const primaryColorHex = document.getElementById('primary-color-hex');
+            const primaryColorPreview = primaryColorPicker.nextElementSibling;
+            
+            if (primaryColorPicker && primaryColorHex && primaryColorPreview) {
+                primaryColorPicker.addEventListener('input', function() {
+                    primaryColorHex.value = this.value;
+                    primaryColorPreview.style.backgroundColor = this.value;
+                });
+                
+                primaryColorHex.addEventListener('input', function() {
+                    primaryColorPicker.value = this.value;
+                    primaryColorPreview.style.backgroundColor = this.value;
+                });
+            }
+            
+            // Secondary Color
+            const secondaryColorPicker = document.getElementById('secondary-color');
+            const secondaryColorHex = document.getElementById('secondary-color-hex');
+            const secondaryColorPreview = secondaryColorPicker.nextElementSibling;
+            
+            if (secondaryColorPicker && secondaryColorHex && secondaryColorPreview) {
+                secondaryColorPicker.addEventListener('input', function() {
+                    secondaryColorHex.value = this.value;
+                    secondaryColorPreview.style.backgroundColor = this.value;
+                });
+                
+                secondaryColorHex.addEventListener('input', function() {
+                    secondaryColorPicker.value = this.value;
+                    secondaryColorPreview.style.backgroundColor = this.value;
+                });
+            }
+            
+            // Accent Color
+            const accentColorPicker = document.getElementById('accent-color');
+            const accentColorHex = document.getElementById('accent-color-hex');
+            const accentColorPreview = accentColorPicker.nextElementSibling;
+            
+            if (accentColorPicker && accentColorHex && accentColorPreview) {
+                accentColorPicker.addEventListener('input', function() {
+                    accentColorHex.value = this.value;
+                    accentColorPreview.style.backgroundColor = this.value;
+                });
+                
+                accentColorHex.addEventListener('input', function() {
+                    accentColorPicker.value = this.value;
+                    accentColorPreview.style.backgroundColor = this.value;
+                });
+            }
+        }
+        
+        // Load Templates
+        async function loadTemplates() {
+            try {
+                // In a real application, you would fetch templates from Firestore
+                // For now, we'll use the example templates already in the HTML
+                
+                // Example of how to fetch from Firestore:
+                /*
+                const templatesSnapshot = await db.collection('templates').get();
+                const templates = [];
+                
+                templatesSnapshot.forEach(doc => {
+                    templates.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                renderTemplates(templates);
+                */
+            } catch (error) {
+                console.error('Error loading templates:', error);
+                showToast('Failed to load templates', 'error');
+            }
+        }
+        
+        // Load Sections
+        async function loadSections() {
+            try {
+                // In a real application, you would fetch sections from Firestore
+                // For now, we'll use the example sections already in the HTML
+                
+                // Example of how to fetch from Firestore:
+                /*
+                const sectionsSnapshot = await db.collection('sections').orderBy('order').get();
+                const sections = [];
+                
+                sectionsSnapshot.forEach(doc => {
+                    sections.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                renderSections(sections);
+                */
+            } catch (error) {
+                console.error('Error loading sections:', error);
+                showToast('Failed to load sections', 'error');
+            }
+        }
+        
+        // Load Coming Soon Pages
+        async function loadComingSoonPages() {
+            try {
+                // In a real application, you would fetch coming soon pages from Firestore
+                // For now, we'll use the example pages already in the HTML
+                
+                // Example of how to fetch from Firestore:
+                /*
+                const pagesSnapshot = await db.collection('comingSoonPages').get();
+                const pages = [];
+                
+                pagesSnapshot.forEach(doc => {
+                    pages.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                renderComingSoonPages(pages);
+                */
+            } catch (error) {
+                console.error('Error loading coming soon pages:', error);
+                showToast('Failed to load coming soon pages', 'error');
+            }
+        }
+        
+        // Load Site Settings
+        async function loadSiteSettings() {
+            try {
+                // In a real application, you would fetch site settings from Firestore
+                // For now, we'll use the example settings already in the HTML
+                
+                // Example of how to fetch from Firestore:
+                /*
+                const settingsDoc = await db.collection('siteSettings').doc('main').get();
+                
+                if (settingsDoc.exists) {
+                    const settings = settingsDoc.data();
+                    
+                    // Populate form fields
+                    document.getElementById('site-title').value = settings.title || '';
+                    document.getElementById('site-description').value = settings.description || '';
+                    document.getElementById('primary-color').value = settings.primaryColor || '#2D7FF9';
+                    document.getElementById('primary-color-hex').value = settings.primaryColor || '#2D7FF9';
+                    document.getElementById('secondary-color').value = settings.secondaryColor || '#8C52FF';
+                    document.getElementById('secondary-color-hex').value = settings.secondaryColor || '#8C52FF';
+                    document.getElementById('accent-color').value = settings.accentColor || '#FF5E8A';
+                    document.getElementById('accent-color-hex').value = settings.accentColor || '#FF5E8A';
+                    document.getElementById('contact-email').value = settings.contactEmail || '';
+                    document.getElementById('contact-phone').value = settings.contactPhone || '';
+                    document.getElementById('whatsapp-number').value = settings.whatsappNumber || '';
+                    document.getElementById('enable-maintenance').checked = settings.maintenanceMode || false;
+                    
+                    // Update color previews
+                    document.querySelector('#primary-color + .color-preview').style.backgroundColor = settings.primaryColor || '#2D7FF9';
+                    document.querySelector('#secondary-color + .color-preview').style.backgroundColor = settings.secondaryColor || '#8C52FF';
+                    document.querySelector('#accent-color + .color-preview').style.backgroundColor = settings.accentColor || '#FF5E8A';
+                    
+                    // Load logo and favicon if available
+                    if (settings.logoUrl) {
+                        document.getElementById('logo-preview').src = settings.logoUrl;
+                        document.getElementById('logo-preview').style.display = 'block';
+                    }
+                    
+                    if (settings.faviconUrl) {
+                        document.getElementById('favicon-preview').src = settings.faviconUrl;
+                        document.getElementById('favicon-preview').style.display = 'block';
+                    }
+                }
+                */
+            } catch (error) {
+                console.error('Error loading site settings:', error);
+                showToast('Failed to load site settings', 'error');
+            }
+        }
+        
+        // Filter Content
+        function filterContent(searchTerm) {
+            // Filter templates
+            const templateCards = document.querySelectorAll('.template-card');
+            
+            templateCards.forEach(card => {
+                const title = card.querySelector('.template-title').textContent.toLowerCase();
+                const description = card.querySelector('.template-description').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Filter sections
+            const sectionRows = document.querySelectorAll('#sections-table-body tr');
+            
+            sectionRows.forEach(row => {
+                const name = row.cells[1].textContent.toLowerCase();
+                const type = row.cells[2].textContent.toLowerCase();
+                const page = row.cells[3].textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || type.includes(searchTerm) || page.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Filter coming soon pages
+            const comingSoonRows = document.querySelectorAll('#coming-soon-table-body tr');
+            
+            comingSoonRows.forEach(row => {
+                const name = row.cells[1].textContent.toLowerCase();
+                const url = row.cells[2].textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || url.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // Open Add Template Modal
+        function openAddTemplateModal() {
+            templateModalTitle.textContent = 'Add Template';
+            document.getElementById('template-id').value = '';
+            document.getElementById('template-form').reset();
+            document.getElementById('template-image-preview').style.display = 'none';
+            templateModalOverlay.classList.add('active');
+        }
+        
+        // Open Edit Template Modal
+        function openEditTemplateModal(templateId) {
+            // In a real application, you would fetch the template from Firestore
+            // For now, we'll use example data
+            
+            templateModalTitle.textContent = 'Edit Template';
+            document.getElementById('template-id').value = templateId;
+            
+            // Example template data
+            const templateData = {
+                name: 'Lagos E-Commerce',
+                type: 'frontend',
+                description: 'A modern, responsive e-commerce template with smooth animations and a user-friendly interface. Perfect for fashion and retail businesses.',
+                price: 15000,
+                status: true,
+                featured: true,
+                free: false,
+                features: [
+                    'Responsive design for all devices',
+                    'Product gallery with zoom functionality',
+                    'Shopping cart and checkout process',
+                    'User account management',
+                    'Product filtering and search',
+                    'Payment gateway integration ready'
+                ].join('\n')
+            };
+            
+            // Populate form fields
+            document.getElementById('template-name').value = templateData.name;
+            document.getElementById('template-type').value = templateData.type;
+            document.getElementById('template-description').value = templateData.description;
+            document.getElementById('template-price').value = templateData.price;
+            document.getElementById('template-status').checked = templateData.status;
+            document.getElementById('template-featured').checked = templateData.featured;
+            document.getElementById('template-free').checked = templateData.free;
+            document.getElementById('template-features').value = templateData.features;
+            
+            // Show image preview if available
+            const imagePreview = document.getElementById('template-image-preview');
+            imagePreview.src = 'https://via.placeholder.com/600x400/2D7FF9/FFFFFF?text=Lagos+E-Commerce';
+            imagePreview.style.display = 'block';
+            
+            templateModalOverlay.classList.add('active');
+        }
+        
+        // View Template
+        function viewTemplate(templateId) {
+            // In a real application, you would redirect to a template preview page
+            // For now, we'll just show a toast
+            showToast('Viewing template: ' + templateId, 'info');
+        }
+        
+        // Close Template Modal
+        function closeTemplateModal() {
+            templateModalOverlay.classList.remove('active');
+        }
+        
+        // Save Template
+        async function saveTemplate() {
+            try {
+                // Validate form
+                const templateForm = document.getElementById('template-form');
+                if (!templateForm.checkValidity()) {
+                    templateForm.reportValidity();
+                    return;
+                }
+                
+                showLoading();
+                
+                // Get form values
+                const templateId = document.getElementById('template-id').value;
+                const name = document.getElementById('template-name').value;
+                const type = document.getElementById('template-type').value;
+                const description = document.getElementById('template-description').value;
+                const price = parseFloat(document.getElementById('template-price').value);
+                const status = document.getElementById('template-status').checked;
+                const featured = document.getElementById('template-featured').checked;
+                const free = document.getElementById('template-free').checked;
+                const features = document.getElementById('template-features').value.split('\n').filter(feature => feature.trim() !== '');
+                
+                // Get image file
+                const imageFile = document.getElementById('template-image-upload').files[0];
+                
+                // Create template data object
+                const templateData = {
+                    name,
+                    type,
+                    description,
+                    price,
+                    status,
+                    featured,
+                    free,
+                    features,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Upload image if available
+                if (imageFile) {
+                    const storageRef = storage.ref(`templates/${Date.now()}_${imageFile.name}`);
+                    await storageRef.put(imageFile);
+                    const imageUrl = await storageRef.getDownloadURL();
+                    templateData.imageUrl = imageUrl;
+                }
+                
+                // Save to Firestore
+                if (templateId) {
+                    // Update existing template
+                    await db.collection('templates').doc(templateId).update(templateData);
+                    showToast('Template updated successfully', 'success');
+                } else {
+                    // Add new template
+                    templateData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('templates').add(templateData);
+                    showToast('Template added successfully', 'success');
+                }
+                
+                // Reload templates
+                await loadTemplates();
+                
+                // Close modal
+                closeTemplateModal();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error saving template:', error);
+                showToast('Failed to save template', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Open Add Section Modal
+        function openAddSectionModal() {
+            sectionModalTitle.textContent = 'Add Section';
+            document.getElementById('section-id').value = '';
+            document.getElementById('section-form').reset();
+            sectionModalOverlay.classList.add('active');
+        }
+        
+        // Open Edit Section Modal
+        function openEditSectionModal(sectionId) {
+            // In a real application, you would fetch the section from Firestore
+            // For now, we'll use example data
+            
+            sectionModalTitle.textContent = 'Edit Section';
+            document.getElementById('section-id').value = sectionId;
+            
+            // Example section data
+            const sectionData = {
+                name: 'Hero Section',
+                type: 'hero',
+                page: 'home',
+                content: '<div class="hero-container">\n  <h1>Welcome to VeltraWave</h1>\n  <p>Discover our premium website solutions and services.</p>\n  <button class="cta-button">Get Started</button>\n</div>',
+                order: 0,
+                status: true
+            };
+            
+            // Populate form fields
+            document.getElementById('section-name').value = sectionData.name;
+            document.getElementById('section-type').value = sectionData.type;
+            document.getElementById('section-page').value = sectionData.page;
+            document.getElementById('section-content').value = sectionData.content;
+            document.getElementById('section-order').value = sectionData.order;
+            document.getElementById('section-status').checked = sectionData.status;
+            
+            sectionModalOverlay.classList.add('active');
+        }
+        
+        // View Section
+        function viewSection(sectionId) {
+            // In a real application, you would redirect to a section preview page
+            // For now, we'll just show a toast
+            showToast('Viewing section: ' + sectionId, 'info');
+        }
+        
+        // Close Section Modal
+        function closeSectionModal() {
+            sectionModalOverlay.classList.remove('active');
+        }
+        
+        // Save Section
+        async function saveSection() {
+            try {
+                // Validate form
+                const sectionForm = document.getElementById('section-form');
+                if (!sectionForm.checkValidity()) {
+                    sectionForm.reportValidity();
+                    return;
+                }
+                
+                showLoading();
+                
+                // Get form values
+                const sectionId = document.getElementById('section-id').value;
+                const name = document.getElementById('section-name').value;
+                const type = document.getElementById('section-type').value;
+                const page = document.getElementById('section-page').value;
+                const content = document.getElementById('section-content').value;
+                const order = parseInt(document.getElementById('section-order').value);
+                const status = document.getElementById('section-status').checked;
+                
+                // Create section data object
+                const sectionData = {
+                    name,
+                    type,
+                    page,
+                    content,
+                    order,
+                    status,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Save to Firestore
+                if (sectionId) {
+                    // Update existing section
+                    await db.collection('sections').doc(sectionId).update(sectionData);
+                    showToast('Section updated successfully', 'success');
+                } else {
+                    // Add new section
+                    sectionData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('sections').add(sectionData);
+                    showToast('Section added successfully', 'success');
+                }
+                
+                // Reload sections
+                await loadSections();
+                
+                // Close modal
+                closeSectionModal();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error saving section:', error);
+                showToast('Failed to save section', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Open Add Coming Soon Modal
+        function openAddComingSoonModal() {
+            comingSoonModalTitle.textContent = 'Add Coming Soon Page';
+            document.getElementById('coming-soon-id').value = '';
+            document.getElementById('coming-soon-form').reset();
+            document.getElementById('coming-soon-image-preview').style.display = 'none';
+            comingSoonModalOverlay.classList.add('active');
+        }
+        
+        // Open Edit Coming Soon Modal
+        function openEditComingSoonModal(pageId) {
+            // In a real application, you would fetch the page from Firestore
+            // For now, we'll use example data
+            
+            comingSoonModalTitle.textContent = 'Edit Coming Soon Page';
+            document.getElementById('coming-soon-id').value = pageId;
+            
+            // Example page data
+            const pageData = {
+                name: 'Maintenance & Support',
+                url: '/maintenance',
+                description: 'Our maintenance and support services will be available shortly.',
+                launchDate: '2023-12-31',
+                status: true,
+                showCountdown: true,
+                ctaText: 'Notify Me',
+                ctaUrl: '#notify-form'
+            };
+            
+            // Populate form fields
+            document.getElementById('coming-soon-name').value = pageData.name;
+            document.getElementById('coming-soon-url').value = pageData.url;
+            document.getElementById('coming-soon-description').value = pageData.description;
+            document.getElementById('coming-soon-launch-date').value = pageData.launchDate;
+            document.getElementById('coming-soon-status').checked = pageData.status;
+            document.getElementById('coming-soon-show-countdown').checked = pageData.showCountdown;
+            document.getElementById('coming-soon-cta-text').value = pageData.ctaText;
+            document.getElementById('coming-soon-cta-url').value = pageData.ctaUrl;
+            
+            comingSoonModalOverlay.classList.add('active');
+        }
+        
+        // View Coming Soon Page
+        function viewComingSoonPage(pageId) {
+            // In a real application, you would redirect to a page preview
+            // For now, we'll just show a toast
+            showToast('Viewing coming soon page: ' + pageId, 'info');
+        }
+        
+        // Close Coming Soon Modal
+        function closeComingSoonModal() {
+            comingSoonModalOverlay.classList.remove('active');
+        }
+        
+        // Save Coming Soon Page
+        async function saveComingSoonPage() {
+            try {
+                // Validate form
+                const comingSoonForm = document.getElementById('coming-soon-form');
+                if (!comingSoonForm.checkValidity()) {
+                    comingSoonForm.reportValidity();
+                    return;
+                }
+                
+                showLoading();
+                
+                // Get form values
+                const pageId = document.getElementById('coming-soon-id').value;
+                const name = document.getElementById('coming-soon-name').value;
+                const url = document.getElementById('coming-soon-url').value;
+                const description = document.getElementById('coming-soon-description').value;
+                const launchDate = document.getElementById('coming-soon-launch-date').value;
+                const status = document.getElementById('coming-soon-status').checked;
+                const showCountdown = document.getElementById('coming-soon-show-countdown').checked;
+                const ctaText = document.getElementById('coming-soon-cta-text').value;
+                const ctaUrl = document.getElementById('coming-soon-cta-url').value;
+                
+                // Get image file
+                const imageFile = document.getElementById('coming-soon-image-upload').files[0];
+                
+                // Create page data object
+                const pageData = {
+                    name,
+                    url,
+                    description,
+                    launchDate,
+                    status,
+                    showCountdown,
+                    ctaText,
+                    ctaUrl,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Upload image if available
+                if (imageFile) {
+                    const storageRef = storage.ref(`coming-soon/${Date.now()}_${imageFile.name}`);
+                    await storageRef.put(imageFile);
+                    const imageUrl = await storageRef.getDownloadURL();
+                    pageData.imageUrl = imageUrl;
+                }
+                
+                // Save to Firestore
+                if (pageId) {
+                    // Update existing page
+                    await db.collection('comingSoonPages').doc(pageId).update(pageData);
+                    showToast('Coming soon page updated successfully', 'success');
+                } else {
+                    // Add new page
+                    pageData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('comingSoonPages').add(pageData);
+                    showToast('Coming soon page added successfully', 'success');
+                }
+                
+                // Reload coming soon pages
+                await loadComingSoonPages();
+                
+                // Close modal
+                closeComingSoonModal();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error saving coming soon page:', error);
+                showToast('Failed to save coming soon page', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Save Site Settings
+        async function saveSiteSettings() {
+            try {
+                showLoading();
+                
+                // Get form values
+                const title = document.getElementById('site-title').value;
+                const description = document.getElementById('site-description').value;
+                const primaryColor = document.getElementById('primary-color').value;
+                const secondaryColor = document.getElementById('secondary-color').value;
+                const accentColor = document.getElementById('accent-color').value;
+                const contactEmail = document.getElementById('contact-email').value;
+                const contactPhone = document.getElementById('contact-phone').value;
+                const whatsappNumber = document.getElementById('whatsapp-number').value;
+                const maintenanceMode = document.getElementById('enable-maintenance').checked;
+                
+                // Get logo and favicon files
+                const logoFile = document.getElementById('logo-upload').files[0];
+                const faviconFile = document.getElementById('favicon-upload').files[0];
+                
+                // Create settings data object
+                const settingsData = {
+                    title,
+                    description,
+                    primaryColor,
+                    secondaryColor,
+                    accentColor,
+                    contactEmail,
+                    contactPhone,
+                    whatsappNumber,
+                    maintenanceMode,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Upload logo if available
+                if (logoFile) {
+                    const logoRef = storage.ref(`site/logo_${Date.now()}`);
+                    await logoRef.put(logoFile);
+                    const logoUrl = await logoRef.getDownloadURL();
+                    settingsData.logoUrl = logoUrl;
+                }
+                
+                // Upload favicon if available
+                if (faviconFile) {
+                    const faviconRef = storage.ref(`site/favicon_${Date.now()}`);
+                    await faviconRef.put(faviconFile);
+                    const faviconUrl = await faviconRef.getDownloadURL();
+                    settingsData.faviconUrl = faviconUrl;
+                }
+                
+                // Save to Firestore
+                await db.collection('siteSettings').doc('main').set(settingsData, { merge: true });
+                
+                showToast('Site settings saved successfully', 'success');
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error saving site settings:', error);
+                showToast('Failed to save site settings', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Open Delete Modal
+        function openDeleteModal(itemId, itemType) {
+            document.getElementById('delete-item-id').value = itemId;
+            document.getElementById('delete-item-type').value = itemType;
+            deleteModalOverlay.classList.add('active');
+        }
+        
+        // Close Delete Modal
+        function closeDeleteModal() {
+            deleteModalOverlay.classList.remove('active');
+        }
+        
+        // Confirm Delete
+        async function confirmDelete() {
+            try {
+                showLoading();
+                
+                const itemId = document.getElementById('delete-item-id').value;
+                const itemType = document.getElementById('delete-item-type').value;
+                
+                let collectionName;
+                let reloadFunction;
+                
+                switch (itemType) {
+                    case 'template':
+                        collectionName = 'templates';
+                        reloadFunction = loadTemplates;
+                        break;
+                    case 'section':
+                        collectionName = 'sections';
+                        reloadFunction = loadSections;
+                        break;
+                    case 'coming-soon':
+                        collectionName = 'comingSoonPages';
+                        reloadFunction = loadComingSoonPages;
+                        break;
+                    default:
+                        throw new Error('Invalid item type');
+                }
+                
+                // Delete from Firestore
+                await db.collection(collectionName).doc(itemId).delete();
+                
+                showToast(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} deleted successfully`, 'success');
+                
+                // Reload data
+                await reloadFunction();
+                
+                // Close modal
+                closeDeleteModal();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error deleting item:', error);
+                showToast('Failed to delete item', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Publish Site
+        async function publishSite() {
+            try {
+                showLoading();
+                
+                // In a real application, you would update a 'published' flag in Firestore
+                // and trigger a build/deploy process
+                
+                // Simulate a delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                showToast('Site published successfully', 'success');
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error publishing site:', error);
+                showToast('Failed to publish site', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                isSigningOut = true;
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    console.error('Error signing out:', error);
+                    showToast('Failed to logout', 'error');
+                }).finally(() => {
+                    isSigningOut = false;
+                });
+            }
+        }
+        
+        // Show Toast Notification
+        function showToast(message, type = 'info') {
+            const toastContainer = document.querySelector('.toast-container');
+            
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let icon = '';
+            switch (type) {
+                case 'success':
+                    icon = '<i class="fas fa-check-circle"></i>';
+                    break;
+                case 'error':
+                    icon = '<i class="fas fa-exclamation-circle"></i>';
+                    break;
+                case 'warning':
+                    icon = '<i class="fas fa-exclamation-triangle"></i>';
+                    break;
+                default:
+                    icon = '<i class="fas fa-info-circle"></i>';
+            }
+            
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            toastContainer.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                
+                // Remove toast after animation
+                setTimeout(() => {
+                    toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Show Loading
+        function showLoading() {
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            loadingOverlay.style.display = 'flex';
+        }
+        
+        // Hide Loading
+        function hideLoading() {
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            loadingOverlay.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
