@@ -1205,8 +1205,12 @@ async function processExamPurchase() {
             showToast(`${currentQuantity} ${selectedExam} pin(s) have been sent to your email.`, 'success');
             resetForm();
         } else {
-            // Show error toast
-            showToast(data.message || 'Purchase failed. Please try again.', 'error');
+            // Show error toast with modified message for insufficient funds
+            if (data.message && data.message.toLowerCase().includes('insufficient')) {
+                showToast('Veltrawave error. Contact admin.', 'error');
+            } else {
+                showToast(data.message || 'Purchase failed. Please try again.', 'error');
+            }
         }
     } catch (error) {
         console.error('Error processing purchase:', error);
