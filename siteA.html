@@ -1868,7 +1868,7 @@
         apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
         authDomain: "veltrawave-vtu.firebaseapp.com",
         projectId: "veltrawave-vtu",
-        storageBucket: "veltrawave-vtu.firebasestorage.app",
+        storageBucket: "veltrawave-vtu.appspot.com", // Fixed storage bucket URL
         messagingSenderId: "431351611304",
         appId: "1:431351611304:web:7381dd659920f9f325a79d",
         measurementId: "G-HRHN8GJCR3"
@@ -1942,7 +1942,8 @@
         showLoading();
         
         auth.onAuthStateChanged(user => {
-            // Skip if we're in the process of checking admin status or signing out
+            console.log('Auth state changed:', user); // Debug log
+            
             if (isCheckingAdmin || isSigningOut) {
                 hideLoading();
                 return;
@@ -1957,9 +1958,14 @@
             // Set flag to prevent loop
             isCheckingAdmin = true;
             
+            // Add debug log for admin check
+            console.log('Checking admin status for user:', user.uid);
+            
             // Check if user is an admin
             db.collection('admins').doc(user.uid).get()
                 .then(doc => {
+                    console.log('Admin document:', doc.exists ? doc.data() : 'Not found');
+                    
                     if (!doc.exists) {
                         // User is not an admin, redirect to login page
                         isSigningOut = true;
@@ -1989,34 +1995,45 @@
         });
     });
     
+    // Rest of your JavaScript remains the same
+    
     // Initialize App
     async function initApp() {
         try {
+            console.log('Initializing app...');
             // Setup event listeners
             setupEventListeners();
             
             // Load templates
+            console.log('Loading templates...');
             await loadTemplates();
             
             // Load sections
+            console.log('Loading sections...');
             await loadSections();
             
             // Load coming soon pages
+            console.log('Loading coming soon pages...');
             await loadComingSoonPages();
             
             // Load custom requests
+            console.log('Loading custom requests...');
             await loadCustomRequests();
             
             // Load site settings
+            console.log('Loading site settings...');
             await loadSiteSettings();
             
             hideLoading();
+            console.log('App initialized successfully');
         } catch (error) {
             console.error('Error initializing app:', error);
             showToast('Failed to initialize the app', 'error');
             hideLoading();
         }
     }
+    
+    // Rest of your JavaScript functions remain the same
     
     // Setup Event Listeners
     function setupEventListeners() {
