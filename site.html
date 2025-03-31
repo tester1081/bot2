@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VeltraWave - Website Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         
@@ -870,9 +873,92 @@
             transform: translateY(-3px);
             box-shadow: 0 8px 15px rgba(45, 127, 249, 0.3);
         }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Toast Notification */
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(20, 30, 50, 0.95);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-notification.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast-notification.error {
+            border-left: 4px solid var(--error);
+        }
+        
+        /* No Templates Message */
+        .no-templates {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        .no-templates i {
+            font-size: 3rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .no-templates p {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .no-templates .sub-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="toast-notification"></div>
+
     <!-- Liquid Background -->
     <div class="liquid-bg">
         <div class="liquid-blob blob-1"></div>
@@ -888,7 +974,7 @@
             </div>
             VeltraWave
         </div>
-        <button class="back-button" onclick="window.location.href='index.html'">
+        <button class="back-button" id="backButton">
             <i class="fas fa-arrow-left"></i>
             Back to Home
         </button>
@@ -927,174 +1013,15 @@
             </div>
             
             <!-- Template Grid -->
-            <div class="template-grid">
-                <!-- Template 1 -->
-                <div class="template-card" data-type="frontend">
-                    <div class="template-badge popular">Popular</div>
-                    <img src="https://via.placeholder.com/600x400/2D7FF9/FFFFFF?text=Lagos+E-Commerce" class="template-image" alt="Lagos E-Commerce Template">
-                    <div class="template-content">
-                        <span class="template-type frontend">Frontend</span>
-                        <h3 class="template-title">Lagos E-Commerce</h3>
-                        <p class="template-description">A modern, responsive e-commerce template with smooth animations and a user-friendly interface. Perfect for fashion and retail businesses.</p>
-                        <div class="template-meta">
-                            <div class="template-price">₦15,000</div>
-                            <div class="template-rating">
-                                <i class="fas fa-star"></i>
-                                <span>4.8</span>
-                            </div>
-                        </div>
-                        <div class="template-actions">
-                            <button class="template-button preview-button" onclick="openPreviewModal('lagos-ecommerce')">
-                                <i class="fas fa-eye"></i>
-                                Preview
-                            </button>
-                            <button class="template-button buy-button">
-                                <i class="fas fa-shopping-cart"></i>
-                                Buy Now
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Template 2 -->
-                <div class="template-card" data-type="backend">
-                    <img src="https://via.placeholder.com/600x400/8C52FF/FFFFFF?text=Abuja+API+Suite" class="template-image" alt="Abuja API Suite">
-                    <div class="template-content">
-                        <span class="template-type backend">Backend</span>
-                        <h3 class="template-title">Abuja API Suite</h3>
-                        <p class="template-description">A comprehensive backend solution with RESTful APIs, authentication, and database integration. Built with Node.js and Express.</p>
-                        <div class="template-meta">
-                            <div class="template-price">₦25,000</div>
-                            <div class="template-rating">
-                                <i class="fas fa-star"></i>
-                                <span>4.7</span>
-                            </div>
-                        </div>
-                        <div class="template-actions">
-                            <button class="template-button preview-button" onclick="openPreviewModal('abuja-api')">
-                                <i class="fas fa-eye"></i>
-                                Preview
-                            </button>
-                            <button class="template-button buy-button">
-                                <i class="fas fa-shopping-cart"></i>
-                                Buy Now
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Template 3 -->
-                <div class="template-card" data-type="fullstack">
-                    <div class="template-badge new">New</div>
-                    <img src="https://via.placeholder.com/600x400/FF5E8A/FFFFFF?text=Naija+Blog+Platform" class="template-image" alt="Naija Blog Platform">
-                    <div class="template-content">
-                        <span class="template-type fullstack">Full Stack</span>
-                        <h3 class="template-title">Naija Blog Platform</h3>
-                        <p class="template-description">A complete blog solution with a beautiful frontend and powerful CMS backend. Features user authentication, comments, and analytics.</p>
-                        <div class="template-meta">
-                            <div class="template-price">₦35,000</div>
-                            <div class="template-rating">
-                                <i class="fas fa-star"></i>
-                                <span>4.9</span>
-                            </div>
-                        </div>
-                        <div class="template-actions">
-                            <button class="template-button preview-button" onclick="openPreviewModal('naija-blog')">
-                                <i class="fas fa-eye"></i>
-                                Preview
-                            </button>
-                            <button class="template-button buy-button">
-                                <i class="fas fa-shopping-cart"></i>
-                                Buy Now
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Template 4 -->
-                <div class="template-card" data-type="frontend">
-                    <img src="https://via.placeholder.com/600x400/00E1A0/FFFFFF?text=Eko+Portfolio" class="template-image" alt="Eko Portfolio">
-                    <div class="template-content">
-                        <span class="template-type frontend">Frontend</span>
-                        <h3 class="template-title">Eko Portfolio</h3>
-                        <p class="template-description">A sleek, modern portfolio template for creatives and professionals. Features smooth scrolling, project showcases, and contact forms.</p>
-                        <div class="template-meta">
-                            <div class="template-price free">Free</div>
-                            <div class="template-rating">
-                                <i class="fas fa-star"></i>
-                                <span>4.5</span>
-                            </div>
-                        </div>
-                        <div class="template-actions">
-                            <button class="template-button preview-button" onclick="openPreviewModal('eko-portfolio')">
-                                <i class="fas fa-eye"></i>
-                                Preview
-                            </button>
-                            <button class="template-button buy-button">
-                                <i class="fas fa-download"></i>
-                                Download
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Template 5 -->
-                <div class="template-card" data-type="backend">
-                    <img src="https://via.placeholder.com/600x400/FFB547/FFFFFF?text=Calabar+Auth+System" class="template-image" alt="Calabar Auth System">
-                    <div class="template-content">
-                        <span class="template-type backend">Backend</span>
-                        <h3 class="template-title">Calabar Auth System</h3>
-                        <p class="template-description">A secure authentication system with JWT, social login, and role-based access control. Easy to integrate with any frontend.</p>
-                        <div class="template-meta">
-                            <div class="template-price">₦18,000</div>
-                            <div class="template-rating">
-                                <i class="fas fa-star"></i>
-                                <span>4.6</span>
-                            </div>
-                        </div>
-                        <div class="template-actions">
-                            <button class="template-button preview-button" onclick="openPreviewModal('calabar-auth')">
-                                <i class="fas fa-eye"></i>
-                                Preview
-                            </button>
-                            <button class="template-button buy-button">
-                                <i class="fas fa-shopping-cart"></i>
-                                Buy Now
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Template 6 -->
-                <div class="template-card" data-type="fullstack">
-                    <img src="https://via.placeholder.com/600x400/008751/FFFFFF?text=Enugu+Dashboard" class="template-image" alt="Enugu Dashboard">
-                    <div class="template-content">
-                        <span class="template-type fullstack">Full Stack</span>
-                        <h3 class="template-title">Enugu Dashboard</h3>
-                        <p class="template-description">A complete admin dashboard solution with analytics, user management, and data visualization. Built with React and Node.js.</p>
-                        <div class="template-meta">
-                            <div class="template-price">₦30,000</div>
-                            <div class="template-rating">
-                                <i class="fas fa-star"></i>
-                                <span>4.8</span>
-                            </div>
-                        </div>
-                        <div class="template-actions">
-                            <button class="template-button preview-button" onclick="openPreviewModal('enugu-dashboard')">
-                                <i class="fas fa-eye"></i>
-                                Preview
-                            </button>
-                            <button class="template-button buy-button">
-                                <i class="fas fa-shopping-cart"></i>
-                                Buy Now
-                            </button>
-                        </div>
-                    </div>
+            <div class="template-grid" id="template-grid">
+                <!-- Templates will be loaded dynamically from Firebase -->
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
                 </div>
             </div>
             
             <!-- Pagination -->
-            <div class="pagination">
+            <div class="pagination" id="pagination">
                 <div class="page-item active">1</div>
                 <div class="page-item">2</div>
                 <div class="page-item">3</div>
@@ -1226,7 +1153,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <img src="https://via.placeholder.com/800x600/2D7FF9/FFFFFF?text=Template+Preview" class="modal-preview" id="modalImage" alt="Template Preview">
+                <img src="public/logo.png" class="modal-preview" id="modalImage" alt="Template Preview">
                 <p class="modal-description" id="modalDescription"></p>
                 <h4>Features:</h4>
                 <ul class="features-list" id="modalFeatures">
@@ -1267,99 +1194,20 @@
     </div>
     
     <script>
-        // Template Data
-        const templates = {
-            'lagos-ecommerce': {
-                title: 'Lagos E-Commerce',
-                image: 'https://via.placeholder.com/800x600/2D7FF9/FFFFFF?text=Lagos+E-Commerce',
-                description: 'A modern, responsive e-commerce template with smooth animations and a user-friendly interface. Perfect for fashion and retail businesses in Nigeria and beyond. Features a clean design that highlights your products and encourages conversions.',
-                price: '₦15,000',
-                isFree: false,
-                features: [
-                    'Responsive design for all devices',
-                    'Product gallery with zoom functionality',
-                    'Shopping cart and checkout process',
-                    'User account management',
-                    'Product filtering and search',
-                    'Payment gateway integration ready'
-                ]
-            },
-            'abuja-api': {
-                title: 'Abuja API Suite',
-                image: 'https://via.placeholder.com/800x600/8C52FF/FFFFFF?text=Abuja+API+Suite',
-                description: 'A comprehensive backend solution with RESTful APIs, authentication, and database integration. Built with Node.js and Express, this template provides a solid foundation for your web application\'s backend needs.',
-                price: '₦25,000',
-                isFree: false,
-                features: [
-                    'RESTful API architecture',
-                    'JWT authentication system',
-                    'MongoDB integration',
-                    'User management endpoints',
-                    'File upload functionality',
-                    'Comprehensive documentation'
-                ]
-            },
-            'naija-blog': {
-                title: 'Naija Blog Platform',
-                image: 'https://via.placeholder.com/800x600/FF5E8A/FFFFFF?text=Naija+Blog+Platform',
-                description: 'A complete blog solution with a beautiful frontend and powerful CMS backend. Features user authentication, comments, and analytics. Perfect for content creators, news sites, and corporate blogs.',
-                price: '₦35,000',
-                isFree: false,
-                features: [
-                    'Responsive blog frontend',
-                    'Admin dashboard for content management',
-                    'SEO optimized structure',
-                    'Comment system with moderation',
-                    'Social media sharing integration',
-                    'Analytics dashboard'
-                ]
-            },
-            'eko-portfolio': {
-                title: 'Eko Portfolio',
-                image: 'https://via.placeholder.com/800x600/00E1A0/FFFFFF?text=Eko+Portfolio',
-                description: 'A sleek, modern portfolio template for creatives and professionals. Features smooth scrolling, project showcases, and contact forms. Perfect for designers, developers, photographers, and other creative professionals.',
-                price: 'Free',
-                isFree: true,
-                features: [
-                    'Responsive design',
-                    'Project showcase gallery',
-                    'Animated page transitions',
-                    'Contact form with validation',
-                    'Skills and services sections',
-                    'Testimonials carousel'
-                ]
-            },
-            'calabar-auth': {
-                title: 'Calabar Auth System',
-                image: 'https://via.placeholder.com/800x600/FFB547/FFFFFF?text=Calabar+Auth+System',
-                description: 'A secure authentication system with JWT, social login, and role-based access control. Easy to integrate with any frontend. This system provides a robust security layer for your web applications.',
-                price: '₦18,000',
-                isFree: false,
-                features: [
-                    'JWT authentication',
-                    'Social login (Google, Facebook, Twitter)',
-                    'Role-based access control',
-                    'Password reset functionality',
-                    'Email verification',
-                    'Two-factor authentication'
-                ]
-            },
-            'enugu-dashboard': {
-                title: 'Enugu Dashboard',
-                image: 'https://via.placeholder.com/800x600/008751/FFFFFF?text=Enugu+Dashboard',
-                description: 'A complete admin dashboard solution with analytics, user management, and data visualization. Built with React and Node.js, this template provides everything you need to manage your application\'s backend.',
-                price: '₦30,000',
-                isFree: false,
-                features: [
-                    'Responsive admin interface',
-                    'Real-time data visualization',
-                    'User management system',
-                    'Activity logs and audit trails',
-                    'Customizable dashboard widgets',
-                    'Dark and light theme options'
-                ]
-            }
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDQnOWm9MPNK1CMB3YC_XbxVJwlXl5fFZU",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.appspot.com",
+            messagingSenderId: "1098979571490",
+            appId: "1:1098979571490:web:c9b6f1a7d9956e5c4d2fb6"
         };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
         
         // DOM Elements
         const previewModal = document.getElementById('previewModal');
@@ -1373,64 +1221,249 @@
         const modalBuyText = document.getElementById('modalBuyText');
         
         const filterPills = document.querySelectorAll('.filter-pill');
-        const templateCards = document.querySelectorAll('.template-card');
         const searchInput = document.querySelector('.search-input');
         const categoryTabs = document.querySelectorAll('.category-tab');
+        const templateGrid = document.getElementById('template-grid');
+        const customRequestForm = document.getElementById('customRequestForm');
+        const toastNotification = document.getElementById('toast-notification');
+        const backButton = document.getElementById('backButton');
         
-        // Tab Switching
-        categoryTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs
-                categoryTabs.forEach(t => t.classList.remove('active'));
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load templates from Firebase
+            loadTemplates();
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+        
+        // Load templates from Firebase
+        function loadTemplates(filter = 'all') {
+            // Show loading spinner
+            templateGrid.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            `;
+            
+            try {
+                // Try to fetch from Firebase
+                let query = db.collection('templates');
                 
-                // Add active class to clicked tab
-                tab.classList.add('active');
+                // Apply filter if not 'all'
+                if (filter !== 'all' && filter !== 'free') {
+                    query = query.where('type', '==', filter);
+                } else if (filter === 'free') {
+                    query = query.where('free', '==', true);
+                }
                 
-                // Hide all sections
-                document.getElementById('templates-section').classList.remove('active');
-                document.getElementById('custom-section').classList.remove('active');
-                document.getElementById('maintenance-section').classList.remove('active');
-                document.getElementById('hosting-section').classList.remove('active');
-                
-                // Show selected section
-                const tabId = tab.getAttribute('data-tab');
-                if (tabId === 'templates') {
-                    document.getElementById('templates-section').classList.add('active');
-                } else if (tabId === 'custom') {
-                    document.getElementById('custom-section').classList.add('active');
-                } else if (tabId === 'maintenance') {
-                    document.getElementById('maintenance-section').classList.add('active');
-                } else if (tabId === 'hosting') {
-                    document.getElementById('hosting-section').classList.add('active');
+                // Get templates without complex ordering to avoid index issues
+                query.get()
+                    .then((querySnapshot) => {
+                        // Clear loading spinner
+                        templateGrid.innerHTML = '';
+                        
+                        if (querySnapshot.empty) {
+                            // If no templates found, show message
+                            showNoTemplatesMessage(filter);
+                            return;
+                        }
+                        
+                        // Process each template
+                        querySnapshot.forEach((doc) => {
+                            const template = doc.data();
+                            const templateId = doc.id;
+                            
+                            // Create template card
+                            createTemplateCard(templateId, template);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error("Error loading templates:", error);
+                        showToast("Error loading templates: " + error.message, "error");
+                        showNoTemplatesMessage(filter);
+                    });
+            } catch (error) {
+                console.error("Error in loadTemplates:", error);
+                showToast("Error loading templates: " + error.message, "error");
+                showNoTemplatesMessage(filter);
+            }
+        }
+        
+        // Show message when no templates are found
+        function showNoTemplatesMessage(filter) {
+            let message = "No templates found";
+            if (filter !== 'all') {
+                message += ` for the "${filter}" filter`;
+            }
+            
+            templateGrid.innerHTML = `
+                <div class="no-templates">
+                    <i class="fas fa-search"></i>
+                    <p>${message}</p>
+                    <p class="sub-text">Please try a different filter or check back later</p>
+                </div>
+            `;
+        }
+        
+        // Create template card
+        function createTemplateCard(id, template) {
+            // Determine template type class
+            let typeClass = '';
+            
+            switch (template.type) {
+                case 'frontend':
+                    typeClass = 'frontend';
+                    break;
+                case 'backend':
+                    typeClass = 'backend';
+                    break;
+                case 'fullstack':
+                    typeClass = 'fullstack';
+                    break;
+                default:
+                    typeClass = '';
+            }
+            
+            // Create card element
+            const card = document.createElement('div');
+            card.className = 'template-card';
+            card.setAttribute('data-type', template.type || '');
+            card.setAttribute('data-id', id);
+            
+            // Add badge if featured or new
+            let badgeHTML = '';
+            if (template.featured) {
+                badgeHTML = `<div class="template-badge popular">Popular</div>`;
+            } else if (template.new) {
+                badgeHTML = `<div class="template-badge new">New</div>`;
+            }
+            
+            // Format price
+            let priceHTML = '';
+            if (template.free) {
+                priceHTML = `<div class="template-price free">Free</div>`;
+            } else {
+                priceHTML = `<div class="template-price">₦${template.price ? template.price.toLocaleString() : '0'}</div>`;
+            }
+            
+            // Set button text based on free status
+            const buttonText = template.free ? 'Download' : 'Buy Now';
+            const buttonIcon = template.free ? 'fa-download' : 'fa-shopping-cart';
+            
+            // Build card HTML
+            card.innerHTML = `
+                ${badgeHTML}
+                <img src="${template.imageUrl || 'public/logo.png'}" class="template-image" alt="${template.name || 'Template'}" onerror="this.src='public/logo.png'">
+                <div class="template-content">
+                    <span class="template-type ${typeClass}">${capitalizeFirstLetter(template.type || 'Template')}</span>
+                    <h3 class="template-title">${template.name || 'Untitled Template'}</h3>
+                    <p class="template-description">${template.description || 'No description available.'}</p>
+                    <div class="template-meta">
+                        ${priceHTML}
+                        <div class="template-rating">
+                            <i class="fas fa-star"></i>
+                            <span>${template.rating || '4.5'}</span>
+                        </div>
+                    </div>
+                    <div class="template-actions">
+                        <button class="template-button preview-button" data-id="${id}">
+                            <i class="fas fa-eye"></i>
+                            Preview
+                        </button>
+                        <button class="template-button buy-button" data-id="${id}">
+                            <i class="fas ${buttonIcon}"></i>
+                            ${buttonText}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add to grid
+            templateGrid.appendChild(card);
+            
+            // Add event listeners
+            const previewButton = card.querySelector('.preview-button');
+            previewButton.addEventListener('click', () => {
+                openPreviewModal(id);
+            });
+            
+            const buyButton = card.querySelector('.buy-button');
+            buyButton.addEventListener('click', () => {
+                if (template.free) {
+                    downloadTemplate(id);
+                } else {
+                    buyTemplate(id);
                 }
             });
-        });
+        }
         
         // Open Preview Modal
         function openPreviewModal(templateId) {
-            const template = templates[templateId];
-            if (!template) return;
+            // Try to fetch from Firebase
+            try {
+                db.collection('templates').doc(templateId).get()
+                    .then((doc) => {
+                        if (doc.exists) {
+                            const template = doc.data();
+                            displayTemplateInModal(template, templateId);
+                        } else {
+                            showToast("Template not found", "error");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error loading template:", error);
+                        showToast("Error loading template details", "error");
+                    });
+            } catch (error) {
+                console.error("Error in openPreviewModal:", error);
+                showToast("Error loading template details", "error");
+            }
+        }
+        
+        // Display template in modal
+        function displayTemplateInModal(template, templateId) {
+            modalTitle.textContent = template.name || 'Template Preview';
             
-            modalTitle.textContent = template.title;
-            modalImage.src = template.image;
-            modalImage.alt = template.title;
-            modalDescription.textContent = template.description;
+            // Set image with fallback
+            modalImage.src = template.imageUrl || 'public/logo.png';
+            modalImage.alt = template.name || 'Template Preview';
+            modalImage.onerror = function() {
+                this.onerror = null;
+                this.src = 'public/logo.png';
+            };
+            
+            modalDescription.textContent = template.description || 'No description available.';
             
             // Clear and populate features
             modalFeatures.innerHTML = '';
-            template.features.forEach(feature => {
-                const li = document.createElement('li');
-                li.innerHTML = `<i class="fas fa-check-circle"></i> ${feature}`;
-                modalFeatures.appendChild(li);
-            });
+            if (template.features && Array.isArray(template.features)) {
+                template.features.forEach(feature => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<i class="fas fa-check-circle"></i> ${feature}`;
+                    modalFeatures.appendChild(li);
+                });
+            } else {
+                modalFeatures.innerHTML = '<li><i class="fas fa-info-circle"></i> No features listed</li>';
+            }
             
             // Update buy button
-            if (template.isFree) {
+            if (template.free) {
                 modalBuyText.textContent = 'Download';
                 modalBuy.querySelector('i').className = 'fas fa-download';
+                modalBuy.onclick = () => downloadTemplate(templateId);
             } else {
                 modalBuyText.textContent = 'Buy Now';
                 modalBuy.querySelector('i').className = 'fas fa-shopping-cart';
+                modalBuy.onclick = () => buyTemplate(templateId);
+            }
+            
+            // Set live demo button
+            if (template.demoUrl) {
+                modalLiveDemo.style.display = 'flex';
+                modalLiveDemo.onclick = () => window.open(template.demoUrl, '_blank');
+            } else {
+                modalLiveDemo.style.display = 'none';
             }
             
             // Show modal
@@ -1440,89 +1473,194 @@
             document.body.style.overflow = 'hidden';
         }
         
-        // Close Preview Modal
-        modalClose.addEventListener('click', () => {
+        // Download template
+        function downloadTemplate(templateId) {
+            // In a real app, you would handle the download process
+            // For now, just show a toast notification
+            showToast("Download started! Check your downloads folder.", "success");
+            
+            // Close modal if open
             previewModal.classList.remove('show');
             document.body.style.overflow = '';
-        });
+        }
         
-        // Close modal when clicking outside
-        previewModal.addEventListener('click', (e) => {
-            if (e.target === previewModal) {
-                previewModal.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        });
+        // Buy template
+        function buyTemplate(templateId) {
+            // In a real app, you would redirect to checkout
+            // For now, just show a toast notification
+            showToast("Redirecting to checkout...", "success");
+            
+            // Close modal if open
+            previewModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
         
-        // Filter Templates
-        filterPills.forEach(pill => {
-            pill.addEventListener('click', () => {
-                // Remove active class from all pills
-                filterPills.forEach(p => p.classList.remove('active'));
-                
-                // Add active class to clicked pill
-                pill.classList.add('active');
-                
-                const filter = pill.getAttribute('data-filter');
-                
-                // Filter templates
-                templateCards.forEach(card => {
-                    if (filter === 'all') {
-                        card.style.display = '';
-                    } else if (filter === 'free') {
-                        const price = card.querySelector('.template-price');
-                        if (price && price.classList.contains('free')) {
-                            card.style.display = '';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    } else {
-                        const type = card.getAttribute('data-type');
-                        if (type === filter) {
-                            card.style.display = '';
-                        } else {
-                            card.style.display = 'none';
-                        }
+        // Set up event listeners
+        function setupEventListeners() {
+            // Back button
+            backButton.addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+            
+            // Tab Switching
+            categoryTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    categoryTabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Hide all sections
+                    document.getElementById('templates-section').classList.remove('active');
+                    document.getElementById('custom-section').classList.remove('active');
+                    document.getElementById('maintenance-section').classList.remove('active');
+                    document.getElementById('hosting-section').classList.remove('active');
+                    
+                    // Show selected section
+                    const tabId = tab.getAttribute('data-tab');
+                    if (tabId === 'templates') {
+                        document.getElementById('templates-section').classList.add('active');
+                    } else if (tabId === 'custom') {
+                        document.getElementById('custom-section').classList.add('active');
+                    } else if (tabId === 'maintenance') {
+                        document.getElementById('maintenance-section').classList.add('active');
+                    } else if (tabId === 'hosting') {
+                        document.getElementById('hosting-section').classList.add('active');
                     }
                 });
             });
-        });
-        
-        // Search Templates
-        searchInput.addEventListener('input', () => {
-            const searchTerm = searchInput.value.toLowerCase();
             
-            templateCards.forEach(card => {
-                const title = card.querySelector('.template-title').textContent.toLowerCase();
-                const description = card.querySelector('.template-description').textContent.toLowerCase();
+            // Filter Pills
+            filterPills.forEach(pill => {
+                pill.addEventListener('click', () => {
+                    // Remove active class from all pills
+                    filterPills.forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked pill
+                    pill.classList.add('active');
+                    
+                    const filter = pill.getAttribute('data-filter');
+                    
+                    // Load templates with filter
+                    loadTemplates(filter);
+                });
+            });
+            
+            // Search Input
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase();
                 
-                if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
+                // Get all template cards
+                const cards = document.querySelectorAll('.template-card');
+                
+                cards.forEach(card => {
+                    const title = card.querySelector('.template-title').textContent.toLowerCase();
+                    const description = card.querySelector('.template-description').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Close Preview Modal
+            modalClose.addEventListener('click', () => {
+                previewModal.classList.remove('show');
+                document.body.style.overflow = '';
+            });
+            
+            // Close modal when clicking outside
+            previewModal.addEventListener('click', (e) => {
+                if (e.target === previewModal) {
+                    previewModal.classList.remove('show');
+                    document.body.style.overflow = '';
                 }
             });
-        });
+            
+            // Custom Request Form Submission
+            customRequestForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                const submitButton = this.querySelector('.form-submit');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+                submitButton.disabled = true;
+                
+                // Get form values
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const projectType = document.getElementById('projectType').value;
+                const budget = document.getElementById('budget').value;
+                const description = document.getElementById('description').value;
+                
+                // Create request object
+                const requestData = {
+                    customerName: name,
+                    email: email,
+                    phoneNumber: phone,
+                    projectType: projectType,
+                    budget: budget,
+                    description: description,
+                    status: 'pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                try {
+                    // Save to Firebase
+                    db.collection('customRequests').add(requestData)
+                        .then(() => {
+                            // Show success message
+                            showToast("Your request has been submitted successfully! We'll contact you soon.", "success");
+                            
+                            // Reset form
+                            customRequestForm.reset();
+                            
+                            // Restore button
+                            submitButton.innerHTML = originalButtonText;
+                            submitButton.disabled = false;
+                        })
+                        .catch((error) => {
+                            console.error("Error submitting request:", error);
+                            showToast("Failed to submit request. Please try again.", "error");
+                            
+                            // Restore button
+                            submitButton.innerHTML = originalButtonText;
+                            submitButton.disabled = false;
+                        });
+                } catch (error) {
+                    console.error("Error in form submission:", error);
+                    showToast("Failed to submit request. Please try again.", "error");
+                    
+                    // Restore button
+                    submitButton.innerHTML = originalButtonText;
+                    submitButton.disabled = false;
+                }
+            });
+        }
         
-        // Form Submission
-        document.getElementById('customRequestForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Show toast notification
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast-notification');
+            toast.textContent = message;
+            toast.className = `toast-notification ${type}`;
+            toast.classList.add('show');
             
-            // Get form values
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            const projectType = document.getElementById('projectType').value;
-            const budget = document.getElementById('budget').value;
-            const description = document.getElementById('description').value;
-            
-            // Here you would typically send this data to your server
-            // For demo purposes, we'll just show an alert
-            alert('Thank you for your request! We will contact you shortly.');
-            
-            // Reset form
-            this.reset();
-        });
+            // Hide after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Helper Functions
+        function capitalizeFirstLetter(string) {
+            if (!string) return '';
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
     </script>
 </body>
 </html>
