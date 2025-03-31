@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Top-up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #2D7FF9;
+            --primary-light: #5A9DFF;
+            --primary-dark: #0D5ED6;
+            --secondary: #8C52FF;
+            --accent: #FF5E8A;
+            --background: #0A0F1E;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --surface: rgba(255, 255, 255, 0.12);
+            --text: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --success: #00E1A0;
+            --warning: #FFB547;
+            --error: #FF5E7D;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+
+        /* Liquid Blob Background */
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .liquid-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--primary);
+            top: -200px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--secondary);
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            top: 40%;
+            right: 20%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(5%, 5%) scale(1.05);
+            }
+            50% {
+                transform: translate(0, 10%) scale(0.95);
+            }
+            75% {
+                transform: translate(-5%, 5%) scale(1.05);
+            }
+        }
+
+        /* Container */
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            padding-bottom: 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header Styles */
+        .page-header {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            border: none;
+            color: var(--text);
+            margin-right: 1rem;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Balance Display */
+        .balance-display {
+            background: rgba(45, 127, 249, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .balance-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .balance-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        /* Tabs */
+        .tabs-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 4px;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: color 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            color: var(--background);
+        }
+
+        .tab-indicator {
+            position: absolute;
+            height: calc(100% - 8px);
+            width: calc(50% - 4px);
+            background: var(--primary);
+            border-radius: 6px;
+            top: 4px;
+            left: 4px;
+            transition: transform 0.3s ease;
+        }
+
+        .tab-indicator.manage {
+            transform: translateX(100%);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Diamond Packs Grid */
+        .diamond-packs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .diamond-pack {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .diamond-pack:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .diamond-pack.selected {
+            border-color: var(--primary);
+            background: rgba(45, 127, 249, 0.1);
+        }
+
+        .diamond-amount {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .base-diamonds {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .bonus-diamonds {
+            font-size: 0.8rem;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .diamond-price {
+            text-align: center;
+        }
+
+        .price-naira {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-bottom-left-radius: 8px;
+        }
+
+        .badge.popular {
+            background: var(--secondary);
+            color: var(--text);
+        }
+
+        .badge.hot {
+            background: var(--error);
+            color: var(--text);
+        }
+
+        .badge.new {
+            background: var(--success);
+            color: var(--background);
+        }
+
+        /* Special Deals */
+        .special-deals {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .special-deal {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .special-deal:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .special-deal.selected {
+            border-color: var(--primary);
+            background: rgba(45, 127, 249, 0.1);
+        }
+
+        .deal-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .deal-description {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .deal-price {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            color: var(--text);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(45, 127, 249, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #b91c1c);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(45, 127, 249, 0.1);
+        }
+
+        /* Coming Soon Section */
+        .coming-soon {
+            background: linear-gradient(135deg, rgba(140, 82, 255, 0.1), rgba(255, 94, 138, 0.1));
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(140, 82, 255, 0.2);
+            margin-bottom: 1.5rem;
+        }
+
+        .coming-soon-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .coming-soon-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .vote-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .vote-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .vote-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .vote-btn.selected {
+            border-color: var(--success);
+            background: rgba(0, 225, 160, 0.1);
+        }
+
+        .vote-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .vote-text {
+            font-weight: 500;
+        }
+
+        .vote-count {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Request Management */
+        .request-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .request-id {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .request-status {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+        }
+
+        .status-pending {
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+
+        .status-completed {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+
+        .status-rejected {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+
+        .request-details {
+            margin-bottom: 0.5rem;
+        }
+
+        .request-item {
+            font-weight: 600;
+        }
+
+        .request-date {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-requests {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.9rem;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease-in-out;
+            max-width: 90%;
+            width: 350px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .toast.success {
+            border-left-color: var(--success);
+        }
+
+        .toast.error {
+            border-left-color: var(--error);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        .toast-icon {
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--error);
+        }
+
+        .toast.warning .toast-icon {
+            color: var(--warning);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 15, 30, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, rgba(45, 127, 249, 0.2), rgba(140, 82, 255, 0.2));
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 90%;
+            width: 400px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .warning-message {
+            background: rgba(255, 181, 71, 0.2);
+            border-left: 4px solid var(--warning);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            color: var(--warning);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .summary-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .modal-footer .btn {
+            padding: 0.75rem 1rem;
+            flex: 1;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-around;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: color 0.3s ease;
+            text-decoration: none;
+            color: var(--text-secondary);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .nav-item span {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Empty message */
+        .empty-message {
+            text-align: center;
+            padding: 1rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 480px) {
+            .nav-item span {
+                font-size: 0.7rem;
+            }
+            
+            .diamond-packs, .special-deals {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .base-diamonds {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Liquid Blob Background -->
+    <div class="liquid-bg">
+        <div class="liquid-blob blob-1"></div>
+        <div class="liquid-blob blob-2"></div>
+        <div class="liquid-blob blob-3"></div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <button class="back-button" id="backButton">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="page-title">Game Top-up</h1>
+        </div>
+        
+        <!-- Balance Display -->
+        <div class="balance-display">
+            <div class="balance-label">Wallet Balance</div>
+            <div class="balance-value" id="userBalance">₦0.00</div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="purchase">Purchase</div>
+                <div class="tab" data-tab="manage">Manage Requests</div>
+                <div class="tab-indicator"></div>
+            </div>
+            
+            <!-- Purchase Tab Content -->
+            <div class="tab-content active" id="purchaseTab">
+                <!-- Diamond Packs -->
+                <h2 class="section-title">Diamond Packs</h2>
+                <div id="diamondPacksLoading" class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+                <div class="diamond-packs" id="diamondPacks">
+                    <!-- Diamond packs will be loaded dynamically -->
+                </div>
+                
+                <!-- Special Deals -->
+                <h2 class="section-title">Special Deals</h2>
+                <div id="specialDealsLoading" class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+                <div class="special-deals" id="specialDeals">
+                    <!-- Special deals will be loaded dynamically -->
+                </div>
+                
+                <!-- COD Coming Soon -->
+                <div class="coming-soon">
+                    <h3 class="coming-soon-title">Cash On Delivery - Coming Soon!</h3>
+                    <p class="coming-soon-description">We're considering adding Cash On Delivery as a payment option. Would you like this feature?</p>
+                    
+                    <div class="vote-container">
+                        <div class="vote-btn" id="voteYes">
+                            <div class="vote-icon"><i class="fas fa-thumbs-up"></i></div>
+                            <div class="vote-text">Yes, please!</div>
+                            <div class="vote-count" id="yesCount">128 votes</div>
+                        </div>
+                        
+                        <div class="vote-btn" id="voteNo">
+                            <div class="vote-icon"><i class="fas fa-thumbs-down"></i></div>
+                            <div class="vote-text">No, thanks</div>
+                            <div class="vote-count" id="noCount">24 votes</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Info Form -->
+                <div class="form-group">
+                    <label for="userName" class="form-label">Your Name</label>
+                    <input type="text" id="userName" class="form-input" placeholder="Enter your name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="userId" class="form-label">Game ID</label>
+                    <input type="text" id="userId" class="form-input" placeholder="Enter your Game ID">
+                </div>
+                
+                <!-- Purchase Button -->
+                <button id="buyButton" class="btn btn-primary btn-block" disabled>Buy Now</button>
+            </div>
+            
+            <!-- Manage Requests Tab Content -->
+            <div class="tab-content" id="manageTab">
+                <h2 class="section-title">Your Purchase Requests</h2>
+                
+                <div id="requestsLoading" class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+                
+                <div id="requestsList">
+                    <!-- Requests will be loaded dynamically -->
+                </div>
+                
+                <!-- Empty state (will be shown when there are no requests) -->
+                <div class="empty-requests" id="emptyRequests" style="display: none;">
+                    <p>You have no purchase requests yet</p>
+                    <button class="btn btn-outline" style="margin-top: 1rem;" onclick="switchTab('purchase')">Make a Purchase</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="toast-icon" id="toastIcon"></div>
+        <div id="toastMessage"></div>
+    </div>
+    
+    <!-- Purchase Confirmation Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">Confirm Purchase</div>
+            <div class="modal-body" id="modalBody">
+                <!-- Purchase details will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="confirmPurchase">Confirm</button>
+                <button class="btn btn-danger" id="cancelPurchase">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="#" class="nav-item active">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Shop</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-gamepad"></i>
+            <span>Games</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.firebasestorage.app",
+            messagingSenderId: "431351611304",
+            appId: "1:431351611304:web:7381dd659920f9f325a79d",
+            measurementId: "G-HRHN8GJCR3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        // Default diamond packs (fallback if Firestore fails)
+        const DEFAULT_DIAMOND_PACKS = [
+            { 
+                id: "pack1", 
+                name: "530 Diamonds", 
+                amount: "530", 
+                bonus: "53", 
+                price: 8500, 
+                originalPrice: 8500, 
+                badge: "popular", 
+                category: "freefire-diamonds", 
+                status: true 
+            },
+            { 
+                id: "pack2", 
+                name: "1080 Diamonds", 
+                amount: "1080", 
+                bonus: "108", 
+                price: 16500, 
+                originalPrice: 16500, 
+                badge: "", 
+                category: "freefire-diamonds", 
+                status: true 
+            },
+            { 
+                id: "pack3", 
+                name: "2200 Diamonds", 
+                amount: "2200", 
+                bonus: "220", 
+                price: 33000, 
+                originalPrice: 33000, 
+                badge: "", 
+                category: "freefire-diamonds", 
+                status: true 
+            },
+            { 
+                id: "pack4", 
+                name: "5600 Diamonds", 
+                amount: "5600", 
+                bonus: "560", 
+                price: 82500, 
+                originalPrice: 82500, 
+                badge: "", 
+                category: "freefire-diamonds", 
+                status: true 
+            }
+        ];
+        
+        // Default special deals (fallback if Firestore fails)
+        const DEFAULT_SPECIAL_DEALS = [
+            { 
+                id: "deal1", 
+                name: "Weekly Membership", 
+                amount: "Weekly", 
+                bonus: "Get exclusive weekly benefits", 
+                price: 22500, 
+                originalPrice: 22500, 
+                badge: "hot", 
+                category: "special-deals", 
+                status: true 
+            },
+            { 
+                id: "deal2", 
+                name: "Monthly Membership", 
+                amount: "Monthly", 
+                bonus: "Get exclusive monthly benefits", 
+                price: 67500, 
+                originalPrice: 67500, 
+                badge: "hot", 
+                category: "special-deals", 
+                status: true 
+            },
+            { 
+                id: "deal3", 
+                name: "Level Up Pass", 
+                amount: "Special", 
+                bonus: "Unlock premium game levels", 
+                price: 37500, 
+                originalPrice: 37500, 
+                badge: "new", 
+                category: "special-deals", 
+                status: true 
+            },
+            { 
+                id: "deal4", 
+                name: "Booyah Pass card", 
+                amount: "Special", 
+                bonus: "Exclusive in-game rewards", 
+                price: 45000, 
+                originalPrice: 45000, 
+                badge: "", 
+                category: "special-deals", 
+                status: true 
+            }
+        ];
+        
+        // State variables
+        let selectedPack = null;
+        let selectedDeal = null;
+        let walletBalance = 90; // Default balance
+        let hasVoted = false;
+        let yesVotes = 128;
+        let noVotes = 24;
+        let currentUser = null;
+        let userId = null;
+        
+        // DOM Elements
+        const tabs = document.querySelectorAll('.tab');
+        const tabIndicator = document.querySelector('.tab-indicator');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const diamondPacksContainer = document.getElementById('diamondPacks');
+        const diamondPacksLoading = document.getElementById('diamondPacksLoading');
+        const specialDealsContainer = document.getElementById('specialDeals');
+        const specialDealsLoading = document.getElementById('specialDealsLoading');
+        const userIdInput = document.getElementById('userId');
+        const userNameInput = document.getElementById('userName');
+        const buyButton = document.getElementById('buyButton');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalBody = document.getElementById('modalBody');
+        const confirmPurchaseBtn = document.getElementById('confirmPurchase');
+        const cancelPurchaseBtn = document.getElementById('cancelPurchase');
+        const userBalanceElement = document.getElementById('userBalance');
+        const voteYesBtn = document.getElementById('voteYes');
+        const voteNoBtn = document.getElementById('voteNo');
+        const yesCountElement = document.getElementById('yesCount');
+        const noCountElement = document.getElementById('noCount');
+        const emptyRequests = document.getElementById('emptyRequests');
+        const requestsList = document.getElementById('requestsList');
+        const requestsLoading = document.getElementById('requestsLoading');
+        const backButton = document.getElementById('backButton');
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("App initializing...");
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Check if user is logged in
+            auth.onAuthStateChanged(user => {
+                console.log("Auth state changed:", user ? user.uid : "No user");
+                
+                if (user) {
+                    currentUser = user;
+                    userId = user.uid;
+                    
+                    // Load user data
+                    loadUserData(user.uid);
+                    
+                    // Load user requests
+                    loadUserRequests(user.uid);
+                } else {
+                    // Not logged in, use default data
+                    console.log("User not logged in, using default data");
+                    updateWalletBalance(90); // Default balance
+                    requestsLoading.style.display = 'none';
+                    emptyRequests.style.display = 'block';
+                }
+                
+                // Load diamond packs and special deals regardless of auth state
+                loadDiamondPacks();
+                loadSpecialDeals();
+            });
+        });
+
+        // Load user data
+        async function loadUserData(uid) {
+            try {
+                console.log("Loading user data for:", uid);
+                const userDoc = await db.collection('users').doc(uid).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    console.log("User data loaded:", userData);
+                    
+                    // Update wallet balance
+                    walletBalance = userData.balance || 90;
+                    updateWalletBalance(walletBalance);
+                    
+                    // Pre-fill user name if available
+                    if (userData.first_name) {
+                        userNameInput.value = `${userData.first_name} ${userData.last_name || ''}`.trim();
+                    }
+                } else {
+                    console.log("User document doesn't exist");
+                    showToast("User profile not found", "warning");
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showToast('Failed to load user data: ' + error.message, 'error');
+            }
+        }
+
+        // Load diamond packs
+        async function loadDiamondPacks() {
+            try {
+                console.log("Loading diamond packs...");
+                diamondPacksLoading.style.display = 'flex';
+                diamondPacksContainer.innerHTML = '';
+                
+                // Try to get packs from Firestore
+                let packs = [];
+                try {
+                    const packsSnapshot = await db.collection('diamondPacks').get();
+                    
+                    if (!packsSnapshot.empty) {
+                        packsSnapshot.forEach(doc => {
+                            const data = doc.data();
+                            // Only include freefire diamonds that are active
+                            if (data.category === 'freefire-diamonds' && data.status !== false) {
+                                packs.push({
+                                    id: doc.id,
+                                    ...data
+                                });
+                            }
+                        });
+                    }
+                    
+                    console.log("Loaded diamond packs from Firestore:", packs.length);
+                } catch (firestoreError) {
+                    console.error("Error loading from Firestore:", firestoreError);
+                    // If Firestore fails, use default packs
+                    packs = DEFAULT_DIAMOND_PACKS;
+                    console.log("Using default diamond packs");
+                }
+                
+                // If no packs were found, use defaults
+                if (packs.length === 0) {
+                    packs = DEFAULT_DIAMOND_PACKS;
+                    console.log("No packs found, using defaults");
+                }
+                
+                // Render the packs
+                renderDiamondPacks(packs);
+                
+                diamondPacksLoading.style.display = 'none';
+            } catch (error) {
+                console.error('Error in loadDiamondPacks:', error);
+                showToast('Failed to load diamond packs', 'error');
+                
+                // Show default packs as fallback
+                renderDiamondPacks(DEFAULT_DIAMOND_PACKS);
+                diamondPacksLoading.style.display = 'none';
+            }
+        }
+
+        // Load special deals
+        async function loadSpecialDeals() {
+            try {
+                console.log("Loading special deals...");
+                specialDealsLoading.style.display = 'flex';
+                specialDealsContainer.innerHTML = '';
+                
+                // Try to get deals from Firestore
+                let deals = [];
+                try {
+                    const dealsSnapshot = await db.collection('diamondPacks').get();
+                    
+                    if (!dealsSnapshot.empty) {
+                        dealsSnapshot.forEach(doc => {
+                            const data = doc.data();
+                            // Only include special deals that are active
+                            if (data.category === 'special-deals' && data.status !== false) {
+                                deals.push({
+                                    id: doc.id,
+                                    ...data
+                                });
+                            }
+                        });
+                    }
+                    
+                    console.log("Loaded special deals from Firestore:", deals.length);
+                } catch (firestoreError) {
+                    console.error("Error loading from Firestore:", firestoreError);
+                    // If Firestore fails, use default deals
+                    deals = DEFAULT_SPECIAL_DEALS;
+                    console.log("Using default special deals");
+                }
+                
+                // If no deals were found, use defaults
+                if (deals.length === 0) {
+                    deals = DEFAULT_SPECIAL_DEALS;
+                    console.log("No deals found, using defaults");
+                }
+                
+                // Render the deals
+                renderSpecialDeals(deals);
+                
+                specialDealsLoading.style.display = 'none';
+            } catch (error) {
+                console.error('Error in loadSpecialDeals:', error);
+                showToast('Failed to load special deals', 'error');
+                
+                // Show default deals as fallback
+                renderSpecialDeals(DEFAULT_SPECIAL_DEALS);
+                specialDealsLoading.style.display = 'none';
+            }
+        }
+
+        // Load user requests
+        async function loadUserRequests(uid) {
+            try {
+                console.log("Loading user requests for:", uid);
+                requestsLoading.style.display = 'flex';
+                requestsList.innerHTML = '';
+                
+                // Try to get requests from Firestore
+                try {
+                    const requestsSnapshot = await db.collection('topupRequests')
+                        .where('userId', '==', uid)
+                        .get();
+                    
+                    if (requestsSnapshot.empty) {
+                        console.log("No requests found for user");
+                        emptyRequests.style.display = 'block';
+                    } else {
+                        console.log("Found requests:", requestsSnapshot.size);
+                        emptyRequests.style.display = 'none';
+                        
+                        requestsSnapshot.forEach(doc => {
+                            const request = doc.data();
+                            const requestId = doc.id;
+                            
+                            // Format date
+                            const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+                            const formattedDate = date.toLocaleString();
+                            
+                            // Create request card
+                            const requestCard = document.createElement('div');
+                            requestCard.className = 'request-card';
+                            
+                            // Determine status class
+                            let statusClass = 'status-pending';
+                            if (request.status === 'completed') {
+                                statusClass = 'status-completed';
+                            } else if (request.status === 'rejected') {
+                                statusClass = 'status-rejected';
+                            }
+                            
+                            requestCard.innerHTML = `
+                                <div class="request-header">
+                                    <div class="request-id">#${requestId.substring(0, 8)}</div>
+                                    <div class="request-status ${statusClass}">${request.status || 'pending'}</div>
+                                </div>
+                                <div class="request-details">
+                                    <div class="request-item">${request.packName || 'Unknown Pack'}</div>
+                                    <div class="request-price">${formatNaira(request.amount || 0)}</div>
+                                </div>
+                                <div class="request-date">Requested on: ${formattedDate}</div>
+                            `;
+                            
+                            requestsList.appendChild(requestCard);
+                        });
+                    }
+                } catch (firestoreError) {
+                    console.error("Error loading requests from Firestore:", firestoreError);
+                    emptyRequests.style.display = 'block';
+                    showToast('Error loading your requests', 'error');
+                }
+                
+                requestsLoading.style.display = 'none';
+            } catch (error) {
+                console.error('Error in loadUserRequests:', error);
+                showToast('Failed to load your requests', 'error');
+                requestsLoading.style.display = 'none';
+                emptyRequests.style.display = 'block';
+            }
+        }
+
+        // Format currency in Naira
+        function formatNaira(amount) {
+            return new Intl.NumberFormat("en-NG", {
+                style: "currency",
+                currency: "NGN",
+            }).format(amount);
+        }
+
+        // Update wallet balance display
+        function updateWalletBalance(balance) {
+            userBalanceElement.textContent = formatNaira(balance);
+        }
+
+        // Render diamond packs
+        function renderDiamondPacks(packs) {
+            diamondPacksContainer.innerHTML = '';
+            
+            if (!packs || packs.length === 0) {
+                diamondPacksContainer.innerHTML = '<div class="empty-message">No diamond packs available</div>';
+                return;
+            }
+            
+            packs.forEach(pack => {
+                const packElement = document.createElement('div');
+                packElement.className = 'diamond-pack';
+                packElement.dataset.id = pack.id;
+                
+                if (selectedPack && selectedPack.id === pack.id) {
+                    packElement.classList.add('selected');
+                }
+                
+                let badgeHTML = '';
+                if (pack.badge === 'popular') {
+                    badgeHTML = '<div class="badge popular">Popular</div>';
+                } else if (pack.badge === 'hot') {
+                    badgeHTML = '<div class="badge hot">Hot</div>';
+                } else if (pack.badge === 'new') {
+                    badgeHTML = '<div class="badge new">New</div>';
+                }
+                
+                packElement.innerHTML = `
+                    ${badgeHTML}
+                    <div class="diamond-amount">
+                        <div class="base-diamonds">${pack.amount}</div>
+                        <div class="bonus-diamonds">Diamond</div>
+                        <div class="bonus-diamonds">+ ${pack.bonus} Free Diamond</div>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="diamond-price">
+                        <div class="price-naira">${formatNaira(pack.price)}</div>
+                    </div>
+                `;
+                
+                packElement.addEventListener('click', () => {
+                    selectPack(pack);
+                });
+                
+                diamondPacksContainer.appendChild(packElement);
+            });
+        }
+
+        // Render special deals
+        function renderSpecialDeals(deals) {
+            specialDealsContainer.innerHTML = '';
+            
+            if (!deals || deals.length === 0) {
+                specialDealsContainer.innerHTML = '<div class="empty-message">No special deals available</div>';
+                return;
+            }
+            
+            deals.forEach(deal => {
+                const dealElement = document.createElement('div');
+                dealElement.className = 'special-deal';
+                dealElement.dataset.id = deal.id;
+                
+                if (selectedDeal && selectedDeal.id === deal.id) {
+                    dealElement.classList.add('selected');
+                }
+                
+                let badgeHTML = '';
+                if (deal.badge === 'hot') {
+                    badgeHTML = '<div class="badge hot">Hot</div>';
+                } else if (deal.badge === 'new') {
+                    badgeHTML = '<div class="badge new">New</div>';
+                } else if (deal.badge === 'popular') {
+                    badgeHTML = '<div class="badge popular">Popular</div>';
+                }
+                
+                dealElement.innerHTML = `
+                    ${badgeHTML}
+                    <div class="deal-title">${deal.name}</div>
+                    <div class="deal-description">${deal.bonus}</div>
+                    <div class="deal-price">${formatNaira(deal.price)}</div>
+                `;
+                
+                dealElement.addEventListener('click', () => {
+                    selectDeal(deal);
+                });
+                
+                specialDealsContainer.appendChild(dealElement);
+            });
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            console.log("Setting up event listeners");
+            
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+            
+            // User ID and Name input
+            userIdInput.addEventListener('input', updateBuyButtonState);
+            userNameInput.addEventListener('input', updateBuyButtonState);
+            
+            // Buy button
+            buyButton.addEventListener('click', handlePurchase);
+            
+            // Confirm purchase button
+            confirmPurchaseBtn.addEventListener('click', handleConfirmPurchase);
+            
+            // Cancel purchase button
+            cancelPurchaseBtn.addEventListener('click', hideModal);
+            
+            // Back button
+            backButton.addEventListener('click', () => {
+                window.history.back();
+            });
+            
+            // Vote buttons
+            voteYesBtn.addEventListener('click', () => {
+                if (!hasVoted) {
+                    yesVotes++;
+                    yesCountElement.textContent = `${yesVotes} votes`;
+                    voteYesBtn.classList.add('selected');
+                    hasVoted = true;
+                    showToast('Thank you for your vote!', 'success');
+                }
+            });
+            
+            voteNoBtn.addEventListener('click', () => {
+                if (!hasVoted) {
+                    noVotes++;
+                    noCountElement.textContent = `${noVotes} votes`;
+                    voteNoBtn.classList.add('selected');
+                    hasVoted = true;
+                    showToast('Thank you for your vote!', 'success');
+                }
+            });
+        }
+
+        // Switch tab
+        function switchTab(tabName) {
+            console.log("Switching to tab:", tabName);
+            
+            // Update active tab
+            tabs.forEach(tab => {
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Move tab indicator
+            if (tabName === 'manage') {
+                tabIndicator.classList.add('manage');
+            } else {
+                tabIndicator.classList.remove('manage');
+            }
+            
+            // Show active tab content
+            tabContents.forEach(content => {
+                if (content.id === tabName + 'Tab') {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        }
+
+        // Select diamond pack
+        function selectPack(pack) {
+            console.log("Selected pack:", pack);
+            selectedPack = pack;
+            selectedDeal = null;
+            
+            // Update UI
+            document.querySelectorAll('.diamond-pack').forEach(packElement => {
+                if (packElement.dataset.id === pack.id) {
+                    packElement.classList.add('selected');
+                } else {
+                    packElement.classList.remove('selected');
+                }
+            });
+            
+            document.querySelectorAll('.special-deal').forEach(dealElement => {
+                dealElement.classList.remove('selected');
+            });
+            
+            updateBuyButtonState();
+        }
+
+        // Select special deal
+        function selectDeal(deal) {
+            console.log("Selected deal:", deal);
+            selectedDeal = deal;
+            selectedPack = null;
+            
+            // Update UI
+            document.querySelectorAll('.special-deal').forEach(dealElement => {
+                if (dealElement.dataset.id === deal.id) {
+                    dealElement.classList.add('selected');
+                } else {
+                    dealElement.classList.remove('selected');
+                }
+            });
+            
+            document.querySelectorAll('.diamond-pack').forEach(packElement => {
+                packElement.classList.remove('selected');
+            });
+            
+            updateBuyButtonState();
+        }
+
+        // Update buy button state
+        function updateBuyButtonState() {
+            const gameId = userIdInput.value.trim();
+            const userName = userNameInput.value.trim();
+            const hasSelection = selectedPack !== null || selectedDeal !== null;
+            
+            buyButton.disabled = !gameId || !userName || !hasSelection;
+        }
+
+        // Handle purchase button click
+        function handlePurchase() {
+            const gameId = userIdInput.value.trim();
+            const userName = userNameInput.value.trim();
+            
+            if (!gameId) {
+                showToast('Please enter your Game ID', 'error');
+                return;
+            }
+            
+            if (!userName) {
+                showToast('Please enter your name', 'error');
+                return;
+            }
+            
+            if (!selectedPack && !selectedDeal) {
+                showToast('Please select a diamond pack or special deal', 'error');
+                return;
+            }
+            
+            showPurchaseModal();
+        }
+
+        // Show purchase confirmation modal
+        function showPurchaseModal() {
+            const selectedItem = selectedPack || selectedDeal;
+            const gameId = userIdInput.value.trim();
+            const userName = userNameInput.value.trim();
+            
+            let modalContent = `
+                <div class="warning-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Please confirm your purchase details
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Name:</div>
+                    <div class="summary-value">${userName}</div>
+                </div>
+                <div class="summary-row">
+                    <div class="summary-label">Game ID:</div>
+                    <div class="summary-value">${gameId}</div>
+                </div>
+            `;
+            
+            if (selectedPack) {
+                modalContent += `
+                    <div class="summary-row">
+                        <div class="summary-label">Diamond Pack:</div>
+                        <div class="summary-value">${selectedPack.amount} + ${selectedPack.bonus}</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">Total Diamonds:</div>
+                        <div class="summary-value">${parseInt(selectedPack.amount) + parseInt(selectedPack.bonus)}</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">Amount:</div>
+                        <div class="summary-value">${formatNaira(selectedPack.price)}</div>
+                    </div>
+                `;
+            } else {
+                modalContent += `
+                    <div class="summary-row">
+                        <div class="summary-label">Special Deal:</div>
+                        <div class="summary-value">${selectedDeal.name}</div>
+                    </div>
+                    <div class="summary-row">
+                        <div class="summary-label">Amount:</div>
+                        <div class="summary-value">${formatNaira(selectedDeal.price)}</div>
+                    </div>
+                `;
+            }
+            
+            modalBody.innerHTML = modalContent;
+            showModal();
+        }
+
+        // Handle confirm purchase
+        async function handleConfirmPurchase() {
+            try {
+                const purchaseAmount = selectedPack ? selectedPack.price : selectedDeal.price;
+                
+                if (walletBalance < purchaseAmount) {
+                    hideModal();
+                    showToast('Insufficient balance. Please top up your wallet.', 'error');
+                    return;
+                }
+                
+                // Create request data
+                const requestData = {
+                    userId: userId || 'guest',
+                    customerName: userNameInput.value.trim(),
+                    gameId: userIdInput.value.trim(),
+                    packId: selectedPack ? selectedPack.id : selectedDeal.id,
+                    packName: selectedPack ? `${selectedPack.amount} Diamonds` : selectedDeal.name,
+                    amount: purchaseAmount,
+                    status: 'pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                console.log("Creating topup request:", requestData);
+                
+                // Add request to Firestore
+                const requestRef = await db.collection('topupRequests').add(requestData);
+                console.log("Request created with ID:", requestRef.id);
+                
+                // Update user balance if logged in
+                if (userId) {
+                    await db.collection('users').doc(userId).update({
+                        balance: firebase.firestore.FieldValue.increment(-purchaseAmount)
+                    });
+                    console.log("User balance updated");
+                    
+                    // Update local balance
+                    walletBalance -= purchaseAmount;
+                    updateWalletBalance(walletBalance);
+                }
+                
+                hideModal();
+                showToast('Purchase successful! Your request has been sent to admin.', 'success');
+                
+                // Reset selection
+                selectedPack = null;
+                selectedDeal = null;
+                userIdInput.value = '';
+                
+                // Update UI
+                document.querySelectorAll('.diamond-pack, .special-deal').forEach(element => {
+                    element.classList.remove('selected');
+                });
+                
+                updateBuyButtonState();
+                
+                // Reload user requests if logged in
+                if (userId) {
+                    loadUserRequests(userId);
+                }
+                
+                // Switch to manage tab
+                switchTab('manage');
+            } catch (error) {
+                console.error('Error processing purchase:', error);
+                hideModal();
+                showToast('Failed to process your purchase: ' + error.message, 'error');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            console.log(`Toast (${type}):`, message);
+            toastMessage.textContent = message;
+            toast.className = 'toast';
+            
+            if (type === 'error') {
+                toast.classList.add('error');
+                toastIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+            } else if (type === 'warning') {
+                toast.classList.add('warning');
+                toastIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            } else {
+                toast.classList.add('success');
+                toastIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            }
+            
+            // Show toast
+            toast.classList.add('show');
+            
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Show modal
+        function showModal() {
+            modalOverlay.classList.add('active');
+        }
+
+        // Hide modal
+        function hideModal() {
+            modalOverlay.classList.remove('active');
+        }
+    </script>
+</body>
+</html>
