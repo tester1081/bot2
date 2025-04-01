@@ -1415,6 +1415,20 @@
                 await loadUserData(userId);
             }
             
+            // Check for internet connection
+            if (!navigator.onLine) {
+                showToastNotification("No internet connection. Some features may not work properly.");
+            }
+
+            // Add event listeners for online/offline status
+            window.addEventListener('online', function() {
+                showToastNotification("You are back online");
+            });
+
+            window.addEventListener('offline', function() {
+                showToastNotification("You are offline. Wallet funding is not available.");
+            });
+            
             // Set up event listeners
             setupEventListeners();
             
@@ -1625,6 +1639,11 @@
                     return;
                 }
                 
+                if (!navigator.onLine && selectedMethod !== 'manual') {
+                    showToastNotification('No internet connection. Please connect to the internet to make payments.');
+                    return;
+                }
+                
                 if (selectedMethod === 'manual') {
                     // For manual payment, scroll to the manual payment section
                     manualPaymentSection.style.display = 'block';
@@ -1726,6 +1745,13 @@
         
         // Initiate Paystack payment
         function initiatePaystackPayment() {
+            // Check for internet connection
+            if (!navigator.onLine) {
+                showToastNotification("No internet connection. Please connect to the internet and try again.");
+                loadingOverlay.classList.add('hide');
+                return;
+            }
+            
             // Show loading overlay
             loadingOverlay.classList.remove('hide');
             
@@ -1738,17 +1764,9 @@
                     throw new Error("Payment service not available");
                 }
                 
-                // Get Paystack public key from environment variable
-                const paystackPublicKey = process.env.PAYSTACK_PUBLIC_KEY || '';
-                
-                if (!paystackPublicKey) {
-                    console.error("Paystack public key not found in environment variables");
-                    throw new Error("Payment configuration error");
-                }
-                
-                // Initialize Paystack
+                // Initialize Paystack with live key
                 const handler = PaystackPop.setup({
-                    key: paystackPublicKey, // Use environment variable
+                    key: "pk_live_fbcac5afea56a1cb73483dd6f0f061d201fc7341", // Live public key
                     email: userEmail || 'customer@email.com',
                     amount: (selectedAmount + serviceFee) * 100, // Convert to kobo
                     currency: 'NGN',
@@ -1771,11 +1789,8 @@
                 handler.openIframe();
             } catch (error) {
                 console.error("Payment Error:", error);
-                showToastNotification("Payment failed: " + error.message);
+                showToastNotification("Payment failed: " + error.message + ". Please check your internet connection.");
                 loadingOverlay.classList.add('hide');
-                
-                // Fallback to mock payment in case of error
-                processWalletFundingMock();
             }
         }
         
@@ -1811,50 +1826,6 @@
                 }
             } catch (error) {
                 console.error("Error handling payment success:", error);
-                
-                // Show error notification
-                showToastNotification('Error processing payment: ' + error.message);
-            } finally {
-                // Hide loading overlay
-                loadingOverlay.classList.add('hide');
-            }
-        }
-        
-        // Process wallet funding mock (for testing)
-        async function processWalletFundingMock() {
-            try {
-                // Show processing message
-                showToastNotification('Processing your payment...');
-                
-                // Generate a mock reference
-                const reference = 'MOCK_' + Math.floor(Math.random() * 1000000000);
-                
-                // Process the payment
-                const success = await processWalletFunding(
-                    userId,
-                    reference,
-                    selectedAmount, // Amount before service fee
-                    serviceFee,
-                    selectedMethod
-                );
-                
-                if (success) {
-                    // Refresh user data
-                    await loadUserData(userId);
-                    
-                    // Show success toast
-                    showToastNotification('Wallet funded successfully!');
-                    
-                    // Reset form
-                    amountInput.value = '';
-                    amountPresets.forEach(preset => preset.classList.remove('active'));
-                    updateAmount(0);
-                } else {
-                    // Show error notification
-                    showToastNotification('Error updating your balance. Please contact support.');
-                }
-            } catch (error) {
-                console.error("Error handling mock payment:", error);
                 
                 // Show error notification
                 showToastNotification('Error processing payment: ' + error.message);
