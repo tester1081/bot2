@@ -10,12 +10,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
-        /* Your existing CSS styles */
-        /* ... */
-        
-
-        
-        /* Your other CSS styles remain the same */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         
         :root {
@@ -169,7 +163,7 @@
             min-width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: var(--accent);
+            background: var(--error);
             color: white;
             font-size: 10px;
             display: flex;
@@ -596,6 +590,7 @@
             position: relative;
             z-index: 2;
             transition: color 0.3s ease;
+            text-decoration: none;
         }
         
         .nav-item.active {
@@ -831,7 +826,7 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: var(--primary);
+            background: var(--error);
             margin-top: 6px;
             flex-shrink: 0;
         }
@@ -885,6 +880,41 @@
             z-index: 2001;
             max-width: 80%;
             text-align: center;
+        }
+        
+        /* User Profile Dropdown */
+        .user-profile-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .user-email, .user-phone {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
         
         /* Responsive Adjustments */
@@ -943,7 +973,7 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <img src="/logo.png" class="logo-image">
+            <img src="public/logo.png" class="logo-image" alt="VeltraWave Logo">
             <span>VeltraWave</span>
         </div>
         <div class="header-actions">
@@ -968,6 +998,13 @@
                 
                 <!-- Profile Dropdown -->
                 <div class="dropdown" id="profile-dropdown">
+                    <div class="user-profile-header">
+                        <div class="user-avatar" id="user-avatar">U</div>
+                        <div class="user-info">
+                            <div class="user-name" id="dropdown-user-name">User Name</div>
+                            <div class="user-phone" id="dropdown-user-phone">+234...</div>
+                        </div>
+                    </div>
                     <div class="dropdown-item" id="my-profile-link" onclick="window.location.href='profile.html'">
                         <i class="fas fa-user-circle"></i>
                         <span>My Profile</span>
@@ -1033,7 +1070,7 @@
             </div>
             
             <!-- Store Service -->
-            <div class="service-card" data-service="store" onclick="window.location.href='site.html'">
+            <div class="service-card" data-service="store" onclick="window.location.href='store.html'">
                 <div class="service-icon">
                     <i class="fas fa-shopping-bag"></i>
                 </div>
@@ -1097,7 +1134,7 @@
                 <span>Home</span>
             </a>
             <a href="services.html" class="nav-item" data-page="services">
-                <i class="fas fa-th-large"></i>
+                <i class="fas fa-bolt"></i>
                 <span>Services</span>
             </a>
             <a href="transactions.html" class="nav-item" data-page="transactions">
@@ -1152,6 +1189,9 @@
         const toastNotification = document.getElementById('toast-notification');
         const userBalance = document.getElementById('user-balance');
         const loadingOverlay = document.querySelector('.loading-overlay');
+        const userAvatar = document.getElementById('user-avatar');
+        const dropdownUserName = document.getElementById('dropdown-user-name');
+        const dropdownUserPhone = document.getElementById('dropdown-user-phone');
 
         // Loading Animation
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1253,6 +1293,19 @@
             
             userBalance.textContent = formattedBalance;
             debug("Balance displayed: " + formattedBalance);
+            
+            // Update profile dropdown
+            if (userData.first_name) {
+                const fullName = `${userData.first_name} ${userData.last_name || ''}`.trim();
+                dropdownUserName.textContent = fullName;
+                
+                // Set avatar initial
+                userAvatar.textContent = userData.first_name.charAt(0).toUpperCase();
+            }
+            
+            if (userData.phone_number) {
+                dropdownUserPhone.textContent = userData.phone_number;
+            }
         }
 
         // Load notifications from Firebase
@@ -1667,3 +1720,4 @@
     </script>
 </body>
 </html>
+
