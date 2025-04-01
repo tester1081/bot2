@@ -1200,9 +1200,9 @@
                             <div class="step-content">
                                 <div class="step-title">Make a transfer to our account</div>
                                 <div class="step-description">
-                                    Bank: GTBank<br>
-                                    Account Number: 0123456789<br>
-                                    Account Name: VeltraWave VTU
+                                    Bank: OPAY<br>
+                                    Account Number: 7067479043<br>
+                                    Account Name: SUSAN
                                 </div>
                             </div>
                         </div>
@@ -1241,7 +1241,7 @@
                         </div>
                     </div>
                     
-                    <a href="https://wa.me/2348123456789?text=Hello%20VeltraWave,%20I%20just%20made%20a%20payment%20of%20" class="whatsapp-button" id="whatsapp-button" target="_blank">
+                    <a href="https://wa.me/2347067479043?text=Hello%20VeltraWave,%20I%20just%20made%20a%20payment%20to%20fund%20my%20wallet.%20My%20VeltraWave%20ID%20is:" class="whatsapp-button" id="whatsapp-button" target="_blank">
                         <i class="fab fa-whatsapp"></i>
                         Contact Us on WhatsApp
                     </a>
@@ -1626,8 +1626,10 @@
                 }
                 
                 if (selectedMethod === 'manual') {
-                    // For manual payment, just scroll to the manual payment section
+                    // For manual payment, scroll to the manual payment section
+                    manualPaymentSection.style.display = 'block';
                     manualPaymentSection.scrollIntoView({ behavior: 'smooth' });
+                    showToastNotification('Please complete the manual payment process and contact us via WhatsApp');
                 } else {
                     // For other payment methods, show payment modal
                     showPaymentModal();
@@ -1667,6 +1669,12 @@
                         filePreviewImage.src = event.target.result;
                         filePreviewName.textContent = file.name;
                         filePreview.classList.add('show');
+                        
+                        // Store the file for later use
+                        window.paymentScreenshot = file;
+                        
+                        // Update WhatsApp message to mention the screenshot
+                        updateWhatsAppLink();
                     };
                     
                     reader.readAsDataURL(file);
@@ -1677,10 +1685,10 @@
             setIndicatorPosition(document.querySelector('.nav-item.active'));
         }
         
-        // Update WhatsApp link with current amount
+        // Update WhatsApp link with current amount and user ID
         function updateWhatsAppLink() {
-            const baseUrl = "https://wa.me/2348123456789?text=";
-            const message = `Hello VeltraWave, I just made a payment of ${formatCurrency(selectedAmount)} to fund my wallet. My VeltraWave ID is: ${userId}`;
+            const baseUrl = "https://wa.me/2347067479043?text=";
+            const message = `Hello VeltraWave, I just made a payment of ${formatCurrency(selectedAmount)} to fund my wallet. My VeltraWave ID is: ${userId}. Please verify and update my balance.`;
             const encodedMessage = encodeURIComponent(message);
             whatsappButton.href = baseUrl + encodedMessage;
         }
@@ -1730,9 +1738,17 @@
                     throw new Error("Payment service not available");
                 }
                 
+                // Get Paystack public key from environment variable
+                const paystackPublicKey = process.env.PAYSTACK_PUBLIC_KEY || '';
+                
+                if (!paystackPublicKey) {
+                    console.error("Paystack public key not found in environment variables");
+                    throw new Error("Payment configuration error");
+                }
+                
                 // Initialize Paystack
                 const handler = PaystackPop.setup({
-                    key: "pk_test_c86e0f48b2a2f9a4663737bf92327d697977070e", // Use your Paystack public key
+                    key: paystackPublicKey, // Use environment variable
                     email: userEmail || 'customer@email.com',
                     amount: (selectedAmount + serviceFee) * 100, // Convert to kobo
                     currency: 'NGN',
@@ -1855,6 +1871,9 @@
                     throw new Error("Database not initialized");
                 }
                 
+                // For manual payments, create a pending transaction that requires admin approval
+                const status = paymentMethod === 'manual' ? 'pending' : 'success';
+                
                 // Create transaction data
                 const transactionData = {
                     user_id: userId,
@@ -1866,7 +1885,7 @@
                     title: 'Wallet Funding',
                     description: `Wallet funded with ${formatCurrency(amount)}`,
                     payment_method: paymentMethod,
-                    status: 'success',
+                    status: status,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
@@ -1880,29 +1899,33 @@
                 // Add transaction record
                 batch.set(transactionRef, transactionData);
                 
-                // Get current user data
-                const userDoc = await userRef.get();
-                
-                if (!userDoc.exists) {
-                    // Create user if not exists
-                    batch.set(userRef, {
-                        user_id: userId,
-                        name: userName,
-                        email: userEmail || '',
-                        balance: amount, // Add the amount to balance
-                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                } else {
-                    // Update existing user balance
-                    const userData = userDoc.data();
-                    const currentBalance = userData.balance || 0;
-                    const newBalance = currentBalance + amount;
+                // Only update balance for non-manual payments (which are auto-approved)
+                // Manual payments require admin verification via WhatsApp
+                if (paymentMethod !== 'manual') {
+                    // Get current user data
+                    const userDoc = await userRef.get();
                     
-                    // Update user balance
-                    batch.update(userRef, {
-                        balance: newBalance,
-                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    if (!userDoc.exists) {
+                        // Create user if not exists
+                        batch.set(userRef, {
+                            user_id: userId,
+                            name: userName,
+                            email: userEmail || '',
+                            balance: amount, // Add the amount to balance
+                            updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    } else {
+                        // Update existing user balance
+                        const userData = userDoc.data();
+                        const currentBalance = userData.balance || 0;
+                        const newBalance = currentBalance + amount;
+                        
+                        // Update user balance
+                        batch.update(userRef, {
+                            balance: newBalance,
+                            updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
                 }
                 
                 // Commit the batch
@@ -1910,11 +1933,20 @@
                 
                 // Create a notification for the user
                 const notificationRef = db.collection('users').doc(userId).collection('notifications').doc();
-                await notificationRef.set({
-                    text: `Your wallet has been funded with ${formatCurrency(amount)}`,
-                    read: false,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                
+                if (paymentMethod === 'manual') {
+                    await notificationRef.set({
+                        text: `Your payment of ${formatCurrency(amount)} is pending verification. We'll update your wallet once confirmed.`,
+                        read: false,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } else {
+                    await notificationRef.set({
+                        text: `Your wallet has been funded with ${formatCurrency(amount)}`,
+                        read: false,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
                 
                 return true;
             } catch (error) {
@@ -1944,3 +1976,4 @@
     </script>
 </body>
 </html>
+
