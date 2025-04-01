@@ -1095,7 +1095,13 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
             auth = firebase.auth();
-            console.log("Firebase initialized successfully");
+            
+            // Sign in anonymously to allow database access without user authentication
+            auth.signInAnonymously().then(() => {
+                console.log("Firebase initialized successfully and signed in anonymously");
+            }).catch(error => {
+                console.error("Error signing in anonymously:", error);
+            });
         } catch (error) {
             console.error("Error initializing Firebase:", error);
             showToastNotification("Error connecting to database. Using offline mode.", "warning");
@@ -1149,11 +1155,20 @@
             } catch (error) {
                 console.error("Initialization error:", error);
                 showToastNotification("Failed to initialize: " + error.message);
+                loadingOverlay.classList.add('hide');
             }
         });
         
         // Initialize the app
         async function initApp() {
+            // Wait for auth to initialize
+            await new Promise(resolve => {
+                const unsubscribe = auth.onAuthStateChanged(user => {
+                    unsubscribe();
+                    resolve();
+                });
+            });
+            
             // Check if running in Telegram WebApp
             if (window.Telegram && window.Telegram.WebApp) {
                 const tg = window.Telegram.WebApp;
@@ -1167,7 +1182,7 @@
                     // Load user data
                     await loadUserData(userId);
                 } else {
-                    showToastNotification("Authentication failed. Please restart the bot.");
+                    showToastNotification("Authentication failed. Using test mode.");
                     
                     // For testing only - use a default user ID
                     userId = '5966603094';
@@ -1225,6 +1240,10 @@
             } catch (error) {
                 console.error("Error loading user data:", error);
                 showToastNotification("Error loading user data: " + error.message);
+                
+                // Set default values for offline mode
+                userBalance = 0;
+                updateBalanceDisplay();
             }
         }
         
@@ -1276,6 +1295,9 @@
             } catch (error) {
                 console.error("Error loading transactions:", error);
                 showToastNotification("Error loading transactions");
+                
+                // Show no transactions message
+                noTransactions.style.display = 'block';
             }
         }
         
@@ -1374,12 +1396,8 @@
                     return;
                 }
                 
-                // Check if we're in a preview environment
-                if (isPreviewEnvironment()) {
-                    showMockPaymentModal();
-                } else {
-                    initiatePaystackPayment();
-                }
+                // Always use mock payment in this environment
+                showMockPaymentModal();
             });
             
             // Mock payment modal close
@@ -1436,18 +1454,15 @@
         
         // Check if we're in a preview environment
         function isPreviewEnvironment() {
-            // Check if we're in v0.dev or another preview environment
-            return window.location.hostname.includes('v0.dev') || 
-                   window.location.hostname.includes('vusercontent.net') ||
-                   window.location.hostname.includes('localhost') ||
-                   typeof PaystackPop === 'undefined';
+            // Always return true for now since we're using mock payments
+            return true;
         }
         
         // Show mock payment modal
         function showMockPaymentModal() {
             // Update mock payment details
             mockPaymentAmount.textContent = formatCurrency(selectedAmount);
-            mockPaymentTotal.textContent = formatCurrency(selectedAmount);
+            mockPaymentTotal.textContent = formatCurrency(selectedAmount + serviceFee);
             
             // Show modal
             mockPaymentModal.classList.add('show');
@@ -1460,8 +1475,8 @@
             // Format amount with commas
             const formattedAmount = formatCurrency(amount);
             
-            // Calculate total (same as amount since fee is deducted)
-            const total = amount;
+            // Calculate total (amount plus service fee)
+            const total = amount + serviceFee;
             
             // Format total with commas
             const formattedTotal = formatCurrency(total);
@@ -1472,97 +1487,6 @@
             
             // Enable/disable pay button
             payButton.disabled = amount < 100;
-        }
-        
-        // Initiate Paystack payment
-        function initiatePaystackPayment() {
-            // Show loading overlay
-            loadingOverlay.classList.remove('hide');
-            
-            // Generate a reference
-            const reference = 'VW_' + Math.floor(Math.random() * 1000000000) + '_' + new Date().getTime();
-            
-            // Use standard test email for Paystack test mode
-            const userEmail = 'customer@email.com';
-            
-            try {
-                // Verify Paystack is loaded
-                if (typeof PaystackPop === 'undefined') {
-                    throw new Error("Payment service not available");
-                }
-                
-                // Initialize Paystack
-                const handler = PaystackPop.setup({
-                    key: "pk_test_c86e0f48b2a2f9a4663737bf92327d697977070e",
-                    email: userEmail,
-                    amount: selectedAmount * 100, // Convert to kobo
-                    currency: 'NGN',
-                    ref: reference,
-                    metadata: {
-                        user_id: userId,
-                        service_fee: serviceFee,
-                        actual_amount: selectedAmount - serviceFee // Amount after deducting service fee
-                    },
-                    callback: function(response) {
-                        handlePaymentSuccess(response);
-                    },
-                    onClose: function() {
-                        loadingOverlay.classList.add('hide');
-                        showToastNotification("Payment window closed");
-                    }
-                });
-                
-                // Open Paystack payment window
-                handler.openIframe();
-            } catch (error) {
-                console.error("Payment Error:", error);
-                showToastNotification("Payment failed: " + error.message);
-                loadingOverlay.classList.add('hide');
-                
-                // Fallback to mock payment in case of error
-                showMockPaymentModal();
-            }
-        }
-        
-        // Handle successful payment
-        async function handlePaymentSuccess(response) {
-            try {
-                // Show processing message
-                showToastNotification('Processing your payment...');
-                
-                // Process the payment
-                const success = await processWalletFunding(
-                    userId,
-                    response.reference,
-                    selectedAmount - serviceFee, // Deduct service fee from amount
-                    serviceFee,
-                    selectedMethod
-                );
-                
-                if (success) {
-                    // Refresh user data
-                    await loadUserData(userId);
-                    
-                    // Show success toast
-                    showToastNotification('Wallet funded successfully!');
-                    
-                    // Reset form
-                    amountInput.value = '';
-                    amountPresets.forEach(preset => preset.classList.remove('active'));
-                    updateAmount(0);
-                } else {
-                    // Show error notification
-                    showToastNotification('Error updating your balance. Please contact support.');
-                }
-            } catch (error) {
-                console.error("Error handling payment success:", error);
-                
-                // Show error notification
-                showToastNotification('Error processing payment: ' + error.message);
-            } finally {
-                // Hide loading overlay
-                loadingOverlay.classList.add('hide');
-            }
         }
         
         // Process wallet funding
@@ -1604,6 +1528,7 @@
                     // Create user if not exists
                     batch.set(userRef, {
                         user_id: userId,
+                        name: userName,
                         balance: amount, // Add the amount after service fee to balance
                         updated_at: firebase.firestore.FieldValue.serverTimestamp()
                     });
