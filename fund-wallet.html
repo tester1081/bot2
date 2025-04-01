@@ -1764,11 +1764,21 @@
                     throw new Error("Payment service not available");
                 }
                 
-                // Initialize Paystack with live key
+                // Get Paystack public key from environment variable
+                const paystackPublicKey = process.env.PAYSTACK_PUBLIC_KEY;
+                
+                if (!paystackPublicKey) {
+                    console.error("Paystack public key not found in environment variables");
+                    throw new Error("Payment configuration error");
+                }
+                
+                // Initialize Paystack
                 const handler = PaystackPop.setup({
-                    key: "pk_live_fbcac5afea56a1cb73483dd6f0f061d201fc7341", // Live public key
+                    key: paystackPublicKey, // Use environment variable
                     email: userEmail || 'customer@email.com',
                     amount: (selectedAmount + serviceFee) * 100, // Convert to kobo
+                    currency: 'NGN',
+                    ref: reference,  * 100, // Convert to kobo
                     currency: 'NGN',
                     ref: reference,
                     metadata: {
