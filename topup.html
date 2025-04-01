@@ -1176,6 +1176,17 @@
                 } else {
                     console.log("User document doesn't exist");
                     showToast("User profile not found", "warning");
+                    
+                    // Create a user document to prevent this warning in the future
+                    try {
+                        await db.collection('users').doc(uid).set({
+                            balance: 90,
+                            created_at: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        console.log("Created new user document");
+                    } catch (createError) {
+                        console.error("Error creating user document:", createError);
+                    }
                 }
             } catch (error) {
                 console.error('Error loading user data:', error);
@@ -1193,27 +1204,44 @@
                 // Try to get packs from Firestore
                 let packs = [];
                 try {
-                    const packsSnapshot = await db.collection('diamondPacks').get();
+                    // Use a query to get all diamond packs with the correct category and status
+                    const packsSnapshot = await db.collection('diamondPacks')
+                        .where('category', '==', 'freefire-diamonds')
+                        .where('status', '==', true)
+                        .get();
                     
                     if (!packsSnapshot.empty) {
                         packsSnapshot.forEach(doc => {
-                            const data = doc.data();
-                            // Only include freefire diamonds that are active
-                            if (data.category === 'freefire-diamonds' && data.status !== false) {
-                                packs.push({
-                                    id: doc.id,
-                                    ...data
-                                });
-                            }
+                            packs.push({
+                                id: doc.id,
+                                ...doc.data()
+                            });
                         });
+                        console.log("Loaded diamond packs from Firestore:", packs.length);
+                    } else {
+                        console.log("No diamond packs found in Firestore with the correct criteria");
+                        // If no packs match the query, try a more general query
+                        const allPacksSnapshot = await db.collection('diamondPacks').get();
+                        
+                        if (!allPacksSnapshot.empty) {
+                            allPacksSnapshot.forEach(doc => {
+                                const data = doc.data();
+                                // Only include freefire diamonds that are active
+                                if (data.category === 'freefire-diamonds' && data.status !== false) {
+                                    packs.push({
+                                        id: doc.id,
+                                        ...data
+                                    });
+                                }
+                            });
+                            console.log("Loaded diamond packs from general query:", packs.length);
+                        }
                     }
-                    
-                    console.log("Loaded diamond packs from Firestore:", packs.length);
                 } catch (firestoreError) {
                     console.error("Error loading from Firestore:", firestoreError);
                     // If Firestore fails, use default packs
                     packs = DEFAULT_DIAMOND_PACKS;
-                    console.log("Using default diamond packs");
+                    console.log("Using default diamond packs due to error");
                 }
                 
                 // If no packs were found, use defaults
@@ -1246,27 +1274,44 @@
                 // Try to get deals from Firestore
                 let deals = [];
                 try {
-                    const dealsSnapshot = await db.collection('diamondPacks').get();
+                    // Use a query to get all special deals with the correct category and status
+                    const dealsSnapshot = await db.collection('diamondPacks')
+                        .where('category', '==', 'special-deals')
+                        .where('status', '==', true)
+                        .get();
                     
                     if (!dealsSnapshot.empty) {
                         dealsSnapshot.forEach(doc => {
-                            const data = doc.data();
-                            // Only include special deals that are active
-                            if (data.category === 'special-deals' && data.status !== false) {
-                                deals.push({
-                                    id: doc.id,
-                                    ...data
-                                });
-                            }
+                            deals.push({
+                                id: doc.id,
+                                ...doc.data()
+                            });
                         });
+                        console.log("Loaded special deals from Firestore:", deals.length);
+                    } else {
+                        console.log("No special deals found in Firestore with the correct criteria");
+                        // If no deals match the query, try a more general query
+                        const allDealsSnapshot = await db.collection('diamondPacks').get();
+                        
+                        if (!allDealsSnapshot.empty) {
+                            allDealsSnapshot.forEach(doc => {
+                                const data = doc.data();
+                                // Only include special deals that are active
+                                if (data.category === 'special-deals' && data.status !== false) {
+                                    deals.push({
+                                        id: doc.id,
+                                        ...data
+                                    });
+                                }
+                            });
+                            console.log("Loaded special deals from general query:", deals.length);
+                        }
                     }
-                    
-                    console.log("Loaded special deals from Firestore:", deals.length);
                 } catch (firestoreError) {
                     console.error("Error loading from Firestore:", firestoreError);
                     // If Firestore fails, use default deals
                     deals = DEFAULT_SPECIAL_DEALS;
-                    console.log("Using default special deals");
+                    console.log("Using default special deals due to error");
                 }
                 
                 // If no deals were found, use defaults
