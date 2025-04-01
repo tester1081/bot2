@@ -7,6 +7,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Paystack SDK -->
@@ -935,7 +936,7 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <img src="public/logo.png" alt="VeltraWave" class="logo-image">
+            <img src="public/logo.png" alt="VeltraWave" class="logo-image" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%232D7FF9\' stroke  width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%232D7FF9\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z\'></path><polyline points=\'13 2 13 9 20 9\'></polyline></svg>'">
             <span>VeltraWave</span>
         </div>
         
@@ -1087,9 +1088,18 @@
             appId: "1:1098979571490:web:c9b6f1a7d9956e5c4d2fb6"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        // Initialize Firebase and create global variables
+        let db, auth;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            console.log("Firebase initialized successfully");
+        } catch (error) {
+            console.error("Error initializing Firebase:", error);
+            showToastNotification("Error connecting to database. Using offline mode.", "warning");
+        }
         
         // Variables
         let userId = null;
@@ -1181,6 +1191,10 @@
         // Load user data from Firestore
         async function loadUserData(userId) {
             try {
+                if (!db) {
+                    throw new Error("Database not initialized");
+                }
+                
                 const userRef = db.collection("users").doc(userId);
                 const doc = await userRef.get();
                 
@@ -1194,7 +1208,19 @@
                     // Load transactions
                     loadTransactions(userId);
                 } else {
-                    showToastNotification("User data not found. Please contact support.");
+                    showToastNotification("User data not found. Creating new user profile.");
+                    
+                    // Create a new user document
+                    await userRef.set({
+                        user_id: userId,
+                        name: userName,
+                        balance: 0,
+                        created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    userBalance = 0;
+                    updateBalanceDisplay();
                 }
             } catch (error) {
                 console.error("Error loading user data:", error);
@@ -1205,6 +1231,10 @@
         // Load transactions
         async function loadTransactions(userId) {
             try {
+                if (!db) {
+                    throw new Error("Database not initialized");
+                }
+                
                 const transactionsRef = db.collection("users").doc(userId).collection("transactions");
                 const snapshot = await transactionsRef.orderBy("timestamp", "desc").limit(5).get();
                 
@@ -1538,6 +1568,10 @@
         // Process wallet funding
         async function processWalletFunding(userId, reference, amount, serviceFee, paymentMethod) {
             try {
+                if (!db) {
+                    throw new Error("Database not initialized");
+                }
+                
                 // Create transaction data
                 const transactionData = {
                     user_id: userId,
