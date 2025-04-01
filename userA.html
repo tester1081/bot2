@@ -1,0 +1,3096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>User Management Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #2D7FF9;
+            --primary-light: #5A9DFF;
+            --primary-dark: #0D5ED6;
+            --secondary: #8C52FF;
+            --accent: #FF5E8A;
+            --background: #0A0F1E;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --surface: rgba(255, 255, 255, 0.12);
+            --text: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --success: #00E1A0;
+            --warning: #FFB547;
+            --error: #FF5E7D;
+            --sidebar-width: 250px;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+        }
+
+        /* Liquid Blob Background */
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .liquid-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--primary);
+            top: -200px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--secondary);
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            top: 40%;
+            right: 20%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(5%, 5%) scale(1.05);
+            }
+            50% {
+                transform: translate(0, 10%) scale(0.95);
+            }
+            75% {
+                transform: translate(-5%, 5%) scale(1.05);
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-logo i {
+            margin-right: 0.75rem;
+            color: var(--primary);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-menu-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .sidebar-menu-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-menu-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sidebar-menu-link i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            right: 1.5rem;
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .sidebar-user-info {
+            flex: 1;
+        }
+
+        .sidebar-user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-user-role {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-user-actions {
+            margin-left: 0.5rem;
+        }
+
+        .sidebar-user-actions button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-user-actions button:hover {
+            color: var(--text);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            color: var(--text);
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--error);
+        }
+
+        .stat-change i {
+            margin-right: 0.25rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 4px;
+            position: relative;
+            margin-bottom: 1.5rem;
+            width: fit-content;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: color 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            color: var(--background);
+        }
+
+        .tab-indicator {
+            position: absolute;
+            height: calc(100% - 8px);
+            background: var(--primary);
+            border-radius: 6px;
+            top: 4px;
+            left: 4px;
+            transition: all 0.3s ease;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tbody tr {
+            transition: background 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+
+        .status-badge.inactive {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+
+        .status-badge.pending {
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+
+        /* Action Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 127, 249, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #00B080);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 225, 160, 0.3);
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon.view {
+            background: rgba(45, 127, 249, 0.2);
+            color: var(--primary);
+        }
+
+        .btn-icon.edit {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+
+        .btn-icon.delete {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+
+        .btn-icon.fund {
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 15, 30, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, rgba(45, 127, 249, 0.2), rgba(140, 82, 255, 0.2));
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 90%;
+            width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        /* Detail List */
+        .detail-list {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .detail-label {
+            width: 150px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            flex: 1;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            color: var(--text);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.2);
+        }
+
+        .form-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            color: var(--text);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.2);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.9rem;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease-in-out;
+            max-width: 350px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid var(--primary);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(50px);
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: var(--success);
+        }
+
+        .toast.error {
+            border-left-color: var(--error);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        .toast-icon {
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--error);
+        }
+
+        .toast.warning .toast-icon {
+            color: var(--warning);
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Mobile Sidebar Toggle */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Transaction History */
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .transaction-icon.credit {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+
+        .transaction-icon.debit {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .transaction-date {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .transaction-amount {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .transaction-amount.credit {
+            color: var(--success);
+        }
+
+        .transaction-amount.debit {
+            color: var(--error);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar-toggle {
+                display: flex;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .search-bar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Liquid Blob Background -->
+    <div class="liquid-bg">
+        <div class="liquid-blob blob-1"></div>
+        <div class="liquid-blob blob-2"></div>
+        <div class="liquid-blob blob-3"></div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" style="width: 100%;">
+        <!-- Mobile Sidebar Toggle -->
+        <button class="sidebar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-users-cog"></i>
+                    <span>User Admin</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="sidebar-menu-title">Main Menu</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link active" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link" data-section="allUsers">
+                            <i class="fas fa-users"></i>
+                            <span>All Users</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link" data-section="telegramUsers">
+                            <i class="fab fa-telegram"></i>
+                            <span>Telegram Users</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link" data-section="transactions">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>Transactions</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link" data-section="settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="admin.html" class="sidebar-menu-link">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>App Requests</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar" id="userInitials">A</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name" id="userName">Admin User</div>
+                        <div class="sidebar-user-role">Administrator</div>
+                    </div>
+                    <div class="sidebar-user-actions">
+                        <button id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="content-section">
+                <div class="header">
+                    <h1 class="header-title">User Management Dashboard</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="addNewUserBtn">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Add New User</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Total Users</div>
+                        <div class="stat-value" id="totalUsers">0</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>8% from last month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">Active Users</div>
+                        <div class="stat-value" id="activeUsers">0</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>5% from last month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">Telegram Users</div>
+                        <div class="stat-value" id="telegramUsers">0</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>12% from last month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-title">Total Wallet Balance</div>
+                        <div class="stat-value" id="totalBalance">₦0</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>15% from last month</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Users -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Recent Users</div>
+                        <div class="card-actions">
+                            <button class="btn btn-outline" id="refreshUsers">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Balance</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentUsersTable">
+                                <!-- Table rows will be added dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Recent Transactions -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Recent Transactions</div>
+                        <div class="card-actions">
+                            <button class="btn btn-outline" id="viewAllTransactions">
+                                <i class="fas fa-list"></i>
+                                <span>View All</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="recentTransactions">
+                        <!-- Transaction items will be added dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- All Users Section -->
+            <div id="allUsersSection" class="content-section" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">All Users</h1>
+                    <div class="header-actions">
+                        <div class="search-bar">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" id="userSearch" placeholder="Search users...">
+                        </div>
+                        <button class="btn btn-primary" id="addUserBtn">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Add User</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active" data-status="all">All</div>
+                    <div class="tab" data-status="active">Active</div>
+                    <div class="tab" data-status="inactive">Inactive</div>
+                    <div class="tab-indicator" style="width: 60px;"></div>
+                </div>
+                
+                <!-- Users Table -->
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <!-- Table rows will be added dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Empty State (will be shown when there are no users) -->
+                <div class="empty-state" id="usersEmpty" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="empty-title">No Users Found</h3>
+                    <p class="empty-description">There are no users matching your search criteria.</p>
+                    <button class="btn btn-primary" id="addFirstUserBtn">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Add First User</span>
+                    </button>
+                </div>
+                
+                <!-- Loading Spinner -->
+                <div class="loading-spinner" id="usersLoading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            
+            <!-- Telegram Users Section -->
+            <div id="telegramUsersSection" class="content-section" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Telegram Users</h1>
+                    <div class="header-actions">
+                        <div class="search-bar">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" id="telegramUserSearch" placeholder="Search telegram users...">
+                        </div>
+                        <button class="btn btn-primary" id="addTelegramUserBtn">
+                            <i class="fab fa-telegram"></i>
+                            <span>Add Telegram User</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Telegram Users Table -->
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Chat ID</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="telegramUsersTable">
+                            <!-- Table rows will be added dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Empty State (will be shown when there are no telegram users) -->
+                <div class="empty-state" id="telegramUsersEmpty" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fab fa-telegram"></i>
+                    </div>
+                    <h3 class="empty-title">No Telegram Users Found</h3>
+                    <p class="empty-description">There are no telegram users matching your search criteria.</p>
+                    <button class="btn btn-primary" id="addFirstTelegramUserBtn">
+                        <i class="fab fa-telegram"></i>
+                        <span>Add First Telegram User</span>
+                    </button>
+                </div>
+                
+                <!-- Loading Spinner -->
+                <div class="loading-spinner" id="telegramUsersLoading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            
+            <!-- Transactions Section -->
+            <div id="transactionsSection" class="content-section" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Transactions</h1>
+                    <div class="header-actions">
+                        <div class="search-bar">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" id="transactionSearch" placeholder="Search transactions...">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active" data-type="all">All</div>
+                    <div class="tab" data-type="credit">Credits</div>
+                    <div class="tab" data-type="debit">Debits</div>
+                    <div class="tab-indicator" style="width: 60px;"></div>
+                </div>
+                
+                <!-- Transactions Table -->
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable">
+                            <!-- Table rows will be added dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Empty State (will be shown when there are no transactions) -->
+                <div class="empty-state" id="transactionsEmpty" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h3 class="empty-title">No Transactions Found</h3>
+                    <p class="empty-description">There are no transactions matching your search criteria.</p>
+                </div>
+                
+                <!-- Loading Spinner -->
+                <div class="loading-spinner" id="transactionsLoading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            
+            <!-- Settings Section -->
+            <div id="settingsSection" class="content-section" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Settings</h1>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Admin Settings</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adminEmail" class="form-label">Admin Email</label>
+                        <input type="email" id="adminEmail" class="form-input" placeholder="Enter admin email" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adminName" class="form-label">Admin Name</label>
+                        <input type="text" id="adminName" class="form-input" placeholder="Enter admin name">
+                    </div>
+                    
+                    <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Notification Settings</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Notifications</label>
+                        <div class="form-group">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="newUserNotification" checked>
+                                <span>New User Registration</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="transactionNotification" checked>
+                                <span>New Transaction</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="lowBalanceNotification">
+                                <span>Low Balance Alert</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="saveNotificationSettingsBtn">Save Notification Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Detail Modal -->
+    <div class="modal-overlay" id="userDetailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">User Details</h2>
+                <button class="modal-close" id="closeUserDetailModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="userDetailContent">
+                <!-- User details will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="closeUserDetailBtn">Close</button>
+                <button class="btn btn-primary" id="editUserBtn">Edit User</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit User Modal -->
+    <div class="modal-overlay" id="editUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="editUserModalTitle">Add New User</h2>
+                <button class="modal-close" id="closeEditUserModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" id="firstName" class="form-input" placeholder="Enter first name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" id="lastName" class="form-input" placeholder="Enter last name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" class="form-input" placeholder="Enter email address" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" id="phone" class="form-input" placeholder="Enter phone number" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userRole" class="form-label">Role</label>
+                        <select id="userRole" class="form-select">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userStatus" class="form-label">Status</label>
+                        <select id="userStatus" class="form-select">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="initialBalance" class="form-label">Initial Balance (₦)</label>
+                        <input type="number" id="initialBalance" class="form-input" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">User Type</label>
+                        <div class="form-group">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="isTelegramUser">
+                                <span>Telegram User</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="telegramFields" style="display: none;">
+                        <div class="form-group">
+                            <label for="telegramUsername" class="form-label">Telegram Username</label>
+                            <input type="text" id="telegramUsername" class="form-input" placeholder="Enter telegram username">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="telegramChatId" class="form-label">Telegram Chat ID</label>
+                            <input type="text" id="telegramChatId" class="form-input" placeholder="Enter telegram chat ID">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelEditUserBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveUserBtn">Save User</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fund Wallet Modal -->
+    <div class="modal-overlay" id="fundWalletModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Fund User Wallet</h2>
+                <button class="modal-close" id="closeFundWalletModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="fundAmount" class="form-label">Amount (₦)</label>
+                    <input type="number" id="fundAmount" class="form-input" placeholder="0.00" min="0" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fundDescription" class="form-label">Description</label>
+                    <textarea id="fundDescription" class="form-input form-textarea" placeholder="Enter transaction description"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="transactionType" class="form-label">Transaction Type</label>
+                    <select id="transactionType" class="form-select">
+                        <option value="credit">Credit (Add Funds)</option>
+                        <option value="debit">Debit (Remove Funds)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelFundWalletBtn">Cancel</button>
+                <button class="btn btn-success" id="confirmFundWalletBtn">Confirm Transaction</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Transaction Detail Modal -->
+    <div class="modal-overlay" id="transactionDetailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Transaction Details</h2>
+                <button class="modal-close" id="closeTransactionDetailModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="transactionDetailContent">
+                <!-- Transaction details will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="closeTransactionDetailBtn">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="toast-icon" id="toastIcon"></div>
+        <div id="toastMessage"></div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.firebasestorage.app",
+            messagingSenderId: "431351611304",
+            appId: "1:431351611304:web:7381dd659920f9f325a79d",
+            measurementId: "G-HRHN8GJCR3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        // DOM Elements
+        const adminDashboard = document.getElementById('adminDashboard');
+        const sidebarLinks = document.querySelectorAll('.sidebar-menu-link');
+        const contentSections = document.querySelectorAll('.content-section');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const userInitials = document.getElementById('userInitials');
+        const userName = document.getElementById('userName');
+        
+        // User Detail Modal Elements
+        const userDetailModal = document.getElementById('userDetailModal');
+        const closeUserDetailModal = document.getElementById('closeUserDetailModal');
+        const closeUserDetailBtn = document.getElementById('closeUserDetailBtn');
+        const userDetailContent = document.getElementById('userDetailContent');
+        const editUserBtn = document.getElementById('editUserBtn');
+        
+        // Edit User Modal Elements
+        const editUserModal = document.getElementById('editUserModal');
+        const editUserModalTitle = document.getElementById('editUserModalTitle');
+        const closeEditUserModal = document.getElementById('closeEditUserModal');
+        const cancelEditUserBtn = document.getElementById('cancelEditUserBtn');
+        const saveUserBtn = document.getElementById('saveUserBtn');
+        const userForm = document.getElementById('userForm');
+        const isTelegramUser = document.getElementById('isTelegramUser');
+        const telegramFields = document.getElementById('telegramFields');
+        
+        // Fund Wallet Modal Elements
+        const fundWalletModal = document.getElementById('fundWalletModal');
+        const closeFundWalletModal = document.getElementById('closeFundWalletModal');
+        const cancelFundWalletBtn = document.getElementById('cancelFundWalletBtn');
+        const confirmFundWalletBtn = document.getElementById('confirmFundWalletBtn');
+        
+        // Transaction Detail Modal Elements
+        const transactionDetailModal = document.getElementById('transactionDetailModal');
+        const closeTransactionDetailModal = document.getElementById('closeTransactionDetailModal');
+        const closeTransactionDetailBtn = document.getElementById('closeTransactionDetailBtn');
+        const transactionDetailContent = document.getElementById('transactionDetailContent');
+        
+        // Toast Elements
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+        
+        // Table Elements
+        const recentUsersTable = document.getElementById('recentUsersTable');
+        const usersTable = document.getElementById('usersTable');
+        const telegramUsersTable = document.getElementById('telegramUsersTable');
+        const transactionsTable = document.getElementById('transactionsTable');
+        const recentTransactions = document.getElementById('recentTransactions');
+        
+        // Loading Elements
+        const usersLoading = document.getElementById('usersLoading');
+        const telegramUsersLoading = document.getElementById('telegramUsersLoading');
+        const transactionsLoading = document.getElementById('transactionsLoading');
+        
+        // Empty State Elements
+        const usersEmpty = document.getElementById('usersEmpty');
+        const telegramUsersEmpty = document.getElementById('telegramUsersEmpty');
+        const transactionsEmpty = document.getElementById('transactionsEmpty');
+        
+        // Stats Elements
+        const totalUsersElement = document.getElementById('totalUsers');
+        const activeUsersElement = document.getElementById('activeUsers');
+        const telegramUsersElement = document.getElementById('telegramUsers');
+        const totalBalanceElement = document.getElementById('totalBalance');
+        
+        // Button Elements
+        const addNewUserBtn = document.getElementById('addNewUserBtn');
+        const addUserBtn = document.getElementById('addUserBtn');
+        const addTelegramUserBtn = document.getElementById('addTelegramUserBtn');
+        const addFirstUserBtn = document.getElementById('addFirstUserBtn');
+        const addFirstTelegramUserBtn = document.getElementById('addFirstTelegramUserBtn');
+        const refreshUsers = document.getElementById('refreshUsers');
+        const viewAllTransactions = document.getElementById('viewAllTransactions');
+        
+        // Tab Elements
+        const tabs = document.querySelectorAll('.tab');
+        const tabIndicator = document.querySelector('.tab-indicator');
+        
+        // State Variables
+        let currentUser = null;
+        let currentSection = 'dashboard';
+        let currentUserId = null;
+        let currentTransactionId = null;
+        let currentTab = 'all';
+        let users = [];
+        let telegramUsers = [];
+        let transactions = [];
+        let isEditMode = false;
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("User Admin page initializing...");
+            
+            // Check if user is logged in
+            auth.onAuthStateChanged(user => {
+                console.log("Auth state changed:", user ? user.uid : "No user");
+                
+                if (user) {
+                    // Check if user is an admin
+                    checkAdminStatus(user);
+                } else {
+                    // Redirect to login page
+                    window.location.href = "/login.html";
+                }
+            });
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+        
+        // Check if user is an admin
+        async function checkAdminStatus(user) {
+            try {
+                const adminDoc = await db.collection('admins').doc(user.uid).get();
+                
+                if (adminDoc.exists) {
+                    // User is an admin
+                    currentUser = user;
+                    showAdminDashboard(user);
+                    loadAdminData(user);
+                } else {
+                    // User is not an admin
+                    showToast('You do not have admin privileges', 'error');
+                    auth.signOut();
+                    window.location.href = "/login.html";
+                }
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+                showToast('Error checking admin status', 'error');
+                auth.signOut();
+                window.location.href = "/login.html";
+            }
+        }
+        
+        // Show admin dashboard
+        function showAdminDashboard(user) {
+            // Update user info
+            updateUserInfo(user);
+            
+            // Load dashboard data
+            loadDashboardData();
+        }
+        
+        // Update user info in sidebar
+        function updateUserInfo(user) {
+            // Set user initials
+            const email = user.email || '';
+            const initials = email.charAt(0).toUpperCase();
+            userInitials.textContent = initials;
+            
+            // Set user name
+            userName.textContent = user.displayName || email;
+            
+            // Update admin settings
+            document.getElementById('adminEmail').value = email;
+            document.getElementById('adminName').value = user.displayName || '';
+        }
+        
+        // Load admin data
+        async function loadAdminData(user) {
+            try {
+                const adminDoc = await db.collection('admins').doc(user.uid).get();
+                
+                if (adminDoc.exists) {
+                    const adminData = adminDoc.data();
+                    
+                    // Update user name if available
+                    if (adminData.name) {
+                        userName.textContent = adminData.name;
+                        document.getElementById('adminName').value = adminData.name;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+            }
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load user stats
+                await loadUserStats();
+                
+                // Load recent users
+                await loadRecentUsers();
+                
+                // Load recent transactions
+                await loadRecentTransactions();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showToast('Error loading dashboard data', 'error');
+            }
+        }
+        
+        // Load user stats
+        async function loadUserStats() {
+            try {
+                // Get all users
+                const usersSnapshot = await db.collection('users').get();
+                
+                let total = 0;
+                let active = 0;
+                let telegramCount = 0;
+                let totalBalance = 0;
+                
+                usersSnapshot.forEach(doc => {
+                    const user = doc.data();
+                    total++;
+                    
+                    if (user.status === 'active') {
+                        active++;
+                    }
+                    
+                    if (user.isTelegramUser) {
+                        telegramCount++;
+                    }
+                    
+                    totalBalance += parseFloat(user.balance || 0);
+                });
+                
+                // Update stats
+                totalUsersElement.textContent = total;
+                activeUsersElement.textContent = active;
+                telegramUsersElement.textContent = telegramCount;
+                totalBalanceElement.textContent = `₦${totalBalance.toFixed(2)}`;
+            } catch (error) {
+                console.error('Error loading user stats:', error);
+                throw error;
+            }
+        }
+        
+        // Load recent users
+        async function loadRecentUsers() {
+            try {
+                const usersSnapshot = await db.collection('users')
+                    .orderBy('createdAt', 'desc')
+                    .limit(5)
+                    .get();
+                
+                recentUsersTable.innerHTML = '';
+                
+                if (usersSnapshot.empty) {
+                    recentUsersTable.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center;">No users found</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                usersSnapshot.forEach(doc => {
+                    const user = doc.data();
+                    const userId = doc.id;
+                    
+                    // Create table row
+                    const row = document.createElement('tr');
+                    
+                    // Determine status class
+                    let statusClass = 'active';
+                    if (user.status === 'inactive') {
+                        statusClass = 'inactive';
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${userId.substring(0, 8)}</td>
+                        <td>${user.first_name || ''} ${user.last_name || ''}</td>
+                        <td>${user.email || 'No email'}</td>
+                        <td>${user.phone_number || 'No phone'}</td>
+                        <td>₦${parseFloat(user.balance || 0).toFixed(2)}</td>
+                        <td><span class="status-badge ${statusClass}">${user.status || 'active'}</span></td>
+                        <td>
+                            <button class="btn-icon view" data-id="${userId}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon edit" data-id="${userId}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon fund" data-id="${userId}">
+                                <i class="fas fa-wallet"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    // Add event listeners to buttons
+                    row.querySelector('.btn-icon.view').addEventListener('click', () => {
+                        viewUserDetails(userId);
+                    });
+                    
+                    row.querySelector('.btn-icon.edit').addEventListener('click', () => {
+                        editUser(userId);
+                    });
+                    
+                    row.querySelector('.btn-icon.fund').addEventListener('click', () => {
+                        showFundWalletModal(userId);
+                    });
+                    
+                    recentUsersTable.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading recent users:', error);
+                throw error;
+            }
+        }
+        
+        // Load recent transactions
+        async function loadRecentTransactions() {
+            try {
+                const transactionsSnapshot = await db.collection('transactions')
+                    .orderBy('timestamp', 'desc')
+                    .limit(5)
+                    .get();
+                
+                recentTransactions.innerHTML = '';
+                
+                if (transactionsSnapshot.empty) {
+                    recentTransactions.innerHTML = `
+                        <div class="empty-state" style="padding: 1rem;">
+                            <p>No transactions found</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                for (const doc of transactionsSnapshot.docs) {
+                    const transaction = doc.data();
+                    const transactionId = doc.id;
+                    
+                    // Get user data
+                    let userData = { first_name: 'Unknown', last_name: 'User' };
+                    if (transaction.userId) {
+                        const userDoc = await db.collection('users').doc(transaction.userId).get();
+                        if (userDoc.exists) {
+                            userData = userDoc.data();
+                        }
+                    }
+                    
+                    // Format date
+                    const date = transaction.timestamp ? new Date(transaction.timestamp.toDate()) : new Date();
+                    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    
+                    // Create transaction item
+                    const transactionItem = document.createElement('div');
+                    transactionItem.className = 'transaction-item';
+                    
+                    // Determine transaction type
+                    const isCredit = transaction.type === 'credit';
+                    const iconClass = isCredit ? 'credit' : 'debit';
+                    const icon = isCredit ? 'fa-arrow-down' : 'fa-arrow-up';
+                    const sign = isCredit ? '+' : '-';
+                    
+                    transactionItem.innerHTML = `
+                        <div class="transaction-icon ${iconClass}">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-title">${transaction.description || (isCredit ? 'Wallet Funded' : 'Wallet Debited')}</div>
+                            <div class="transaction-date">${formattedDate} • ${userData.first_name} ${userData.last_name}</div>
+                        </div>
+                        <div class="transaction-amount ${iconClass}">${sign}₦${parseFloat(transaction.amount || 0).toFixed(2)}</div>
+                    `;
+                    
+                    // Add event listener to view transaction details
+                    transactionItem.addEventListener('click', () => {
+                        viewTransactionDetails(transactionId);
+                    });
+                    
+                    recentTransactions.appendChild(transactionItem);
+                }
+            } catch (error) {
+                console.error('Error loading recent transactions:', error);
+                throw error;
+            }
+        }
+        
+        // Load all users
+        async function loadAllUsers(status = 'all') {
+            try {
+                usersLoading.style.display = 'flex';
+                usersEmpty.style.display = 'none';
+                usersTable.innerHTML = '';
+                
+                let query = db.collection('users').orderBy('createdAt', 'desc');
+                
+                if (status !== 'all') {
+                    query = query.where('status', '==', status);
+                }
+                
+                const usersSnapshot = await query.get();
+                
+                usersLoading.style.display = 'none';
+                
+                if (usersSnapshot.empty) {
+                    usersEmpty.style.display = 'flex';
+                    return;
+                }
+                
+                users = [];
+                
+                usersSnapshot.forEach(doc => {
+                    const user = doc.data();
+                    user.id = doc.id;
+                    users.push(user);
+                });
+                
+                renderUsers(users);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                usersLoading.style.display = 'none';
+                showToast('Error loading users', 'error');
+            }
+        }
+        
+        // Render users
+        function renderUsers(users) {
+            usersTable.innerHTML = '';
+            
+            if (users.length === 0) {
+                usersEmpty.style.display = 'flex';
+                return;
+            }
+            
+            usersEmpty.style.display = 'none';
+            
+            users.forEach(user => {
+                // Create table row
+                const row = document.createElement('tr');
+                
+                // Determine status class
+                let statusClass = 'active';
+                if (user.status === 'inactive') {
+                    statusClass = 'inactive';
+                }
+                
+                row.innerHTML = `
+                    <td>${user.id.substring(0, 8)}</td>
+                    <td>${user.first_name || ''} ${user.last_name || ''}</td>
+                    <td>${user.email || 'No email'}</td>
+                    <td>${user.phone_number || 'No phone'}</td>
+                    <td>₦${parseFloat(user.balance || 0).toFixed(2)}</td>
+                    <td><span class="status-badge ${statusClass}">${user.status || 'active'}</span></td>
+                    <td>
+                        <button class="btn-icon view" data-id="${user.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon edit" data-id="${user.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon fund" data-id="${user.id}">
+                            <i class="fas fa-wallet"></i>
+                        </button>
+                    </td>
+                `;
+                
+                // Add event listeners to buttons
+                row.querySelector('.btn-icon.view').addEventListener('click', () => {
+                    viewUserDetails(user.id);
+                });
+                
+                row.querySelector('.btn-icon.edit').addEventListener('click', () => {
+                    editUser(user.id);
+                });
+                
+                row.querySelector('.btn-icon.fund').addEventListener('click', () => {
+                    showFundWalletModal(user.id);
+                });
+                
+                usersTable.appendChild(row);
+            });
+        }
+        
+        // Load telegram users
+        async function loadTelegramUsers() {
+            try {
+                telegramUsersLoading.style.display = 'flex';
+                telegramUsersEmpty.style.display = 'none';
+                telegramUsersTable.innerHTML = '';
+                
+                const usersSnapshot = await db.collection('users')
+                    .where('isTelegramUser', '==', true)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                
+                telegramUsersLoading.style.display = 'none';
+                
+                if (usersSnapshot.empty) {
+                    telegramUsersEmpty.style.display = 'flex';
+                    return;
+                }
+                
+                telegramUsers = [];
+                
+                usersSnapshot.forEach(doc => {
+                    const user = doc.data();
+                    user.id = doc.id;
+                    telegramUsers.push(user);
+                });
+                
+                renderTelegramUsers(telegramUsers);
+            } catch (error) {
+                console.error('Error loading telegram users:', error);
+                telegramUsersLoading.style.display = 'none';
+                showToast('Error loading telegram users', 'error');
+            }
+        }
+        
+        // Render telegram users
+        function renderTelegramUsers(users) {
+            telegramUsersTable.innerHTML = '';
+            
+            if (users.length === 0) {
+                telegramUsersEmpty.style.display = 'flex';
+                return;
+            }
+            
+            telegramUsersEmpty.style.display = 'none';
+            
+            users.forEach(user => {
+                // Create table row
+                const row = document.createElement('tr');
+                
+                // Determine status class
+                let statusClass = 'active';
+                if (user.status === 'inactive') {
+                    statusClass = 'inactive';
+                }
+                
+                row.innerHTML = `
+                    <td>${user.id.substring(0, 8)}</td>
+                    <td>${user.first_name || ''} ${user.last_name || ''}</td>
+                    <td>${user.telegramUsername || 'No username'}</td>
+                    <td>${user.telegramChatId || 'No chat ID'}</td>
+                    <td>₦${parseFloat(user.balance || 0).toFixed(2)}</td>
+                    <td><span class="status-badge ${statusClass}">${user.status || 'active'}</span></td>
+                    <td>
+                        <button class="btn-icon view" data-id="${user.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon edit" data-id="${user.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon fund" data-id="${user.id}">
+                            <i class="fas fa-wallet"></i>
+                        </button>
+                    </td>
+                `;
+                
+                // Add event listeners to buttons
+                row.querySelector('.btn-icon.view').addEventListener('click', () => {
+                    viewUserDetails(user.id);
+                });
+                
+                row.querySelector('.btn-icon.edit').addEventListener('click', () => {
+                    editUser(user.id);
+                });
+                
+                row.querySelector('.btn-icon.fund').addEventListener('click', () => {
+                    showFundWalletModal(user.id);
+                });
+                
+                telegramUsersTable.appendChild(row);
+            });
+        }
+        
+        // Load transactions
+        async function loadTransactions(type = 'all') {
+            try {
+                transactionsLoading.style.display = 'flex';
+                transactionsEmpty.style.display = 'none';
+                transactionsTable.innerHTML = '';
+                
+                let query = db.collection('transactions').orderBy('timestamp', 'desc');
+                
+                if (type !== 'all') {
+                    query = query.where('type', '==', type);
+                }
+                
+                const transactionsSnapshot = await query.get();
+                
+                transactionsLoading.style.display = 'none';
+                
+                if (transactionsSnapshot.empty) {
+                    transactionsEmpty.style.display = 'flex';
+                    return;
+                }
+                
+                transactions = [];
+                
+                for (const doc of transactionsSnapshot.docs) {
+                    const transaction = doc.data();
+                    transaction.id = doc.id;
+                    
+                    // Get user data
+                    if (transaction.userId) {
+                        const userDoc = await db.collection('users').doc(transaction.userId).get();
+                        if (userDoc.exists) {
+                            transaction.user = userDoc.data();
+                        }
+                    }
+                    
+                    transactions.push(transaction);
+                }
+                
+                renderTransactions(transactions);
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                transactionsLoading.style.display = 'none';
+                showToast('Error loading transactions', 'error');
+            }
+        }
+        
+        // Render transactions
+        function renderTransactions(transactions) {
+            transactionsTable.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                transactionsEmpty.style.display = 'flex';
+                return;
+            }
+            
+            transactionsEmpty.style.display = 'none';
+            
+            transactions.forEach(transaction => {
+                // Format date
+                const date = transaction.timestamp ? new Date(transaction.timestamp.toDate()) : new Date();
+                const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                
+                // Create table row
+                const row = document.createElement('tr');
+                
+                // Determine transaction type
+                const isCredit = transaction.type === 'credit';
+                const typeClass = isCredit ? 'success' : 'error';
+                
+                row.innerHTML = `
+                    <td>${transaction.id.substring(0, 8)}</td>
+                    <td>${transaction.user ? `${transaction.user.first_name} ${transaction.user.last_name}` : 'Unknown User'}</td>
+                    <td><span class="status-badge ${isCredit ? 'active' : 'inactive'}">${isCredit ? 'Credit' : 'Debit'}</span></td>
+                    <td class="text-${typeClass}">₦${parseFloat(transaction.amount || 0).toFixed(2)}</td>
+                    <td>${transaction.description || (isCredit ? 'Wallet Funded' : 'Wallet Debited')}</td>
+                    <td>${formattedDate}</td>
+                    <td>
+                        <button class="btn-icon view" data-id="${transaction.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                
+                // Add event listener to view button
+                row.querySelector('.btn-icon.view').addEventListener('click', () => {
+                    viewTransactionDetails(transaction.id);
+                });
+                
+                transactionsTable.appendChild(row);
+            });
+        }
+        
+        // View user details
+        async function viewUserDetails(userId) {
+            try {
+                currentUserId = userId;
+                
+                const userDoc = await db.collection('users').doc(userId).get();
+                
+                if (!userDoc.exists) {
+                    showToast('User not found', 'error');
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                
+                // Get user transactions
+                const transactionsSnapshot = await db.collection('transactions')
+                    .where('userId', '==', userId)
+                    .orderBy('timestamp', 'desc')
+                    .limit(5)
+                    .get();
+                
+                const userTransactions = [];
+                transactionsSnapshot.forEach(doc => {
+                    const transaction = doc.data();
+                    transaction.id = doc.id;
+                    userTransactions.push(transaction);
+                });
+                
+                // Format created date
+                const createdDate = userData.createdAt ? new Date(userData.createdAt.toDate()) : new Date();
+                const formattedCreatedDate = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
+                
+                // Build user details HTML
+                let detailsHTML = `
+                    <div class="detail-list">
+                        <div class="detail-item">
+                            <div class="detail-label">User ID</div>
+                            <div class="detail-value">${userId}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Name</div>
+                            <div class="detail-value">${userData.first_name || ''} ${userData.last_name || ''}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Email</div>
+                            <div class="detail-value">${userData.email || 'Not provided'}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Phone</div>
+                            <div class="detail-value">${userData.phone_number || 'Not provided'}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Balance</div>
+                            <div class="detail-value">₦${parseFloat(userData.balance || 0).toFixed(2)}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Status</div>
+                            <div class="detail-value">
+                                <span class="status-badge ${userData.status === 'inactive' ? 'inactive' : 'active'}">${userData.status || 'active'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Role</div>
+                            <div class="detail-value">${userData.role || 'user'}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Created</div>
+                            <div class="detail-value">${formattedCreatedDate}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add telegram info if user is a telegram user
+                if (userData.isTelegramUser) {
+                    detailsHTML += `
+                        <h3 style="margin-top: 1.5rem; margin-bottom: 1rem;">Telegram Information</h3>
+                        <div class="detail-list">
+                            <div class="detail-item">
+                                <div class="detail-label">Username</div>
+                                <div class="detail-value">${userData.telegramUsername || 'Not provided'}</div>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label">Chat ID</div>
+                                <div class="detail-value">${userData.telegramChatId || 'Not provided'}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Add recent transactions
+                detailsHTML += `
+                    <h3 style="margin-top: 1.5rem; margin-bottom: 1rem;">Recent Transactions</h3>
+                `;
+                
+                if (userTransactions.length === 0) {
+                    detailsHTML += `
+                        <p>No transactions found for this user.</p>
+                    `;
+                } else {
+                    detailsHTML += `<div style="max-height: 300px; overflow-y: auto;">`;
+                    
+                    userTransactions.forEach(transaction => {
+                        // Format date
+                        const date = transaction.timestamp ? new Date(transaction.timestamp.toDate()) : new Date();
+                        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                        
+                        // Determine transaction type
+                        const isCredit = transaction.type === 'credit';
+                        const iconClass = isCredit ? 'credit' : 'debit';
+                        const icon = isCredit ? 'fa-arrow-down' : 'fa-arrow-up';
+                        const sign = isCredit ? '+' : '-';
+                        
+                        detailsHTML += `
+                            <div class="transaction-item" data-id="${transaction.id}">
+                                <div class="transaction-icon ${iconClass}">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <div class="transaction-title">${transaction.description || (isCredit ? 'Wallet Funded' : 'Wallet Debited')}</div>
+                                    <div class="transaction-date">${formattedDate}</div>
+                                </div>
+                                <div class="transaction-amount ${iconClass}">${sign}₦${parseFloat(transaction.amount || 0).toFixed(2)}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    detailsHTML += `</div>`;
+                }
+                
+                // Add action buttons
+                detailsHTML += `
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" id="fundUserWalletBtn">
+                            <i class="fas fa-wallet"></i>
+                            Fund Wallet
+                        </button>
+                        <button class="btn btn-outline" id="viewAllUserTransactionsBtn">
+                            <i class="fas fa-list"></i>
+                            View All Transactions
+                        </button>
+                    </div>
+                `;
+                
+                userDetailContent.innerHTML = detailsHTML;
+                
+                // Add event listeners to transaction items
+                const transactionItems = userDetailContent.querySelectorAll('.transaction-item');
+                transactionItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const transactionId = item.dataset.id;
+                        viewTransactionDetails(transactionId);
+                    });
+                });
+                
+                // Add event listener to fund wallet button
+                document.getElementById('fundUserWalletBtn').addEventListener('click', () => {
+                    showFundWalletModal(userId);
+                });
+                
+                // Add event listener to view all transactions button
+                document.getElementById('viewAllUserTransactionsBtn').addEventListener('click', () => {
+                    // Switch to transactions section and filter by user
+                    switchSection('transactions');
+                    // TODO: Implement filtering by user
+                    userDetailModal.classList.remove('active');
+                });
+                
+                // Show modal
+                userDetailModal.classList.add('active');
+            } catch (error) {
+                console.error('Error viewing user details:', error);
+                showToast('Error loading user details', 'error');
+            }
+        }
+        
+        // View transaction details
+        async function viewTransactionDetails(transactionId) {
+            try {
+                currentTransactionId = transactionId;
+                
+                const transactionDoc = await db.collection('transactions').doc(transactionId).get();
+                
+                if (!transactionDoc.exists) {
+                    showToast('Transaction not found', 'error');
+                    return;
+                }
+                
+                const transactionData = transactionDoc.data();
+                
+                // Get user data
+                let userData = { first_name: 'Unknown', last_name: 'User' };
+                if (transactionData.userId) {
+                    const userDoc = await db.collection('users').doc(transactionData.userId).get();
+                    if (userDoc.exists) {
+                        userData = userDoc.data();
+                    }
+                }
+                
+                // Format date
+                const date = transactionData.timestamp ? new Date(transactionData.timestamp.toDate()) : new Date();
+                const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                
+                // Determine transaction type
+                const isCredit = transactionData.type === 'credit';
+                const typeClass = isCredit ? 'success' : 'error';
+                
+                // Build transaction details HTML
+                const detailsHTML = `
+                    <div class="detail-list">
+                        <div class="detail-item">
+                            <div class="detail-label">Transaction ID</div>
+                            <div class="detail-value">${transactionId}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">User</div>
+                            <div class="detail-value">${userData.first_name} ${userData.last_name}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Type</div>
+                            <div class="detail-value">
+                                <span class="status-badge ${isCredit ? 'active' : 'inactive'}">${isCredit ? 'Credit' : 'Debit'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Amount</div>
+                            <div class="detail-value" style="color: var(--${isCredit ? 'success' : 'error'});">₦${parseFloat(transactionData.amount || 0).toFixed(2)}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Description</div>
+                            <div class="detail-value">${transactionData.description || (isCredit ? 'Wallet Funded' : 'Wallet Debited')}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Date</div>
+                            <div class="detail-value">${formattedDate}</div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <div class="detail-label">Admin</div>
+                            <div class="detail-value">${transactionData.adminName || 'System'}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn btn-outline" id="viewUserBtn" data-id="${transactionData.userId}">
+                            <i class="fas fa-user"></i>
+                            View User
+                        </button>
+                    </div>
+                `;
+                
+                transactionDetailContent.innerHTML = detailsHTML;
+                
+                // Add event listener to view user button
+                document.getElementById('viewUserBtn').addEventListener('click', (e) => {
+                    const userId = e.currentTarget.dataset.id;
+                    transactionDetailModal.classList.remove('active');
+                    viewUserDetails(userId);
+                });
+                
+                // Show modal
+                transactionDetailModal.classList.add('active');
+            } catch (error) {
+                console.error('Error viewing transaction details:', error);
+                showToast('Error loading transaction details', 'error');
+            }
+        }
+        
+        // Add new user
+        function addNewUser() {
+            isEditMode = false;
+            editUserModalTitle.textContent = 'Add New User';
+            
+            // Reset form
+            userForm.reset();
+            telegramFields.style.display = 'none';
+            
+            // Show modal
+            editUserModal.classList.add('active');
+        }
+        
+        // Edit user
+        async function editUser(userId) {
+            try {
+                isEditMode = true;
+                currentUserId = userId;
+                editUserModalTitle.textContent = 'Edit User';
+                
+                const userDoc = await db.collection('users').doc(userId).get();
+                
+                if (!userDoc.exists) {
+                    showToast('User not found', 'error');
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                
+                // Fill form with user data
+                document.getElementById('firstName').value = userData.first_name || '';
+                document.getElementById('lastName').value = userData.last_name || '';
+                document.getElementById('email').value = userData.email || '';
+                document.getElementById('phone').value = userData.phone_number || '';
+                document.getElementById('userRole').value = userData.role || 'user';
+                document.getElementById('userStatus').value = userData.status || 'active';
+                document.getElementById('initialBalance').value = userData.balance || '0';
+                document.getElementById('isTelegramUser').checked = userData.isTelegramUser || false;
+                
+                // Show/hide telegram fields
+                if (userData.isTelegramUser) {
+                    telegramFields.style.display = 'block';
+                    document.getElementById('telegramUsername').value = userData.telegramUsername || '';
+                    document.getElementById('telegramChatId').value = userData.telegramChatId || '';
+                } else {
+                    telegramFields.style.display = 'none';
+                }
+                
+                // Show modal
+                editUserModal.classList.add('active');
+            } catch (error) {
+                console.error('Error editing user:', error);
+                showToast('Error loading user data', 'error');
+            }
+        }
+        
+        // Save user
+        async function saveUser() {
+            try {
+                // Get form data
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const role = document.getElementById('userRole').value;
+                const status = document.getElementById('userStatus').value;
+                const balance = parseFloat(document.getElementById('initialBalance').value || '0');
+                const isTelegramUser = document.getElementById('isTelegramUser').checked;
+                
+                // Validate required fields
+                if (!firstName || !lastName || !email) {
+                    showToast('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                // Get telegram fields if user is a telegram user
+                let telegramUsername = '';
+                let telegramChatId = '';
+                
+                if (isTelegramUser) {
+                    telegramUsername = document.getElementById('telegramUsername').value.trim();
+                    telegramChatId = document.getElementById('telegramChatId').value.trim();
+                    
+                    // Validate telegram fields
+                    if (!telegramUsername) {
+                        showToast('Please enter a Telegram username', 'error');
+                        return;
+                    }
+                }
+                
+                // Prepare user data
+                const userData = {
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email,
+                    phone_number: phone,
+                    role: role,
+                    status: status,
+                    balance: balance,
+                    isTelegramUser: isTelegramUser,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser.uid
+                };
+                
+                // Add telegram fields if user is a telegram user
+                if (isTelegramUser) {
+                    userData.telegramUsername = telegramUsername;
+                    userData.telegramChatId = telegramChatId;
+                }
+                
+                if (isEditMode) {
+                    // Update existing user
+                    await db.collection('users').doc(currentUserId).update(  {
+                    // Update existing user
+                    await db.collection('users').doc(currentUserId).update(userData);
+                    
+                    showToast('User updated successfully', 'success');
+                } else {
+                    // Add new user
+                    userData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    userData.createdBy = currentUser.uid;
+                    
+                    await db.collection('users').doc().set(userData);
+                    
+                    showToast('User added successfully', 'success');
+                }
+                
+                // Hide modal
+                editUserModal.classList.remove('active');
+                
+                // Reload data
+                if (currentSection === 'dashboard') {
+                    loadDashboardData();
+                } else if (currentSection === 'allUsers') {
+                    loadAllUsers(currentTab);
+                } else if (currentSection === 'telegramUsers') {
+                    loadTelegramUsers();
+                }
+            } catch (error) {
+                console.error('Error saving user:', error);
+                showToast('Error saving user: ' + error.message, 'error');
+            }
+        }
+        
+        // Show fund wallet modal
+        async function showFundWalletModal(userId) {
+            try {
+                currentUserId = userId;
+                
+                const userDoc = await db.collection('users').doc(userId).get();
+                
+                if (!userDoc.exists) {
+                    showToast('User not found', 'error');
+                    return;
+                }
+                
+                // Reset form
+                document.getElementById('fundAmount').value = '';
+                document.getElementById('fundDescription').value = '';
+                document.getElementById('transactionType').value = 'credit';
+                
+                // Show modal
+                fundWalletModal.classList.add('active');
+            } catch (error) {
+                console.error('Error showing fund wallet modal:', error);
+                showToast('Error loading user data', 'error');
+            }
+        }
+        
+        // Fund user wallet
+        async function fundUserWallet() {
+            try {
+                // Get form data
+                const amount = parseFloat(document.getElementById('fundAmount').value || '0');
+                const description = document.getElementById('fundDescription').value.trim();
+                const type = document.getElementById('transactionType').value;
+                
+                // Validate amount
+                if (amount <= 0) {
+                    showToast('Please enter a valid amount', 'error');
+                    return;
+                }
+                
+                // Get user data
+                const userDoc = await db.collection('users').doc(currentUserId).get();
+                
+                if (!userDoc.exists) {
+                    showToast('User not found', 'error');
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                const currentBalance = parseFloat(userData.balance || '0');
+                
+                // Calculate new balance
+                let newBalance = currentBalance;
+                if (type === 'credit') {
+                    newBalance += amount;
+                } else {
+                    // Check if user has enough balance
+                    if (currentBalance < amount) {
+                        showToast('User does not have enough balance', 'error');
+                        return;
+                    }
+                    
+                    newBalance -= amount;
+                }
+                
+                // Update user balance
+                await db.collection('users').doc(currentUserId).update({
+                    balance: newBalance,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser.uid
+                });
+                
+                // Create transaction record
+                const transactionData = {
+                    userId: currentUserId,
+                    amount: amount,
+                    type: type,
+                    description: description || (type === 'credit' ? 'Wallet Funded by Admin' : 'Wallet Debited by Admin'),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    adminId: currentUser.uid,
+                    adminName: currentUser.displayName || currentUser.email
+                };
+                
+                await db.collection('transactions').doc().set(transactionData);
+                
+                // Hide modal
+                fundWalletModal.classList.remove('active');
+                
+                // Show success message
+                showToast(`Wallet ${type === 'credit' ? 'funded' : 'debited'} successfully`, 'success');
+                
+                // Reload data
+                if (currentSection === 'dashboard') {
+                    loadDashboardData();
+                } else if (currentSection === 'allUsers') {
+                    loadAllUsers(currentTab);
+                } else if (currentSection === 'telegramUsers') {
+                    loadTelegramUsers();
+                } else if (currentSection === 'transactions') {
+                    loadTransactions(currentTab);
+                }
+                
+                // Refresh user details if modal is open
+                if (userDetailModal.classList.contains('active')) {
+                    viewUserDetails(currentUserId);
+                }
+            } catch (error) {
+                console.error('Error funding wallet:', error);
+                showToast('Error processing transaction: ' + error.message, 'error');
+            }
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Logout button
+            logoutBtn.addEventListener('click', handleLogout);
+            
+            // Sidebar links
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (e.currentTarget.getAttribute('href') !== '#') return;
+                    e.preventDefault();
+                    const section = link.dataset.section;
+                    switchSection(section);
+                });
+            });
+            
+            // Sidebar toggle
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+            
+            // Add new user buttons
+            addNewUserBtn.addEventListener('click', addNewUser);
+            addUserBtn.addEventListener('click', addNewUser);
+            addTelegramUserBtn.addEventListener('click', () => {
+                addNewUser();
+                document.getElementById('isTelegramUser').checked = true;
+                telegramFields.style.display = 'block';
+            });
+            
+            addFirstUserBtn?.addEventListener('click', addNewUser);
+            addFirstTelegramUserBtn?.addEventListener('click', () => {
+                addNewUser();
+                document.getElementById('isTelegramUser').checked = true;
+                telegramFields.style.display = 'block';
+            });
+            
+            // Refresh users button
+            refreshUsers.addEventListener('click', () => {
+                loadDashboardData();
+                showToast('Dashboard refreshed', 'success');
+            });
+            
+            // View all transactions button
+            viewAllTransactions.addEventListener('click', () => {
+                switchSection('transactions');
+            });
+            
+            // User detail modal
+            closeUserDetailModal.addEventListener('click', () => {
+                userDetailModal.classList.remove('active');
+            });
+            
+            closeUserDetailBtn.addEventListener('click', () => {
+                userDetailModal.classList.remove('active');
+            });
+            
+            editUserBtn.addEventListener('click', () => {
+                userDetailModal.classList.remove('active');
+                editUser(currentUserId);
+            });
+            
+            // Edit user modal
+            closeEditUserModal.addEventListener('click', () => {
+                editUserModal.classList.remove('active');
+            });
+            
+            cancelEditUserBtn.addEventListener('click', () => {
+                editUserModal.classList.remove('active');
+            });
+            
+            saveUserBtn.addEventListener('click', saveUser);
+            
+            // Fund wallet modal
+            closeFundWalletModal.addEventListener('click', () => {
+                fundWalletModal.classList.remove('active');
+            });
+            
+            cancelFundWalletBtn.addEventListener('click', () => {
+                fundWalletModal.classList.remove('active');
+            });
+            
+            confirmFundWalletBtn.addEventListener('click', fundUserWallet);
+            
+            // Transaction detail modal
+            closeTransactionDetailModal.addEventListener('click', () => {
+                transactionDetailModal.classList.remove('active');
+            });
+            
+            closeTransactionDetailBtn.addEventListener('click', () => {
+                transactionDetailModal.classList.remove('active');
+            });
+            
+            // Save settings button
+            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            
+            // Save notification settings button
+            document.getElementById('saveNotificationSettingsBtn').addEventListener('click', saveNotificationSettings);
+            
+            // Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const status = tab.dataset.status;
+                    const type = tab.dataset.type;
+                    currentTab = status || type;
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Move tab indicator
+                    const tabWidth = tab.offsetWidth;
+                    const tabLeft = tab.offsetLeft;
+                    tabIndicator.style.width = `${tabWidth}px`;
+                    tabIndicator.style.left = `${tabLeft}px`;
+                    
+                    // Load data based on current section
+                    if (currentSection === 'allUsers') {
+                        loadAllUsers(status);
+                    } else if (currentSection === 'transactions') {
+                        loadTransactions(type);
+                    }
+                });
+            });
+            
+            // Search inputs
+            document.getElementById('userSearch')?.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                filterUsers(searchTerm);
+            });
+            
+            document.getElementById('telegramUserSearch')?.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                filterTelegramUsers(searchTerm);
+            });
+            
+            document.getElementById('transactionSearch')?.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                filterTransactions(searchTerm);
+            });
+            
+            // Toggle telegram fields
+            isTelegramUser.addEventListener('change', () => {
+                telegramFields.style.display = isTelegramUser.checked ? 'block' : 'none';
+            });
+        }
+        
+        // Handle logout
+        async function handleLogout() {
+            try {
+                await auth.signOut();
+                // Redirect to login page
+                window.location.href = "/login.html";
+            } catch (error) {
+                console.error('Logout error:', error);
+                showToast('Logout failed: ' + error.message, 'error');
+            }
+        }
+        
+        // Switch section
+        function switchSection(section) {
+            currentSection = section;
+            
+            // Update active link
+            sidebarLinks.forEach(link => {
+                if (link.dataset.section === section) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            
+            // Show active section
+            contentSections.forEach(contentSection => {
+                if (contentSection.id === section + 'Section') {
+                    contentSection.style.display = 'block';
+                } else {
+                    contentSection.style.display = 'none';
+                }
+            });
+            
+            // Load section data
+            if (section === 'dashboard') {
+                loadDashboardData();
+            } else if (section === 'allUsers') {
+                loadAllUsers(currentTab);
+            } else if (section === 'telegramUsers') {
+                loadTelegramUsers();
+            } else if (section === 'transactions') {
+                loadTransactions(currentTab);
+            }
+            
+            // Close sidebar on mobile
+            if (window.innerWidth < 992) {
+                sidebar.classList.remove('active');
+            }
+        }
+        
+        // Filter users
+        function filterUsers(searchTerm) {
+            if (!searchTerm) {
+                renderUsers(users);
+                return;
+            }
+            
+            const filteredUsers = users.filter(user => {
+                return (
+                    (user.first_name && user.first_name.toLowerCase().includes(searchTerm)) ||
+                    (user.last_name && user.last_name.toLowerCase().includes(searchTerm)) ||
+                    (user.email && user.email.toLowerCase().includes(searchTerm)) ||
+                    (user.phone_number && user.phone_number.toLowerCase().includes(searchTerm)) ||
+                    (user.id && user.id.toLowerCase().includes(searchTerm))
+                );
+            });
+            
+            renderUsers(filteredUsers);
+        }
+        
+        // Filter telegram users
+        function filterTelegramUsers(searchTerm) {
+            if (!searchTerm) {
+                renderTelegramUsers(telegramUsers);
+                return;
+            }
+            
+            const filteredUsers = telegramUsers.filter(user => {
+                return (
+                    (user.first_name && user.first_name.toLowerCase().includes(searchTerm)) ||
+                    (user.last_name && user.last_name.toLowerCase().includes(searchTerm)) ||
+                    (user.telegramUsername && user.telegramUsername.toLowerCase().includes(searchTerm)) ||
+                    (user.telegramChatId && user.telegramChatId.toLowerCase().includes(searchTerm)) ||
+                    (user.id && user.id.toLowerCase().includes(searchTerm))
+                );
+            });
+            
+            renderTelegramUsers(filteredUsers);
+        }
+        
+        // Filter transactions
+        function filterTransactions(searchTerm) {
+            if (!searchTerm) {
+                renderTransactions(transactions);
+                return;
+            }
+            
+            const filteredTransactions = transactions.filter(transaction => {
+                return (
+                    (transaction.description && transaction.description.toLowerCase().includes(searchTerm)) ||
+                    (transaction.user && transaction.user.first_name && transaction.user.first_name.toLowerCase().includes(searchTerm)) ||
+                    (transaction.user && transaction.user.last_name && transaction.user.last_name.toLowerCase().includes(searchTerm)) ||
+                    (transaction.id && transaction.id.toLowerCase().includes(searchTerm))
+                );
+            });
+            
+            renderTransactions(filteredTransactions);
+        }
+        
+        // Save settings
+        async function saveSettings() {
+            try {
+                const adminName = document.getElementById('adminName').value.trim();
+                
+                if (!currentUser) {
+                    showToast('You must be logged in to save settings', 'error');
+                    return;
+                }
+                
+                // Update admin document
+                await db.collection('admins').doc(currentUser.uid).set({
+                    name: adminName,
+                    email: currentUser.email,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                // Update display name
+                await currentUser.updateProfile({
+                    displayName: adminName
+                });
+                
+                // Update UI
+                userName.textContent = adminName;
+                
+                showToast('Settings saved successfully', 'success');
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showToast('Error saving settings', 'error');
+            }
+        }
+        
+        // Save notification settings
+        async function saveNotificationSettings() {
+            try {
+                const newUserNotification = document.getElementById('newUserNotification').checked;
+                const transactionNotification = document.getElementById('transactionNotification').checked;
+                const lowBalanceNotification = document.getElementById('lowBalanceNotification').checked;
+                
+                if (!currentUser) {
+                    showToast('You must be logged in to save settings', 'error');
+                    return;
+                }
+                
+                // Update admin document
+                await db.collection('admins').doc(currentUser.uid).set({
+                    notificationSettings: {
+                        newUser: newUserNotification,
+                        transaction: transactionNotification,
+                        lowBalance: lowBalanceNotification
+                    },
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                showToast('Notification settings saved successfully', 'success');
+            } catch (error) {
+                console.error('Error saving notification settings:', error);
+                showToast('Error saving notification settings', 'error');
+            }
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            console.log(`Toast (${type}):`, message);
+            toastMessage.textContent = message;
+            toast.className = 'toast';
+            
+            if (type === 'error') {
+                toast.classList.add('error');
+                toastIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+            } else if (type === 'warning') {
+                toast.classList.add('warning');
+                toastIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            } else {
+                toast.classList.add('success');
+                toastIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            }
+            
+            // Show toast
+            toast.classList.add('show');
+            
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Initialize the app on load
+        window.onload = function() {
+            // Check if user is already logged in
+            const user = auth.currentUser;
+            if (user) {
+                checkAdminStatus(user);
+            }
+        };
+    </script>
+</body>
+</html>
