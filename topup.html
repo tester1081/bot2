@@ -843,7 +843,7 @@
         <!-- Balance Display -->
         <div class="balance-display">
             <div class="balance-label">Wallet Balance</div>
-            <div class="balance-value" id="userBalance">₦0.00</div>
+            <div class="balance-value" id="userBalance">Loading...</div>
         </div>
         
         <!-- Tabs -->
@@ -1086,7 +1086,7 @@
         // State variables
         let selectedPack = null;
         let selectedDeal = null;
-        let walletBalance = 90; // Default balance
+        let walletBalance = 0; // Default to 0 until loaded
         let hasVoted = false;
         let yesVotes = 128;
         let noVotes = 24;
@@ -1128,25 +1128,123 @@
             // Set up event listeners
             setupEventListeners();
             
-            // Check if user is logged in
-            auth.onAuthStateChanged(user => {
+            // Get user ID from URL parameter or local storage
+            // This is for Telegram integration
+            function getUserId() {
+                // Try to get from URL parameters first
+                const urlParams = new URLSearchParams(window.location.search);
+                const telegramId = urlParams.get('user_id');
+                
+                if (telegramId) {
+                    return telegramId;
+                }
+                
+                // If not in URL, try localStorage
+                const storedUserId = localStorage.getItem('telegram_user_id');
+                if (storedUserId) {
+                    return storedUserId;
+                }
+                
+                // Return null if no user ID found
+                return null;
+            }
+            
+            // Check if user is logged in via Firebase Auth
+            auth.onAuthStateChanged(async user => {
                 console.log("Auth state changed:", user ? user.uid : "No user");
                 
                 if (user) {
                     currentUser = user;
                     userId = user.uid;
                     
-                    // Load user data
-                    loadUserData(user.uid);
+                    // Check if user exists in Firestore by UID
+                    const userDoc = await db.collection('users').doc(userId).get();
+                    
+                    if (userDoc.exists) {
+                        console.log("User document found, loading data");
+                        loadUserData(userId);
+                    } else {
+                        console.log("User document not found, checking by phone number");
+                        
+                        // Try to find user by phone number if available
+                        const telegramId = getUserId();
+                        if (telegramId) {
+                            // Check if user exists with this telegram ID
+                            const userQuery = await db.collection('users')
+                                .where('user_id', '==', telegramId)
+                                .limit(1)
+                                .get();
+                            
+                            if (!userQuery.empty) {
+                                // User exists with this telegram ID
+                                const existingUserDoc = userQuery.docs[0];
+                                const existingUserData = existingUserDoc.data();
+                                
+                                console.log("Found existing user by telegram ID:", existingUserData);
+                                
+                                // Create a new document with the auth UID but keep all existing data
+                                await db.collection('users').doc(userId).set({
+                                    ...existingUserData,
+                                    auth_uid: userId,
+                                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                                
+                                console.log("Created user document with existing data");
+                                loadUserData(userId);
+                            } else {
+                                // Create new user with complete profile structure
+                                await createNewUserDocument(userId, telegramId);
+                                loadUserData(userId);
+                            }
+                        } else {
+                            // No telegram ID, create basic user
+                            await createNewUserDocument(userId);
+                            loadUserData(userId);
+                        }
+                    }
                     
                     // Load user requests
-                    loadUserRequests(user.uid);
+                    loadUserRequests(userId);
                 } else {
-                    // Not logged in, use default data
-                    console.log("User not logged in, using default data");
-                    updateWalletBalance(90); // Default balance
-                    requestsLoading.style.display = 'none';
-                    emptyRequests.style.display = 'block';
+                    // Not logged in, try to use telegram ID directly
+                    const telegramId = getUserId();
+                    if (telegramId) {
+                        console.log("Using Telegram ID:", telegramId);
+                        userId = telegramId;
+                        
+                        // Try to load user data by telegram ID
+                        const userQuery = await db.collection('users')
+                            .where('user_id', '==', telegramId)
+                            .limit(1)
+                            .get();
+                        
+                        if (!userQuery.empty) {
+                            const userData = userQuery.docs[0].data();
+                            console.log("Found user by telegram ID:", userData);
+                            
+                            // Update UI with user data
+                            walletBalance = userData.balance || 0;
+                            updateWalletBalance(walletBalance);
+                            
+                            if (userData.first_name) {
+                                userNameInput.value = `${userData.first_name} ${userData.last_name || ''}`.trim();
+                            }
+                            
+                            // Load user requests
+                            loadUserRequestsByTelegramId(telegramId);
+                        } else {
+                            console.log("No user found with telegram ID:", telegramId);
+                            updateWalletBalance(0);
+                            requestsLoading.style.display = 'none';
+                            emptyRequests.style.display = 'block';
+                        }
+                    } else {
+                        // No user ID at all
+                        console.log("No user ID found, using default data");
+                        updateWalletBalance(0);
+                        requestsLoading.style.display = 'none';
+                        emptyRequests.style.display = 'block';
+                    }
                 }
                 
                 // Load diamond packs and special deals regardless of auth state
@@ -1154,6 +1252,34 @@
                 loadSpecialDeals();
             });
         });
+
+        // Create a new user document with all required fields
+        async function createNewUserDocument(uid, telegramId = null) {
+            try {
+                console.log("Creating new user document for:", uid);
+                
+                const newUser = {
+                    balance: 0,
+                    email: "",
+                    first_name: "",
+                    last_name: "",
+                    phone_number: "",
+                    referred_by: "",
+                    role: "user",
+                    transactions: [],
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    user_id: telegramId || "",
+                    vtu_id: telegramId ? telegramId.substring(0, 6) : "",
+                    created_at: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                await db.collection('users').doc(uid).set(newUser);
+                console.log("Created new user document with complete structure");
+            } catch (error) {
+                console.error("Error creating user document:", error);
+                showToast("Error creating user profile", "error");
+            }
+        }
 
         // Load user data
         async function loadUserData(uid) {
@@ -1166,7 +1292,7 @@
                     console.log("User data loaded:", userData);
                     
                     // Update wallet balance
-                    walletBalance = userData.balance || 90;
+                    walletBalance = userData.balance || 0;
                     updateWalletBalance(walletBalance);
                     
                     // Pre-fill user name if available
@@ -1174,19 +1300,8 @@
                         userNameInput.value = `${userData.first_name} ${userData.last_name || ''}`.trim();
                     }
                 } else {
-                    console.log("User document doesn't exist");
-                    showToast("User profile not found", "warning");
-                    
-                    // Create a user document to prevent this warning in the future
-                    try {
-                        await db.collection('users').doc(uid).set({
-                            balance: 90,
-                            created_at: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        console.log("Created new user document");
-                    } catch (createError) {
-                        console.error("Error creating user document:", createError);
-                    }
+                    console.log("User document doesn't exist after creation attempt");
+                    updateWalletBalance(0);
                 }
             } catch (error) {
                 console.error('Error loading user data:', error);
@@ -1334,7 +1449,7 @@
             }
         }
 
-        // Load user requests
+        // Load user requests by auth UID
         async function loadUserRequests(uid) {
             try {
                 console.log("Loading user requests for:", uid);
@@ -1354,40 +1469,7 @@
                         console.log("Found requests:", requestsSnapshot.size);
                         emptyRequests.style.display = 'none';
                         
-                        requestsSnapshot.forEach(doc => {
-                            const request = doc.data();
-                            const requestId = doc.id;
-                            
-                            // Format date
-                            const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
-                            const formattedDate = date.toLocaleString();
-                            
-                            // Create request card
-                            const requestCard = document.createElement('div');
-                            requestCard.className = 'request-card';
-                            
-                            // Determine status class
-                            let statusClass = 'status-pending';
-                            if (request.status === 'completed') {
-                                statusClass = 'status-completed';
-                            } else if (request.status === 'rejected') {
-                                statusClass = 'status-rejected';
-                            }
-                            
-                            requestCard.innerHTML = `
-                                <div class="request-header">
-                                    <div class="request-id">#${requestId.substring(0, 8)}</div>
-                                    <div class="request-status ${statusClass}">${request.status || 'pending'}</div>
-                                </div>
-                                <div class="request-details">
-                                    <div class="request-item">${request.packName || 'Unknown Pack'}</div>
-                                    <div class="request-price">${formatNaira(request.amount || 0)}</div>
-                                </div>
-                                <div class="request-date">Requested on: ${formattedDate}</div>
-                            `;
-                            
-                            requestsList.appendChild(requestCard);
-                        });
+                        renderRequestsList(requestsSnapshot);
                     }
                 } catch (firestoreError) {
                     console.error("Error loading requests from Firestore:", firestoreError);
@@ -1402,6 +1484,96 @@
                 requestsLoading.style.display = 'none';
                 emptyRequests.style.display = 'block';
             }
+        }
+
+        // Load user requests by Telegram ID
+        async function loadUserRequestsByTelegramId(telegramId) {
+            try {
+                console.log("Loading user requests for Telegram ID:", telegramId);
+                requestsLoading.style.display = 'flex';
+                requestsList.innerHTML = '';
+                
+                // Try to get requests from Firestore
+                try {
+                    // First try to find user document by telegram ID
+                    const userQuery = await db.collection('users')
+                        .where('user_id', '==', telegramId)
+                        .limit(1)
+                        .get();
+                    
+                    if (!userQuery.empty) {
+                        const userDoc = userQuery.docs[0];
+                        const userId = userDoc.id;
+                        
+                        // Now get requests using the document ID
+                        const requestsSnapshot = await db.collection('topupRequests')
+                            .where('userId', '==', userId)
+                            .get();
+                        
+                        if (requestsSnapshot.empty) {
+                            console.log("No requests found for user");
+                            emptyRequests.style.display = 'block';
+                        } else {
+                            console.log("Found requests:", requestsSnapshot.size);
+                            emptyRequests.style.display = 'none';
+                            
+                            renderRequestsList(requestsSnapshot);
+                        }
+                    } else {
+                        console.log("No user found with Telegram ID:", telegramId);
+                        emptyRequests.style.display = 'block';
+                    }
+                } catch (firestoreError) {
+                    console.error("Error loading requests from Firestore:", firestoreError);
+                    emptyRequests.style.display = 'block';
+                    showToast('Error loading your requests', 'error');
+                }
+                
+                requestsLoading.style.display = 'none';
+            } catch (error) {
+                console.error('Error in loadUserRequestsByTelegramId:', error);
+                showToast('Failed to load your requests', 'error');
+                requestsLoading.style.display = 'none';
+                emptyRequests.style.display = 'block';
+            }
+        }
+
+        // Render requests list
+        function renderRequestsList(requestsSnapshot) {
+            requestsSnapshot.forEach(doc => {
+                const request = doc.data();
+                const requestId = doc.id;
+                
+                // Format date
+                const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+                const formattedDate = date.toLocaleString();
+                
+                // Create request card
+                const requestCard = document.createElement('div');
+                requestCard.className = 'request-card';
+                
+                // Determine status class
+                let statusClass = 'status-pending';
+                if (request.status === 'completed') {
+                    statusClass = 'status-completed';
+                } else if (request.status === 'rejected') {
+                    statusClass = 'status-rejected';
+                }
+                
+                requestCard.innerHTML = `
+                    <div class="request-header">
+                        <div class="request-id">#${requestId.substring(0, 8)}</div>
+                        <div class="request-status ${statusClass}">${request.status || 'pending'}</div>
+                    </div>
+                    <div class="request-details">
+                        <div class="request-item">${request.packName || 'Unknown Pack'}</div>
+                        <div class="request-price">${formatNaira(request.amount || 0)}</div>
+                    </div>
+                    <div class="request-date">Requested on: ${formattedDate}</div>
+                `;
+                
+                requestsList.appendChild(requestCard);
+            });
         }
 
         // Format currency in Naira
@@ -1750,7 +1922,8 @@
                 // Update user balance if logged in
                 if (userId) {
                     await db.collection('users').doc(userId).update({
-                        balance: firebase.firestore.FieldValue.increment(-purchaseAmount)
+                        balance: firebase.firestore.FieldValue.increment(-purchaseAmount),
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     console.log("User balance updated");
                     
