@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>N3TData - Buy Data</title>
+<title>VeltraWave - Buy Data</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -172,10 +172,70 @@ body {
     color: var(--success);
 }
 
+/* Mode Selection Tabs */
+.mode-tabs-container {
+    background: rgba(45, 127, 249, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mode-tabs-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 12px;
+}
+
+.mode-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 4px;
+    position: relative;
+}
+
+.mode-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: color 0.3s ease;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.mode-tab.active {
+    color: var(--background);
+}
+
+.mode-tab-indicator {
+    position: absolute;
+    height: calc(100% - 8px);
+    width: calc(50% - 4px);
+    background: var(--primary);
+    border-radius: 6px;
+    top: 4px;
+    left: 4px;
+    transition: transform 0.3s ease;
+}
+
+.mode-tab-indicator.manual {
+    transform: translateX(100%);
+}
+
 /* Network Selection */
 .network-slider-container {
     margin-bottom: 2rem;
     position: relative;
+    display: none;
+}
+
+.network-slider-container.show {
+    display: block;
 }
 
 .slider-indicators {
@@ -361,6 +421,16 @@ body {
     color: white;
 }
 
+.form-select:disabled, .form-input:disabled {
+    background-color: rgba(255, 255, 255, 0.03);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.form-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
 .btn {
     display: inline-block;
     padding: 0.75rem 1.5rem;
@@ -414,60 +484,446 @@ body {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Data Plan Selection */
-.data-plans-container {
+/* Auto-detect Section */
+.auto-detect-section {
+    display: none;
     margin-bottom: 1.5rem;
 }
 
-.data-plan-category {
+.auto-detect-section.show {
+    display: block;
+}
+
+.auto-detect-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1rem;
+}
+
+.auto-detect-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.auto-detect-status {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.auto-detect-status.detecting {
+    color: var(--warning);
+}
+
+.auto-detect-status.success {
+    color: var(--success);
+}
+
+.auto-detect-status.error {
+    color: var(--error);
+}
+
+.auto-detect-button {
+    background: rgba(45, 127, 249, 0.2);
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.auto-detect-button:hover {
+    background: rgba(45, 127, 249, 0.3);
+}
+
+.auto-detect-button i {
+    margin-right: 0.5rem;
+}
+
+.auto-detect-button.detecting {
+    background: rgba(255, 181, 71, 0.2);
+    cursor: not-allowed;
+}
+
+.auto-detect-button.success {
+    background: rgba(0, 225, 160, 0.2);
+}
+
+/* MTN Special Data Plans Section */
+.mtn-special-plans {
+    background: linear-gradient(135deg, rgba(255, 204, 0, 0.15) 0%, rgba(255, 204, 0, 0.3) 100%);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 204, 0, 0.3);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    display: none; /* Hidden by default, shown when MTN is selected */
+}
+
+.mtn-special-plans.show {
+    display: block;
+}
+
+.section-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    opacity: 0.15;
+    background-color: var(--mtn-yellow);
+}
+
+.shape-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    top: -40px;
+    right: -40px;
+}
+
+.shape-square {
+    width: 60px;
+    height: 60px;
+    bottom: 20px;
+    left: 10%;
+    transform: rotate(45deg);
+}
+
+.shape-triangle {
+    width: 0;
+    height: 0;
+    border-left: 50px solid transparent;
+    border-right: 50px solid transparent;
+    border-bottom: 80px solid var(--mtn-yellow);
+    bottom: -40px;
+    right: 15%;
+    opacity: 0.1;
+}
+
+.section-content {
+    position: relative;
+    z-index: 1;
+}
+
+.section-title {
+    color: var(--mtn-yellow);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.section-tagline {
+    color: var(--mtn-yellow);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.important-notes {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.important-notes h3 {
+    color: var(--mtn-yellow);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.important-notes ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.important-notes li {
+    margin-bottom: 0.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.important-notes li i {
+    color: var(--mtn-yellow);
+    margin-right: 0.5rem;
+    font-size: 0.85rem;
+}
+
+/* Manual Data Plans */
+.manual-data-section {
+    display: none;
+    margin-bottom: 1.5rem;
+}
+
+.manual-data-section.show {
+    display: block;
+}
+
+.plan-category {
+    margin-bottom: 1.5rem;
 }
 
 .category-title {
     font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--primary-light);
+}
+
+.category-description {
+    font-size: 0.85rem;
     color: var(--text-secondary);
+    margin-bottom: 1rem;
 }
 
-.data-plans {
+.plan-cards {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
 }
 
-.data-plan {
+.plan-card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-    padding: 0.75rem;
+    border-radius: 12px;
+    padding: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.data-plan:hover {
+.plan-card:hover {
     background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
 }
 
-.data-plan.selected {
+.plan-card.selected {
     border-color: var(--primary);
     background: rgba(45, 127, 249, 0.1);
 }
 
-.data-plan-name {
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
+.plan-data {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
 }
 
-.data-plan-price {
+.plan-validity {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.plan-price {
     font-size: 0.9rem;
+    font-weight: 600;
     color: var(--success);
 }
 
-.data-plan-validity {
+.plan-original-price {
     font-size: 0.8rem;
     color: var(--text-secondary);
+    text-decoration: line-through;
+    margin-right: 5px;
+}
+
+.plan-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--warning);
+    color: var(--background);
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-bottom-left-radius: 8px;
+}
+
+.plan-badge.hot {
+    background: var(--error);
+}
+
+.plan-badge.popular {
+    background: var(--secondary);
+}
+
+.plan-badge.value {
+    background: var(--success);
+}
+
+/* Request History Section */
+.request-history-toggle {
+    background: rgba(45, 127, 249, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.request-history-toggle:hover {
+    background: rgba(45, 127, 249, 0.15);
+}
+
+.request-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.request-history-title {
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.request-history-title i {
+    margin-right: 10px;
+}
+
+.request-history-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.request-history-toggle.open .request-history-content {
+    max-height: 500px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.request-history-toggle .toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.request-history-toggle.open .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.request-tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.request-tab {
+    padding: 8px 15px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.request-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.request-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.request-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.request-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.request-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.request-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.request-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.request-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.request-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.request-status {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.request-status.pending {
+    background: rgba(255, 181, 71, 0.2);
+    color: var(--warning);
+}
+
+.request-status.completed {
+    background: rgba(0, 225, 160, 0.2);
+    color: var(--success);
+}
+
+.request-status.rejected {
+    background: rgba(255, 94, 125, 0.2);
+    color: var(--error);
+}
+
+.request-details {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.request-network {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.empty-requests {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 /* Bottom Navigation */
@@ -588,6 +1044,10 @@ body {
     backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
+    15,30,0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
     justify-content: center;
     z-index: 1000;
     opacity: 0;
@@ -705,9 +1165,36 @@ body {
         font-size: 0.7rem;
     }
     
-    .data-plans {
-        grid-template-columns: repeat(2, 1fr);
+    .plan-cards {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
+}
+
+/* Add this CSS for the loading state: */
+.loading-requests {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Add this CSS for the pending badge: */
+.pending-badge {
+    background: var(--warning);
+    color: var(--background);
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
 }
 </style>
 </head>
@@ -721,7 +1208,7 @@ body {
 
 <div class="data-container">
     <div class="page-header">
-        <button class="back-button" onclick="window.location.href='dashboard.html'">
+        <button class="back-button" onclick="window.location.href='    index.html'">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5"></path>
                 <path d="M12 19l-7-7 7-7"></path>
@@ -735,8 +1222,19 @@ body {
         <div class="balance-label">Wallet Balance</div>
         <div class="balance-value" id="userBalance">Loading...</div>
     </div>
-
-    <div class="network-slider-container">
+    
+    <!-- Mode Selection Tabs -->
+    <div class="mode-tabs-container">
+        <div class="mode-tabs-title">Purchase Mode</div>
+        <div class="mode-tabs">
+            <div class="mode-tab automatic active" data-mode="automatic">Automatic</div>
+            <div class="mode-tab manual" data-mode="manual">Manual</div>
+            <div class="mode-tab-indicator"></div>
+        </div>
+    </div>
+    
+    <!-- Network Selection (shown in automatic mode) -->
+    <div class="network-slider-container show" id="automaticNetworkSection">
         <div class="slider-indicators" id="sliderIndicators">
             <div class="indicator active" data-index="0"></div>
             <div class="indicator" data-index="1"></div>
@@ -744,7 +1242,7 @@ body {
             <div class="indicator" data-index="3"></div>
         </div>
         <div class="network-slider" id="networkSlider">
-            <div class="network-option mtn" data-network="MTN" data-network-id="1">
+            <div class="network-option mtn selected" data-network="MTN" data-network-id="1">
                 <div class="network-image">
                     <div class="network-logo">M</div>
                 </div>
@@ -774,9 +1272,74 @@ body {
         </div>
     </div>
     
+    
+    <!-- MTN Special Data Plans Section (shown in automatic mode when MTN is selected) -->
+    <div class="mtn-special-plans" id="mtnSpecialPlans">
+        <div class="section-shapes">
+            <div class="shape shape-circle"></div>
+            <div class="shape shape-square"></div>
+            <div class="shape shape-triangle"></div>
+        </div>
+        <div class="section-content">
+            <h2 class="section-title">VeltraWave Exclusive MTN Special Data Plans</h2>
+            <p class="section-tagline">The cheapest MTN data plans available anywhere - exclusively for VeltraWave customers!</p>
+            
+            <div class="important-notes">
+                <h3>Important Notes:</h3>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Premium quality data with full network coverage</li>
+                    <li><i class="fas fa-bolt"></i> Fast delivery - data will be delivered within 30 minutes</li>
+                    <li><i class="fas fa-layer-group"></i> Large plans (5GB+) may be delivered in multiple transfers</li>
+                    <li><i class="fas fa-calendar-alt"></i> Plans expire after validity period (no rollover)</li>
+                    <li><i class="fas fa-sim-card"></i> Works on all MTN SIM cards and supports hotspot/tethering</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Manual Data Plans Section (shown when MTN is selected in manual mode) -->
+    <div class="manual-data-section" id="manualDataSection">
+        <!-- 1-Day Offers -->
+        <div class="plan-category">
+            <h3 class="category-title">1-Day Offers (24 Hours Validity)</h3>
+            <p class="category-description">Best for: Quick browsing, social media, and light streaming.</p>
+            <div class="plan-cards" id="oneDayPlans">
+                <!-- Plans will be loaded dynamically -->
+            </div>
+        </div>
+        
+        <!-- 7-Day Offers -->
+        <div class="plan-category">
+            <h3 class="category-title">7-Day Offers (1 Week Validity)</h3>
+            <p class="category-description">Best for: Heavy users, movie streaming, gaming, and hotspot sharing.</p>
+            <div class="plan-cards" id="sevenDayPlans">
+                <!-- Plans will be loaded dynamically -->
+            </div>
+        </div>
+        
+        <!-- 14-Day Offers -->
+        <div class="plan-category">
+            <h3 class="category-title">14-Day Offers (2 Weeks Validity)</h3>
+            <p class="category-description">Best for: Remote work, gaming, frequent downloads, and social media content creators.</p>
+            <div class="plan-cards" id="fourteenDayPlans">
+                <!-- Plans will be loaded dynamically -->
+            </div>
+        </div>
+        
+        <!-- 30-Day Offers -->
+        <div class="plan-category">
+            <h3 class="category-title">30-Day Offers (1 Month Validity)</h3>
+            <p class="category-description">Best for: Long-term users, multiple device connections, video streaming, and online businesses.</p>
+            <div class="plan-cards" id="thirtyDayPlans">
+                <!-- Plans will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Form Container -->
     <div class="form-container">
         <form id="dataForm">
-            <div class="form-group">
+            <div class="form-group" id="networkDisplayGroup">
                 <label for="selectedNetwork" class="form-label">Selected Network</label>
                 <div class="input-wrapper">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -793,21 +1356,54 @@ body {
                 </div>
             </div>
             
-            <div class="form-group">
-                <label for="dataPlan" class="form-label">Data Plan</label>
-                <div class="input-wrapper">
-                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                        <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
-                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
-                    </svg>
-                    <select id="dataPlan" class="form-select">
-                        <option value="" selected disabled>Select Data Plan</option>
-                    </select>
+            <!-- Automatic Mode Fields -->
+            <div id="automaticModeFields">
+                <div class="form-group">
+                    <label for="planType" class="form-label">Plan Type</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        </svg>
+                        <select id="planType" class="form-select" disabled>
+                            <option value="" selected disabled>Select Plan Type</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="dataPlan" class="form-label">Data Plan</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                        </svg>
+                        <select id="dataPlan" class="form-select" disabled>
+                            <option value="" selected disabled>Select Data Plan</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
+            <!-- Manual Mode Fields -->
+            <div id="manualModeFields" style="display: none;">
+                <input type="hidden" id="selectedManualPlan">
+                <div class="form-group">
+                    <label for="selectedPlanDisplay" class="form-label">Selected Plan</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                        </svg>
+                        <input type="text" id="selectedPlanDisplay" class="form-input" readonly placeholder="Select a plan above">
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="phoneNumber" class="form-label">Phone Number</label>
                 <div class="input-wrapper">
@@ -817,11 +1413,34 @@ body {
                     <input type="text" id="phoneNumber" class="form-input" placeholder="Enter 11-digit phone number" maxlength="11">
                 </div>
             </div>
-            
+
             <button type="submit" id="submitButton" class="btn btn-primary btn-block" disabled>
-                <span id="buttonText">Buy Data</span>
+                <span id="buttonText">Buy Now</span>
             </button>
         </form>
+    </div>
+    
+    <!-- Request History Section -->
+    <div class="request-history-toggle" id="requestHistoryToggle">
+        <div class="request-history-header">
+            <div class="request-history-title">
+                <i class="fas fa-history"></i>
+                <span>Request History</span>
+            </div>
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="request-history-content">
+            <div class="request-tabs">
+                <div class="request-tab active" data-status="all">All</div>
+                <div class="request-tab" data-status="pending">Pending</div>
+                <div class="request-tab" data-status="completed">Completed</div>
+                <div class="request-tab" data-status="rejected">Rejected</div>
+            </div>
+            <div class="request-list" id="requestList">
+                <!-- Requests will be loaded dynamically -->
+                <div class="empty-requests">No requests found</div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -845,25 +1464,26 @@ body {
     </div>
 </div>
 
-<!-- Bottom Navigation -->
-<div class="bottom-nav">
-    <a href="dashboard.html" class="nav-item">
-        <i class="fas fa-home"></i>
-        <span>Home</span>
-    </a>
-    <a href="service.html" class="nav-item active">
-        <i class="fas fa-bolt"></i>
-        <span>Service</span>
-    </a>
-    <a href="games.html" class="nav-item">
-        <i class="fas fa-gamepad"></i>
-        <span>Games</span>
-    </a>
-    <a href="profile.html" class="nav-item">
-        <i class="fas fa-user"></i>
-        <span>Profile</span>
-    </a>
-</div>
+  <!-- Navigation Bar -->
+    <div class="nav-container">
+        <div class="nav-bar">
+            <div class="nav-indicator"></div>
+            <a href="index.html" class="nav-item" data-page="home">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="services.html" class="nav-item active" data-page="services">
+                <i class="fas fa-bolt"></i>
+                <span>Services</span>
+            </a>
+            
+            </a>
+            <a href="account.html" class="nav-item" data-page="account">
+                <i class="fas fa-user"></i>
+                <span>Account</span>
+            </a>
+        </div>
+    </div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -873,7 +1493,7 @@ body {
 <script>
     // API credentials
     const ACCESS_TOKEN = "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d";
-
+    
     // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
@@ -884,50 +1504,130 @@ body {
         appId: "1:431351611304:web:7381dd659920f9f325a79d",
         measurementId: "G-HRHN8GJCR3"
     };
-
+    
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-
-    // Data plans by network
+    
+    // Default data plans by network and type (for automatic mode)
     const DATA_PLANS = {
-        "MTN": [
-            { id: 1, name: "500MB", price: 300, validity: "1 Month" },
-            { id: 2, name: "1GB", price: 600, validity: "1 Month" },
-            { id: 3, name: "2GB", price: 1200, validity: "1 Month" },
-            { id: 4, name: "3GB", price: 1800, validity: "1 Month" },
-            { id: 5, name: "5GB", price: 3000, validity: "1 Month" },
-            { id: 6, name: "10GB", price: 6000, validity: "1 Month" },
+        "MTN": {
+            "SME": [
+                { id: 1, name: "500MB", price: 300, validity: "1 Month" },
+                { id: 2, name: "1GB", price: 600, validity: "1 Month" },
+                { id: 3, name: "2GB", price: 1200, validity: "1 Month" },
+                { id: 4, name: "3GB", price: 1800, validity: "1 Month" },
+                { id: 6, name: "10GB", price: 6000, validity: "1 Month" },
+            ],
+            "COOPERATE GIFTING": [
+                { id: 50, name: "500MB", price: 130, validity: "1 Month" },
+                { id: 51, name: "1GB", price: 260, validity: "1 Month" },
+                { id: 52, name: "2GB", price: 520, validity: "1 Month" },
+                { id: 53, name: "3GB", price: 780, validity: "1 Month" },
+                { id: 54, name: "5GB", price: 1300, validity: "1 Month" },
+                { id: 55, name: "10GB", price: 2600, validity: "1 Month" },
+            ],
+            "GIFTING": [
+                { id: 101, name: "1GB", price: 400, validity: "1Day Awoof Data" },
+                { id: 102, name: "1.5GB", price: 500, validity: "1Day Awoof Data" },
+                { id: 103, name: "3.2GB", price: 1200, validity: "2Days Awoof Data" },
+                { id: 104, name: "5GB", price: 1700, validity: "7Days Awoof Data" },
+                { id: 105, name: "15GB", price: 3700, validity: "1Month Awoof Data" },
+            ]
+        },
+        "GLO": {
+            "COOPERATE GIFTING": [
+                { id: 57, name: "200MB", price: 100, validity: "1 Month" },
+                { id: 58, name: "500MB", price: 215, validity: "1 Month" },
+                { id: 59, name: "1GB", price: 430, validity: "1 Month" },
+                { id: 60, name: "2GB", price: 860, validity: "1 Month" },
+                { id: 61, name: "3GB", price: 1290, validity: "1 Month" },
+                { id: 62, name: "5GB", price: 2150, validity: "1 Month" },
+                { id: 63, name: "10GB", price: 4300, validity: "1 Month" },
+            ],
+            "GIFTING": [
+                { id: 90, name: "1GB", price: 230, validity: "1Day Awoof Data" },
+                { id: 91, name: "2GB", price: 350, validity: "1Day Awoof Data" },
+                { id: 92, name: "3.5GB", price: 550, validity: "2Days Awoof Data" },
+                { id: 93, name: "15GB", price: 2300, validity: "7Days Awoof Data" },
+            ]
+        },
+        "AIRTEL": {
+            "COOPERATE GIFTING": [
+                { id: 46, name: "500MB", price: 300, validity: "1 Month" },
+                { id: 47, name: "1GB", price: 600, validity: "1 Month" },
+                { id: 48, name: "2GB", price: 1200, validity: "1 Month" },
+                { id: 49, name: "5GB", price: 3000, validity: "1 Month" },
+                { id: 56, name: "10GB", price: 6000, validity: "1 Month" },
+                { id: 70, name: "300MB", price: 220, validity: "1Month" },
+                { id: 71, name: "100MB", price: 80, validity: "1Month" },
+            ],
+            "GIFTING": [
+                { id: 83, name: "300MB", price: 200, validity: "2Days Awoof Data" },
+                { id: 84, name: "1GB", price: 350, validity: "2Days Awoof Data" },
+                { id: 85, name: "2GB", price: 450, validity: "2Days Awoof Data" },
+                { id: 86, name: "3GB", price: 700, validity: "7Days Awoof Data" },
+                { id: 87, name: "4GB", price: 1200, validity: "1Month Awoof Data" },
+                { id: 88, name: "10GB", price: 2200, validity: "1Month Awoof Data" },
+                { id: 89, name: "15GB", price: 3100, validity: "1Month Awoof Data" },
+            ],
+            "SME": [
+                { id: 94, name: "500MB", price: 230, validity: "14 Days" },
+                { id: 95, name: "1GB", price: 350, validity: "7Days" },
+                { id: 96, name: "1.5GB", price: 450, validity: "7 Days" },
+                { id: 97, name: "2GB", price: 650, validity: "14 Days" },
+                { id: 98, name: "5GB", price: 1400, validity: "14 Days" },
+                { id: 100, name: "20GB", price: 4200, validity: "30 Days" },
+            ]
+        },
+        "9MOBILE": {
+            "GIFTING": [
+                { id: 36, name: "1.5GB", price: 950, validity: "1 Month" },
+                { id: 37, name: "2GB", price: 1100, validity: "1 Month" },
+                { id: 38, name: "3GB", price: 1400, validity: "1 Month" },
+                { id: 39, name: "4.5GB", price: 1800, validity: "1 Month" },
+            ],
+            "COOPERATE GIFTING": [
+                { id: 72, name: "500MB", price: 100, validity: "1Month" },
+                { id: 73, name: "1GB", price: 200, validity: "1Month" },
+                { id: 74, name: "2GB", price: 400, validity: "1Month" },
+                { id: 75, name: "3GB", price: 600, validity: "1Month" },
+                { id: 76, name: "5GB", price: 1000, validity: "1Month" },
+                { id: 77, name: "10GB", price: 2000, validity: "1Month" },
+            ]
+        }
+    };
+    
+    // Default manual data plans (will be replaced with data from Firestore)
+    const DEFAULT_MANUAL_PLANS = {
+        "1day": [
+            { id: "1day-1", data: "500MB", price: 129, originalPrice: 150, validity: "1 Day", badge: "" },
+            { id: "1day-2", data: "600MB", price: 159, originalPrice: 180, validity: "1 Day", badge: "" },
+            { id: "1day-3", data: "2.5GB", price: 519, originalPrice: 600, validity: "1 Day", badge: "hot" },
+            { id: "1day-4", data: "4.5GB", price: 1299, originalPrice: 1500, validity: "1 Day", badge: "" }
         ],
-        "AIRTEL": [
-            { id: 7, name: "500MB", price: 300, validity: "1 Month" },
-            { id: 8, name: "1GB", price: 600, validity: "1 Month" },
-            { id: 9, name: "2GB", price: 1200, validity: "1 Month" },
-            { id: 10, name: "5GB", price: 3000, validity: "1 Month" },
-            { id: 11, name: "10GB", price: 6000, validity: "1 Month" },
+        "7day": [
+            { id: "7day-1", data: "13GB", price: 2599, originalPrice: 3000, validity: "7 Days", badge: "" },
+            { id: "7day-2", data: "18GB", price: 4549, originalPrice: 5200, validity: "7 Days", badge: "" },
+            { id: "7day-3", data: "22GB", price: 5199, originalPrice: 6000, validity: "7 Days", badge: "popular" }
         ],
-        "GLO": [
-            { id: 12, name: "500MB", price: 300, validity: "1 Month" },
-            { id: 13, name: "1GB", price: 600, validity: "1 Month" },
-            { id: 14, name: "2GB", price: 1200, validity: "1 Month" },
-            { id: 15, name: "5GB", price: 3000, validity: "1 Month" },
-            { id: 16, name: "10GB", price: 6000, validity: "1 Month" },
+        "14day": [
+            { id: "14day-1", data: "30GB", price: 6499, originalPrice: 7500, validity: "14 Days", badge: "value" }
         ],
-        "9MOBILE": [
-            { id: 17, name: "500MB", price: 300, validity: "1 Month" },
-            { id: 18, name: "1GB", price: 600, validity: "1 Month" },
-            { id: 19, name: "2GB", price: 1200, validity: "1 Month" },
-            { id: 20, name: "5GB", price: 3000, validity: "1 Month" },
-            { id: 21, name: "10GB", price: 6000, validity: "1 Month" },
+        "30day": [
+            { id: "30day-1", data: "39GB", price: 7799, originalPrice: 9000, validity: "30 Days", badge: "" },
+            { id: "30day-2", data: "53GB", price: 12999, originalPrice: 15000, validity: "30 Days", badge: "" }
         ]
     };
-
+    
     // DOM elements
+    const automaticNetworkSection = document.getElementById('automaticNetworkSection');
     const networkSlider = document.getElementById('networkSlider');
     const sliderIndicators = document.getElementById('sliderIndicators');
     const networkOptions = document.querySelectorAll('.network-option');
     const selectedNetworkInput = document.getElementById('selectedNetwork');
+    const planTypeSelect = document.getElementById('planType');
     const dataPlanSelect = document.getElementById('dataPlan');
     const phoneNumberInput = document.getElementById('phoneNumber');
     const submitButton = document.getElementById('submitButton');
@@ -941,18 +1641,35 @@ body {
     const confirmPurchaseBtn = document.getElementById('confirmPurchase');
     const cancelPurchaseBtn = document.getElementById('cancelPurchase');
     const userBalanceElement = document.getElementById('userBalance');
-
+    const mtnSpecialPlans = document.getElementById('mtnSpecialPlans');
+    const manualDataSection = document.getElementById('manualDataSection');
+    const automaticModeFields = document.getElementById('automaticModeFields');
+    const manualModeFields = document.getElementById('manualModeFields');
+    const selectedPlanDisplay = document.getElementById('selectedPlanDisplay');
+    const selectedManualPlan = document.getElementById('selectedManualPlan');
+    const requestHistoryToggle = document.getElementById('requestHistoryToggle');
+    const requestList = document.getElementById('requestList');
+    const requestTabs = document.querySelectorAll('.request-tab');
+    const modeTabs = document.querySelectorAll('.mode-tab');
+    const modeTabIndicator = document.querySelector('.mode-tab-indicator');
+    const networkDisplayGroup = document.getElementById('networkDisplayGroup');
+    
     // State variables
     let selectedNetwork = '';
     let selectedNetworkId = null;
+    let selectedPlanType = '';
     let selectedDataPlan = null;
+    let selectedManualDataPlan = null;
     let activeSlideIndex = 0;
     let isLoading = false;
     let startX, startScrollLeft;
     let isDown = false;
     let userBalance = 0;
     let currentUser = null;
-
+    let isAutoMode = true; // Default to automatic mode
+    let manualDataPlans = DEFAULT_MANUAL_PLANS;
+    let currentRequestTab = 'all';
+    
     // Get user ID from URL parameter or local storage
     // This is for Telegram integration
     function getUserId() {
@@ -973,14 +1690,55 @@ body {
         // Default test user ID if nothing is found
         return "5966603094"; // Default test user
     }
-
+    
     // Initialize with user ID
     const userId = getUserId();
     currentUser = { uid: userId };
     
-    // Fetch user balance directly without auth check
-    fetchUserBalance();
-
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch user balance
+        fetchUserBalance();
+        
+        // Fetch manual data plans from Firestore
+        fetchManualDataPlans();
+        
+        // Fetch user's data requests
+        fetchDataRequests();
+        
+        // Initialize slider
+        initSlider();
+        
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Set MTN as default network
+        const mtnOption = document.querySelector('.network-option.mtn');
+        if (mtnOption) {
+            selectNetwork('MTN', 1, mtnOption);
+        }
+        
+        // Wait for auth state before proceeding with data loading
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                await fetchUserBalance();
+                await fetchManualDataPlans();
+                await fetchDataRequests();
+            } else {
+                // Handle case where user isn't logged in
+                console.log("No user logged in, using default user ID");
+                // Continue with the default user ID that was set earlier
+                fetchUserBalance();
+                fetchManualDataPlans();
+                fetchDataRequests();
+            }
+        });
+        
+        // Set automatic mode as default
+        setMode('automatic');
+    });
+    
     // Fetch user balance from Firestore
     async function fetchUserBalance() {
         try {
@@ -1008,7 +1766,371 @@ body {
             showToast("Error loading balance. Please refresh.", "error");
         }
     }
+    
+    // Fetch manual data plans from Firestore
+    async function fetchManualDataPlans() {
+        try {
+            // Query the dataPlans collection for manual plans
+            const plansSnapshot = await db.collection('dataPlans')
+                .where('provider', '==', 'manual')
+                .where('status', '==', true)
+                .get();
+            
+            if (!plansSnapshot.empty) {
+                // Reset manual plans object
+                manualDataPlans = {
+                    "1day": [],
+                    "7day": [],
+                    "14day": [],
+                    "30day": []
+                };
+                
+                // Process each plan
+                plansSnapshot.forEach(doc => {
+                    const plan = doc.data();
+                    const planId = doc.id;
+                    
+                    // Determine which category this plan belongs to
+                    let category;
+                    if (plan.category === 'manual-1day') category = '1day';
+                    else if (plan.category === 'manual-7day') category = '7day';
+                    else if (plan.category === 'manual-14day') category = '14day';
+                    else if (plan.category === 'manual-30day') category = '30day';
+                    else return; // Skip if not in a known category
+                    
+                    // Add plan to the appropriate category
+                    manualDataPlans[category].push({
+                        id: planId,
+                        data: plan.data,
+                        price: plan.price,
+                        originalPrice: plan.originalPrice || null,
+                        validity: plan.validity,
+                        badge: plan.badge || ""
+                    });
+                });
+                
+                console.log("Fetched manual data plans:", manualDataPlans);
+            } else {
+                console.log("No manual data plans found, using defaults");
+            }
+            
+            // Render manual plans if MTN is selected and in manual mode
+            if (selectedNetwork === 'MTN' && !isAutoMode) {
+                renderManualDataPlans();
+            }
+        } catch (error) {
+            console.error("Error fetching manual data plans:", error);
+            showToast("Error loading data plans. Using default plans.", "error");
+        }
+    }
+    
+    // Fetch user's data requests
+    async function fetchDataRequests() {
+    try {
+        if (!currentUser || !currentUser.uid) return;
+        
+        // Show loading state in the request list
+        requestList.innerHTML = '<div class="loading-requests"><span class="loading"></span> Loading requests...</div>';
+        
+        // Check if the collection exists first
+        const requestsRef = db.collection('dataRequests');
+        const userRequestsQuery = requestsRef.where('userId', '==', currentUser.uid);
+        
+        const requestsSnapshot = await userRequestsQuery.orderBy('timestamp', 'desc').limit(20).get();
+        
+        const requests = [];
+        
+        if (requestsSnapshot.empty) {
+            // No requests found, create a sample request for demonstration
+            const sampleRequest = {
+                userId: currentUser.uid,
+                network: 'MTN',
+                planName: '1GB Data',
+                amount: 500,
+                phoneNumber: '07067479043',
+                status: 'completed',
+                timestamp: firebase.firestore.Timestamp.now()
+            };
+            
+            await db.collection('dataRequests').add(sampleRequest);
+            
+            // Add the sample to our display list
+            requests.push({
+                id: 'sample',
+                ...sampleRequest,
+                timestamp: new Date()
+            });
+        } else {
+            requestsSnapshot.forEach(doc => {
+                requests.push({
+                    id: doc.id,
+                    ...doc.data(),
+                    timestamp: doc.data().timestamp ? doc.data().timestamp.toDate() : new Date()
+                });
+            });
+        }
+        
+        console.log("Fetched requests:", requests);
+        renderDataRequests(requests);
+        
+        // Check for pending requests
+        await checkPendingRequests();
+    } catch (error) {
+        console.error("Error fetching data requests:", error);
+        requestList.innerHTML = '<div class="empty-requests">Error loading requests. Please try again.</div>';
+    }
+}
+    
+    // Render data requests
+    function renderDataRequests(requests) {
+        // Filter requests based on current tab
+        const filteredRequests = currentRequestTab === 'all' 
+            ? requests 
+            : requests.filter(req => req.status === currentRequestTab);
+        
+        // Clear the request list
+        requestList.innerHTML = '';
+        
+        if (filteredRequests.length === 0) {
+            requestList.innerHTML = '<div class="empty-requests">No requests found</div>';
+            return;
+        }
+        
+        // Render each request
+        filteredRequests.forEach(request => {
+            const requestItem = document.createElement('div');
+            requestItem.className = 'request-item';
+            
+            const formattedDate = request.timestamp.toLocaleString();
+            const statusClass = request.status || 'pending';
+            
+            // Format the data and network information
+            const dataInfo = request.data || request.planName || 'Unknown Plan';
+            const networkInfo = request.network || 'Unknown Network';
+            const phoneNumber = request.phoneNumber || 'N/A';
+            const amount = formatCurrency(request.amount || 0);
+            
+            requestItem.innerHTML = `
+                <div class="request-item-header">
+                    <div class="request-date">${formattedDate}</div>
+                    <div class="request-status ${statusClass}">${request.status || 'pending'}</div>
+                </div>
+                <div class="request-details">${dataInfo} - ${amount}</div>
+                <div class="request-network">${networkInfo} - ${phoneNumber}</div>
+            `;
+            
+            requestList.appendChild(requestItem);
+        });
+    }
+    
+    // Check for pending requests and show notification badge
+    async function checkPendingRequests() {
+        try {
+            if (!currentUser || !currentUser.uid) return;
+            
+            const pendingSnapshot = await db.collection('dataRequests')
+                .where('userId', '==', currentUser.uid)
+                .where('status', '==', 'pending')
+                .get();
+            
+            const pendingCount = pendingSnapshot.size;
+            
+            // Update the request history title with a badge if there are pending requests
+            const requestHistoryTitle = document.querySelector('.request-history-title');
+            const existingBadge = requestHistoryTitle.querySelector('.pending-badge');
+            
+            if (pendingCount > 0) {
+                if (existingBadge) {
+                    existingBadge.textContent = pendingCount;
+                } else {
+                    const badge = document.createElement('span');
+                    badge.className = 'pending-badge';
+                    badge.textContent = pendingCount;
+                    requestHistoryTitle.appendChild(badge);
+                }
+            } else if (existingBadge) {
+                existingBadge.remove();
+            }
+        } catch (error) {
+            console.error("Error checking pending requests:", error);
+        }
+    }
+    
+    // Set up event listeners
+    function setupEventListeners() {
+        // Mode tabs functionality
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const mode = this.getAttribute('data-mode');
+                setMode(mode);
+            });
+        });
+        
+        // Plan Type Select
+        planTypeSelect.addEventListener('change', function() {
+            selectedPlanType = this.value;
+            selectedDataPlan = null;
+            updateDataPlans();
+            updateSubmitButtonState();
+        });
+        
+        // Data Plan Select
+        dataPlanSelect.addEventListener('change', function() {
+            const planId = parseInt(this.value);
+            
+            if (selectedNetwork && selectedPlanType) {
+                const dataPlans = DATA_PLANS[selectedNetwork][selectedPlanType] || [];
+                selectedDataPlan = dataPlans.find(plan => plan.id === planId) || null;
+            }
+            
+            updateSubmitButtonState();
+        });
+        
+        // Phone Number Input
+        phoneNumberInput.addEventListener('input', function() {
+            // Allow only digits
+            this.value = this.value.replace(/\D/g, '');
+            updateSubmitButtonState();
+        });
+        
+        // Data Form Submit
+        dataForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (isAutoMode) {
+                // Validate automatic mode form
+                if (!selectedNetwork || !selectedPlanType || !selectedDataPlan || phoneNumberInput.value.length !== 11) {
+                    showToast('Please fill in all required fields correctly', 'error');
+                    return;
+                }
+                
+                showAutomaticPurchaseModal();
+            } else {
+                // Validate manual mode form
+                if (!selectedNetwork || !selectedManualDataPlan || phoneNumberInput.value.length !== 11) {
+                    showToast('Please select a network, data plan, and enter a valid phone number', 'error');
+                    return;
+                }
+                
+                showManualPurchaseModal();
+            }
+        });
+        
+        // Confirm Purchase Button
+        confirmPurchaseBtn.addEventListener('click', async function() {
+            hideModal();
+            
+            if (isAutoMode) {
+                // Handle automatic purchase
+                await processAutomaticPurchase();
+            } else {
+                // Handle manual purchase
+                await processManualPurchase();
+            }
+        });
+        
+        // Cancel Purchase Button
+        cancelPurchaseBtn.addEventListener('click', function() {
+            hideModal();
+        });
+        
+        // Request History Toggle
+        requestHistoryToggle.addEventListener('click', function() {
+            this.classList.toggle('open');
+    
+            // If opening and no requests loaded yet, fetch them
+            if (this.classList.contains('open') && 
+                requestList.querySelector('.empty-requests') && 
+                requestList.querySelector('.empty-requests').textContent === 'No requests found') {
+                fetchDataRequests();
+            }
+        });
+        
+        // Request Tabs
+        requestTabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent toggle from closing when clicking tabs
+                
+                // Remove active class from all tabs
+                requestTabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Update current tab and re-render requests
+                currentRequestTab = this.getAttribute('data-status');
+                fetchDataRequests();
+            });
+        });
+    }
+    
+    // Make sure slider is initialized after DOM is fully loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSlider);
+    } else {
+        initSlider();
+    }
+    
+    // Set mode (automatic or manual)
+    function setMode(mode) {
+        isAutoMode = (mode === 'automatic');
+        
+        // Update active class on tabs
+        modeTabs.forEach(tab => {
+            if (tab.getAttribute('data-mode') === mode) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+        
+        // Update indicator position
+        if (isAutoMode) {
+            modeTabIndicator.classList.remove('manual');
+        } else {
+            modeTabIndicator.classList.add('manual');
+        }
+        
+        // Update UI based on selected mode
+        updateModeUI();
+        
+        // Reset form when switching modes
+        resetForm();
+    }
+    
+    // Update UI based on selected mode
+    function updateModeUI() {
+    if (isAutoMode) {
+        automaticNetworkSection.classList.add('show');
+        manualDataSection.classList.remove('show');
+        mtnSpecialPlans.classList.add('show');
+        automaticModeFields.style.display = 'block';
+        manualModeFields.style.display = 'none';
+        
+        // Set MTN as default in automatic mode
+        if (!selectedNetwork) {
+            const mtnOption = document.querySelector('.network-option.mtn');
+            if (mtnOption) {
+                selectNetwork('MTN', 1, mtnOption);
+            }
+        }
+    } else {
+        automaticNetworkSection.classList.remove('show');
+        automaticModeFields.style.display = 'none';
+        manualModeFields.style.display = 'block';
+        
+        // Show manual data section and MTN special plans
+        manualDataSection.classList.add('show');
+        mtnSpecialPlans.classList.add('show');
+        renderManualDataPlans();
+    }
 
+    // Show/hide network display group based on mode
+    if (networkDisplayGroup) {
+        networkDisplayGroup.style.display = isAutoMode ? 'block' : 'none';
+    }
+}
+    
     // Initialize slider
     function initSlider() {
         // Set up mouse events for desktop
@@ -1016,21 +2138,20 @@ body {
             isDown = true;
             networkSlider.classList.add('active');
             startX = e.pageX - networkSlider.offsetLeft;
-            startScrollLeft = networkSlider.scrollLeft;
-            e.preventDefault();
+            startScrollLeft = e.preventDefault();
         });
-
+    
         networkSlider.addEventListener('mouseleave', () => {
             isDown = false;
             networkSlider.classList.remove('active');
         });
-
+    
         networkSlider.addEventListener('mouseup', () => {
             isDown = false;
             networkSlider.classList.remove('active');
             snapToClosestSlide();
         });
-
+    
         networkSlider.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
@@ -1038,7 +2159,7 @@ body {
             const walk = (x - startX) * 2; // Scroll speed multiplier
             networkSlider.scrollLeft = startScrollLeft - walk;
         });
-
+    
         // Set up touch events for mobile
         networkSlider.addEventListener('touchstart', (e) => {
             isDown = true;
@@ -1046,20 +2167,20 @@ body {
             startX = e.touches[0].pageX - networkSlider.offsetLeft;
             startScrollLeft = networkSlider.scrollLeft;
         }, { passive: true });
-
+    
         networkSlider.addEventListener('touchend', () => {
             isDown = false;
             networkSlider.classList.remove('active');
             snapToClosestSlide();
         });
-
+    
         networkSlider.addEventListener('touchmove', (e) => {
             if (!isDown) return;
             const x = e.touches[0].pageX - networkSlider.offsetLeft;
             const walk = (x - startX) * 2;
             networkSlider.scrollLeft = startScrollLeft - walk;
         }, { passive: true });
-
+    
         // Set up scroll event to update active slide
         networkSlider.addEventListener('scroll', handleSliderScroll);
         
@@ -1075,29 +2196,19 @@ body {
         // Set up network option clicks
         networkOptions.forEach((option, index) => {
             option.addEventListener('click', (e) => {
-                if (Math.abs(networkSlider.scrollLeft - (index * networkSlider.offsetWidth)) < 50) {
-                    const network = option.dataset.network;
-                    const networkId = parseInt(option.dataset.networkId);
-                    selectNetwork(network, networkId, option);
-                }
+                const network = option.dataset.network;
+                const networkId = parseInt(option.dataset.networkId);
+                selectNetwork(network, networkId, option);
             });
         });
-
-        // Initialize with the first network selected
-        const firstOption = networkOptions[0];
-        selectNetwork(
-            firstOption.dataset.network,
-            parseInt(firstOption.dataset.networkId),
-            firstOption
-        );
     }
-
+    
     function snapToClosestSlide() {
         const slideWidth = networkSlider.offsetWidth;
         const slideIndex = Math.round(networkSlider.scrollLeft / slideWidth);
         scrollToSlide(slideIndex);
     }
-
+    
     // Handle slider scroll
     function handleSliderScroll() {
         const slideWidth = networkSlider.offsetWidth;
@@ -1114,7 +2225,7 @@ body {
             selectNetwork(network, networkId, activeOption);
         }
     }
-
+    
     // Update slider indicators
     function updateIndicators() {
         const indicators = document.querySelectorAll('.indicator');
@@ -1126,7 +2237,7 @@ body {
             }
         });
     }
-
+    
     // Scroll to specific slide
     function scrollToSlide(index) {
         if (index < 0) index = 0;
@@ -1138,64 +2249,107 @@ body {
             behavior: 'smooth'
         });
     }
-
+    
     // Select network
     function selectNetwork(network, networkId, element) {
         // Reset previous selection
         networkOptions.forEach(opt => opt.classList.remove('selected'));
         
         // Set new selection
-        element.classList.add('selected');
+        if (element) element.classList.add('selected');
         selectedNetwork = network;
         selectedNetworkId = networkId;
         selectedNetworkInput.value = network;
         
-        // Update data plans
-        updateDataPlans();
+        if (isAutoMode) {
+            // In automatic mode
+            // Show MTN special plans if MTN is selected
+            if (network === 'MTN') {
+                mtnSpecialPlans.classList.add('show');
+            } else {
+                mtnSpecialPlans.classList.remove('show');
+            }
+            
+            // Update plan types
+            updatePlanTypes();
+        } else {
+            // In manual mode
+            // Show manual data section if MTN is selected
+            if (network === 'MTN') {
+                manualDataSection.classList.add('show');
+                renderManualDataPlans();
+            } else {
+                manualDataSection.classList.remove('show');
+            }
+        }
+        
+        // Reset other fields
+        resetForm();
         
         // Update button state
         updateSubmitButtonState();
     }
-
-    // Update data plans based on selected network
-    function updateDataPlans() {
+    
+    // Reset form
+    function resetForm() {
+        selectedPlanType = '';
+        selectedDataPlan = null;
+        planTypeSelect.value = '';
+        dataPlanSelect.innerHTML = '<option value="" disabled selected>Select Data Plan</option>';
+        dataPlanSelect.disabled = true;
+        updateSubmitButtonState();
+    }
+    
+    // Update plan types based on selected network
+    function updatePlanTypes() {
         // Clear existing options
-        dataPlanSelect.innerHTML = '<option value="" selected disabled>Select Data Plan</option>';
+        planTypeSelect.innerHTML = '<option value="" disabled selected>Select Plan Type</option>';
         
         if (selectedNetwork) {
-            const plans = DATA_PLANS[selectedNetwork] || [];
+            const planTypes = Object.keys(DATA_PLANS[selectedNetwork] || {});
             
-            plans.forEach(plan => {
+            planTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                planTypeSelect.appendChild(option);
+            });
+            
+            planTypeSelect.disabled = planTypes.length === 0;
+        } else {
+            planTypeSelect.disabled = true;
+        }
+    }
+    
+    // Update data plans based on selected plan type
+    function updateDataPlans() {
+        // Clear existing options
+        dataPlanSelect.innerHTML = '<option value="" disabled selected>Select Data Plan</option>';
+        
+        if (selectedNetwork && selectedPlanType) {
+            const dataPlans = DATA_PLANS[selectedNetwork][selectedPlanType] || [];
+            
+            dataPlans.forEach(plan => {
                 const option = document.createElement('option');
                 option.value = plan.id;
                 option.textContent = `${plan.name} - ${formatCurrency(plan.price)} - ${plan.validity}`;
                 dataPlanSelect.appendChild(option);
             });
+            
+            dataPlanSelect.disabled = dataPlans.length === 0;
+        } else {
+            dataPlanSelect.disabled = true;
         }
     }
-
+    
     // Format currency
     function formatCurrency(amount) {
         return new Intl.NumberFormat('en-NG', { 
             style: 'currency', 
-            currency: 'NGN',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
+            currency: 'NGN' 
         }).format(amount);
     }
-
-    // Update submit button state
-    function updateSubmitButtonState() {
-        const isFormValid = 
-            selectedNetwork && 
-            dataPlanSelect.value && 
-            phoneNumberInput.value.length === 11 && 
-            /^\d+$/.test(phoneNumberInput.value) &&
-            !isLoading;
-        
-        submitButton.disabled = !isFormValid;
-    }
-
+    
     // Set loading state
     function setLoading(loading) {
         isLoading = loading;
@@ -1203,12 +2357,12 @@ body {
         if (loading) {
             buttonText.innerHTML = '<span class="loading"></span>Processing...';
         } else {
-            buttonText.innerHTML = 'Buy Data';
+            buttonText.innerHTML = 'Buy Now';
         }
         
         submitButton.disabled = loading;
     }
-
+    
     // Show toast notification
     function showToast(message, type = 'success') {
         toastMessage.textContent = message;
@@ -1221,15 +2375,6 @@ body {
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="15" y1="9" x2="9" y2="15"></line>
                     <line x1="9" y1="9" x2="15" y2="15"></line>
-                </svg>
-            `;
-        } else if (type === 'warning') {
-            toast.classList.add('warning');
-            toastIcon.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
             `;
         } else {
@@ -1250,203 +2395,279 @@ body {
             toast.classList.remove('show');
         }, 3000);
     }
-
+    
     // Show modal
     function showModal() {
         modalOverlay.classList.add('active');
     }
-
+    
     // Hide modal
     function hideModal() {
         modalOverlay.classList.remove('active');
     }
-
-    // Check if user has sufficient balance
-    function checkBalance(amount) {
-        return userBalance >= amount;
+    
+    // Render manual data plans
+    function renderManualDataPlans() {
+        // Get plan container elements
+        const oneDayPlans = document.getElementById('oneDayPlans');
+        const sevenDayPlans = document.getElementById('sevenDayPlans');
+        const fourteenDayPlans = document.getElementById('fourteenDayPlans');
+        const thirtyDayPlans = document.getElementById('thirtyDayPlans');
+        
+        // Clear existing plans
+        oneDayPlans.innerHTML = '';
+        sevenDayPlans.innerHTML = '';
+        fourteenDayPlans.innerHTML = '';
+        thirtyDayPlans.innerHTML = '';
+        
+        // Render 1-day plans
+        manualDataPlans['1day'].forEach(plan => {
+            const planCard = createPlanCard(plan);
+            oneDayPlans.appendChild(planCard);
+        });
+        
+        // Render 7-day plans
+        manualDataPlans['7day'].forEach(plan => {
+            const planCard = createPlanCard(plan);
+            sevenDayPlans.appendChild(planCard);
+        });
+        
+        // Render 14-day plans
+        manualDataPlans['14day'].forEach(plan => {
+            const planCard = createPlanCard(plan);
+            fourteenDayPlans.appendChild(planCard);
+        });
+        
+        // Render 30-day plans
+        manualDataPlans['30day'].forEach(plan => {
+            const planCard = createPlanCard(plan);
+            thirtyDayPlans.appendChild(planCard);
+        });
     }
-
-    // Event listeners
-    phoneNumberInput.addEventListener('input', function() {
-        // Allow only digits
-        this.value = this.value.replace(/\D/g, '');
-        updateSubmitButtonState();
-    });
-
-    dataPlanSelect.addEventListener('change', function() {
-        const planId = parseInt(this.value);
-        if (selectedNetwork) {
-            const plans = DATA_PLANS[selectedNetwork] || [];
-            selectedDataPlan = plans.find(plan => plan.id === planId) || null;
-        }
-        updateSubmitButtonState();
-    });
-
-    dataForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+    
+    // Create plan card element
+    function createPlanCard(plan) {
+        const planCard = document.createElement('div');
+        planCard.className = 'plan-card';
+        planCard.setAttribute('data-plan-id', plan.id);
         
-        if (!selectedNetwork || !selectedDataPlan || phoneNumberInput.value.length !== 11) {
-            showToast('Please fill in all required fields correctly', 'error');
-            return;
+        // Add badge if present
+        if (plan.badge) {
+            const badgeClass = `plan-badge ${plan.badge}`;
+            const badgeText = plan.badge.charAt(0).toUpperCase() + plan.badge.slice(1);
+            planCard.innerHTML += `<div class="${badgeClass}">${badgeText}</div>`;
         }
-
-        const hasSufficientBalance = checkBalance(selectedDataPlan.price);
         
-        // Prepare modal content
-        let modalContent = `
-            <p>Are you sure you want to buy ${selectedDataPlan.name} data for ${phoneNumberInput.value}?</p>
-            <div class="summary-row">
-                <span class="summary-label">Network:</span>
-                <span class="summary-value">${selectedNetwork}</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Data Plan:</span>
-                <span class="summary-value">${selectedDataPlan.name} (${selectedDataPlan.validity})</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Phone Number:</span>
-                <span class="summary-value">${phoneNumberInput.value}</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Amount:</span>
-                <span class="summary-value">${formatCurrency(selectedDataPlan.price)}</span>
+        // Add plan details
+        planCard.innerHTML += `
+            <div class="plan-data">${plan.data}</div>
+            <div class="plan-validity">${plan.validity}</div>
+            <div class="plan-price">
+                ${plan.originalPrice ? `<span class="plan-original-price">${formatCurrency(plan.originalPrice)}</span>` : ''}
+                ${formatCurrency(plan.price)}
             </div>
         `;
-
-        // Add warning for insufficient balance
-        if (!hasSufficientBalance) {
-            modalContent = `
-                <div class="warning-message">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                    Insufficient balance. Please fund your wallet to continue.
-                </div>
-                ${modalContent}
-            `;
-
-            // Update modal buttons for insufficient balance
-            confirmPurchaseBtn.innerText = "Fund Wallet";
-            confirmPurchaseBtn.className = "btn btn-warning";
-        } else {
-            // Reset buttons if balance is sufficient
-            confirmPurchaseBtn.innerText = "Confirm";
-            confirmPurchaseBtn.className = "btn btn-primary";
-        }
-
-        modalBody.innerHTML = modalContent;
-
-        // Show modal
-        showModal();
-    });
-
-    // Confirm purchase or fund wallet
-    confirmPurchaseBtn.addEventListener('click', async function() {
-        hideModal();
         
-        // Check if insufficient balance
-        if (!checkBalance(selectedDataPlan.price)) {
-            // Redirect to fund wallet page
-            window.location.href = 'fund-wallet.html';
-            return;
-        }
-        
-        setLoading(true);
-
-        try {
-            // Generate a unique request ID
-            const requestId = `Data_${Date.now()}${Math.floor(Math.random() * 1000)}`;
-
-            // Prepare the request payload
-            const payload = {
-                network: selectedNetworkId,
-                phone: phoneNumberInput.value,
-                plan_id: selectedDataPlan.id,
-                bypass: false,
-                "request-id": requestId
-            };
-
-            console.log("Sending request payload:", payload);
-
-            // Make the API call
-            const response = await fetch('https://n3tdata.com/api/data', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${ACCESS_TOKEN}`
-                },
-                body: JSON.stringify(payload)
+        // Add click event
+        planCard.addEventListener('click', function() {
+            // Remove selected class from all plan cards
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('selected');
             });
             
-            const responseData = await response.json();
-            console.log("API Response:", responseData);
+            // Add selected class to this card
+            this.classList.add('selected');
             
-            if (responseData.status === 'success') {
-                // Deduct balance from user's account
-                await updateUserBalance(selectedDataPlan.price);
-                showToast(`${selectedDataPlan.name} data has been purchased for ${phoneNumberInput.value}`);
-                
-                // Reset form
-                phoneNumberInput.value = '';
-                dataPlanSelect.value = '';
-                selectedDataPlan = null;
-                updateSubmitButtonState();
-            } else {
-                // Check if error is from API side
-                if (responseData.message && responseData.message.toLowerCase().includes('insufficient')) {
-                    showToast('Insufficient funds. Please contact admin.', 'error');
-                } else if (responseData.message) {
-                    showToast('Error: ' + responseData.message + '. Contact admin.', 'error');
-                } else {
-                    showToast('Error processing request. Contact admin.', 'error');
-                }
+            // Set selected plan
+            selectedManualDataPlan = plan;
+            selectedPlanDisplay.value = `${plan.data} - ${formatCurrency(plan.price)} - ${plan.validity}`;
+            
+            // Update submit button state
+            updateSubmitButtonState();
+        });
+        
+        return planCard;
+    }
+    
+    // Show automatic purchase modal
+    function showAutomaticPurchaseModal() {
+        if (!selectedDataPlan) return;
+        
+        modalBody.innerHTML = `
+            <div class="warning-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                Please confirm your purchase details
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Network:</div>
+                <div class="summary-value">${selectedNetwork}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Plan Type:</div>
+                <div class="summary-value">${selectedPlanType}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Data Plan:</div>
+                <div class="summary-value">${selectedDataPlan.name} (${selectedDataPlan.validity})</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Phone Number:</div>
+                <div class="summary-value">${phoneNumberInput.value}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Amount:</div>
+                <div class="summary-value">${formatCurrency(selectedDataPlan.price)}</div>
+            </div>
+        `;
+        
+        showModal();
+    }
+    
+    // Show manual purchase modal
+    function showManualPurchaseModal() {
+        if (!selectedManualDataPlan) return;
+        
+        modalBody.innerHTML = `
+            <div class="warning-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                Please confirm your purchase details
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Network:</div>
+                <div class="summary-value">${selectedNetwork}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Data Plan:</div>
+                <div class="summary-value">${selectedManualDataPlan.data} (${selectedManualDataPlan.validity})</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Phone Number:</div>
+                <div class="summary-value">${phoneNumberInput.value}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">Amount:</div>
+                <div class="summary-value">${formatCurrency(selectedManualDataPlan.price)}</div>
+            </div>
+        `;
+        
+        showModal();
+    }
+
+    // Update submit button state
+    function updateSubmitButtonState() {
+    if (isAutoMode) {
+        // In automatic mode
+        submitButton.disabled = !selectedNetwork || !selectedPlanType || !selectedDataPlan || phoneNumberInput.value.length !== 11;
+    } else {
+        // In manual mode - only need plan and phone number
+        submitButton.disabled = !selectedManualDataPlan || phoneNumberInput.value.length !== 11;
+    }
+}
+
+    // Process automatic purchase
+    async function processAutomaticPurchase() {
+        try {
+            setLoading(true);
+            
+            // Check if user has enough balance
+            if (userBalance < selectedDataPlan.price) {
+                showToast('Insufficient balance. Please top up your wallet.', 'error');
+                setLoading(false);
+                return;
             }
+            
+            // Create request in Firestore
+            const requestData = {
+                userId: currentUser.uid,
+                network: selectedNetwork,
+                networkId: selectedNetworkId,
+                planType: selectedPlanType,
+                planId: selectedDataPlan.id,
+                planName: selectedDataPlan.name,
+                amount: selectedDataPlan.price,
+                phoneNumber: phoneNumberInput.value,
+                status: 'pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            const requestRef = await db.collection('dataRequests').add(requestData);
+            
+            // Deduct balance from user's wallet
+            await db.collection('users').doc(currentUser.uid).update({
+                balance: firebase.firestore.FieldValue.increment(-selectedDataPlan.price)
+            });
+            
+            // Refresh user balance
+            await fetchUserBalance();
+            
+            // Show success message
+            showToast('Data purchase request submitted successfully!', 'success');
+            
+            // Refresh data requests
+            await fetchDataRequests();
+            
+            // Reset form
+            resetForm();
         } catch (error) {
-            console.error("Error purchasing data:", error);
-            showToast('Network error or server is unreachable. Please try again.', 'error');
+            console.error("Error processing purchase:", error);
+            showToast('An error occurred while processing your request. Please try again.', 'error');
         } finally {
             setLoading(false);
         }
-    });
-
-    // Update user balance in Firestore
-    async function updateUserBalance(amountToDeduct) {
+    }
+    
+    // Process manual purchase
+    async function processManualPurchase() {
         try {
-            if (currentUser && currentUser.uid) {
-                const userRef = db.collection('users').doc(currentUser.uid);
-                
-                // Update balance using a transaction to ensure accuracy
-                await db.runTransaction(async (transaction) => {
-                    const userDoc = await transaction.get(userRef);
-                    if (!userDoc.exists) {
-                        throw new Error("User document does not exist!");
-                    }
-                    
-                    const userData = userDoc.data();
-                    const newBalance = (userData.balance || 0) - amountToDeduct;
-                    
-                    transaction.update(userRef, { balance: newBalance });
-                    
-                    // Update the local balance
-                    userBalance = newBalance;
-                    userBalanceElement.textContent = formatCurrency(newBalance);
-                });
+            setLoading(true);
+            
+            // Check if user has enough balance
+            if (userBalance < selectedManualDataPlan.price) {
+                showToast('Insufficient balance. Please top up your wallet.', 'error');
+                setLoading(false);
+                return;
             }
+            
+            // Create request in Firestore
+            const requestData = {
+                userId: currentUser.uid,
+                network: selectedNetwork,
+                networkId: selectedNetworkId,
+                planType: 'manual',
+                planId: selectedManualDataPlan.id,
+                planName: selectedManualDataPlan.data,
+                amount: selectedManualDataPlan.price,
+                phoneNumber: phoneNumberInput.value,
+                status: 'pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            const requestRef = await db.collection('dataRequests').add(requestData);
+            
+            // Deduct balance from user's wallet
+            await db.collection('users').doc(currentUser.uid).update({
+                balance: firebase.firestore.FieldValue.increment(-selectedManualDataPlan.price)
+            });
+            
+            // Refresh user balance
+            await fetchUserBalance();
+            
+            // Show success message
+            showToast('Data purchase request submitted successfully!', 'success');
+            
+            // Refresh data requests
+            await fetchDataRequests();
+            
+            // Reset form
+            resetForm();
         } catch (error) {
-            console.error("Error updating user balance:", error);
-            showToast('Failed to update balance. Please refresh the page.', 'error');
+            console.error("Error processing purchase:", error);
+            showToast('An error occurred while processing your request. Please try again.', 'error');
+        } finally {
+            setLoading(false);
         }
     }
-
-    // Cancel purchase
-    cancelPurchaseBtn.addEventListener('click', function() {
-        hideModal();
-    });
-
-    // Initialize the page
-    initSlider();
 </script>
 </body>
 </html>
+
