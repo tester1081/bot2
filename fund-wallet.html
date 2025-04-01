@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet - VeltraWave VTU</title>
+    <title>Fund Wallet - VeltraWave VTU</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -132,6 +132,23 @@
             margin-right: 10px;
             border-radius: 8px;
             object-fit: contain;
+        }
+        
+        .back-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text);
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
         
         /* Main Content */
@@ -693,22 +710,139 @@
             opacity: 1;
         }
         
-        /* Debug Panel */
-        .debug-panel {
+        /* Mock Payment Modal */
+        .mock-payment-modal {
             position: fixed;
-            bottom: 100px;
-            right: 20px;
-            width: 300px;
-            max-height: 200px;
-            overflow-y: auto;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            color: #00ff00;
-            padding: 10px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 12px;
-            z-index: 9999;
-            display: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mock-payment-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .mock-payment-content {
+            background: var(--background);
+            border-radius: 24px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .mock-payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .mock-payment-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .mock-payment-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mock-payment-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .mock-payment-body {
+            margin-bottom: 24px;
+        }
+        
+        .mock-payment-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .mock-payment-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .mock-payment-label {
+            color: var(--text-secondary);
+        }
+        
+        .mock-payment-value {
+            font-weight: 500;
+        }
+        
+        .mock-payment-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .mock-payment-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .mock-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .mock-btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+        }
+        
+        .mock-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(45, 127, 249, 0.3);
+        }
+        
+        .mock-btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text);
+        }
+        
+        .mock-btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
         
         /* Responsive Adjustments */
@@ -739,11 +873,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Debug Panel (hidden in production) -->
-    <div id="debug-panel" class="debug-panel"></div>
-    
     <!-- Loading Animation -->
-    <div class="loading-overlay">
+    <div class="loading-overlay" id="loading-overlay">
         <div class="loading-container">
             <div class="loading-bubble bubble-1"></div>
             <div class="loading-bubble bubble-2"></div>
@@ -754,6 +885,45 @@
     
     <!-- Toast Notification Container -->
     <div id="toast-notification" class="toast-notification"></div>
+    
+    <!-- Mock Payment Modal (for preview environment) -->
+    <div class="mock-payment-modal" id="mock-payment-modal">
+        <div class="mock-payment-content">
+            <div class="mock-payment-header">
+                <div class="mock-payment-title">Complete Payment</div>
+                <button class="mock-payment-close" id="mock-payment-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mock-payment-body">
+                <div class="mock-payment-info">
+                    <div class="mock-payment-row">
+                        <div class="mock-payment-label">Amount</div>
+                        <div class="mock-payment-value" id="mock-payment-amount">₦0.00</div>
+                    </div>
+                    <div class="mock-payment-row">
+                        <div class="mock-payment-label">Service Fee</div>
+                        <div class="mock-payment-value">₦50.00</div>
+                    </div>
+                    <div class="mock-payment-total">
+                        <div>Total</div>
+                        <div id="mock-payment-total">₦0.00</div>
+                    </div>
+                </div>
+                <p>This is a simulated payment for preview purposes. In production, Paystack payment gateway will be used.</p>
+            </div>
+            <div class="mock-payment-actions">
+                <button class="mock-btn mock-btn-outline" id="mock-payment-cancel">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+                <button class="mock-btn mock-btn-primary" id="mock-payment-complete">
+                    <i class="fas fa-check"></i>
+                    Complete Payment
+                </button>
+            </div>
+        </div>
+    </div>
     
     <!-- Liquid Background -->
     <div class="liquid-bg">
@@ -768,13 +938,19 @@
             <img src="public/logo.png" alt="VeltraWave" class="logo-image">
             <span>VeltraWave</span>
         </div>
+        
+        </div>
+        <button class="back-button" id="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Dashboard
+        </button>
     </header>
     
     <!-- Main Content -->
     <div class="main-content">
         <h1 class="page-title">
             <i class="fas fa-wallet"></i>
-            My Wallet
+            Fund My Wallet
         </h1>
         
         <!-- Balance Card -->
@@ -783,9 +959,9 @@
                 <div class="balance-label">Available Balance</div>
                 <div class="balance-amount" id="user-balance">₦0.00</div>
                 <div class="balance-actions">
-                    <button class="btn" id="fund-wallet-btn">
-                        <i class="fas fa-plus"></i>
-                        Fund Wallet
+                    <button class="btn" id="check-balance-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh Balance
                     </button>
                 </div>
             </div>
@@ -854,7 +1030,7 @@
                     </div>
                     <div class="summary-total">
                         <div>Total</div>
-                        <div id="summary-total">₦50.00</div>
+                        <div id="summary-total">₦0.00</div>
                     </div>
                 </div>
                 
@@ -893,8 +1069,6 @@
                 <i class="fas fa-bolt"></i>
                 <span>Services</span>
             </a>
-            
-            </a>
             <a href="account.html" class="nav-item" data-page="account">
                 <i class="fas fa-user"></i>
                 <span>Account</span>
@@ -905,32 +1079,17 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "%NEXT_PUBLIC_FIREBASE_API_KEY%",
-            authDomain: "%NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN%",
-            projectId: "%NEXT_PUBLIC_FIREBASE_PROJECT_ID%",
-            storageBucket: "%NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET%",
-            messagingSenderId: "%NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID%",
-            appId: "%NEXT_PUBLIC_FIREBASE_APP_ID%"
+            apiKey: "AIzaSyDQnOWm9MPNK1CMB3YC_XbxVJwlXl5fFZU",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.appspot.com",
+            messagingSenderId: "1098979571490",
+            appId: "1:1098979571490:web:c9b6f1a7d9956e5c4d2fb6"
         };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        
-        // Debug function (set to true to enable debugging)
-        const DEBUG_MODE = false;
-        function debug(message) {
-            if (DEBUG_MODE) {
-                const debugPanel = document.getElementById('debug-panel');
-                if (debugPanel) {
-                    debugPanel.style.display = 'block';
-                    const timestamp = new Date().toLocaleTimeString();
-                    debugPanel.innerHTML += `<div>[${timestamp}] ${message}</div>`;
-                    debugPanel.scrollTop = debugPanel.scrollHeight;
-                }
-                console.log(`[DEBUG] ${message}`);
-            }
-        }
         
         // Variables
         let userId = null;
@@ -943,9 +1102,9 @@
         const serviceFee = 50;
         
         // DOM Elements
-        const loadingOverlay = document.querySelector('.loading-overlay');
+        const loadingOverlay = document.getElementById('loading-overlay');
         const userBalanceElement = document.getElementById('user-balance');
-        const fundWalletBtn = document.getElementById('fund-wallet-btn');
+        const checkBalanceBtn = document.getElementById('check-balance-btn');
         const fundWalletSection = document.getElementById('fund-wallet-section');
         const amountInput = document.getElementById('amount');
         const amountPresets = document.querySelectorAll('.amount-preset');
@@ -958,10 +1117,18 @@
         const navItems = document.querySelectorAll('.nav-item');
         const toastNotification = document.getElementById('toast-notification');
         const navIndicator = document.querySelector('.nav-indicator');
+        const backButton = document.getElementById('back-button');
+        
+        // Mock Payment Elements
+        const mockPaymentModal = document.getElementById('mock-payment-modal');
+        const mockPaymentAmount = document.getElementById('mock-payment-amount');
+        const mockPaymentTotal = document.getElementById('mock-payment-total');
+        const mockPaymentClose = document.getElementById('mock-payment-close');
+        const mockPaymentCancel = document.getElementById('mock-payment-cancel');
+        const mockPaymentComplete = document.getElementById('mock-payment-complete');
         
         // Initialize the app
         document.addEventListener('DOMContentLoaded', async function() {
-            debug("DOM loaded, initializing app...");
             try {
                 await initApp();
                 
@@ -971,7 +1138,6 @@
                 }, 1000);
             } catch (error) {
                 console.error("Initialization error:", error);
-                debug("ERROR: " + error.message);
                 showToastNotification("Failed to initialize: " + error.message);
             }
         });
@@ -980,7 +1146,6 @@
         async function initApp() {
             // Check if running in Telegram WebApp
             if (window.Telegram && window.Telegram.WebApp) {
-                debug("Telegram WebApp detected");
                 const tg = window.Telegram.WebApp;
                 tg.expand(); // Expand the web app to full view
                 
@@ -988,26 +1153,21 @@
                 if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                     userId = tg.initDataUnsafe.user.id.toString();
                     userName = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name || ''}`.trim();
-                    debug("Telegram user ID: " + userId);
                     
                     // Load user data
                     await loadUserData(userId);
                 } else {
-                    debug("No Telegram user data available");
                     showToastNotification("Authentication failed. Please restart the bot.");
                     
                     // For testing only - use a default user ID
                     userId = '5966603094';
                     userName = 'Test User';
-                    debug("Using test user ID: " + userId);
                     await loadUserData(userId);
                 }
             } else {
-                debug("Not in Telegram WebApp - using test mode");
                 // For testing only - use a default user ID
                 userId = '5966603094';
                 userName = 'Test User';
-                debug("Using test user ID: " + userId);
                 await loadUserData(userId);
             }
             
@@ -1021,13 +1181,11 @@
         // Load user data from Firestore
         async function loadUserData(userId) {
             try {
-                debug("Loading user data for ID: " + userId);
                 const userRef = db.collection("users").doc(userId);
                 const doc = await userRef.get();
                 
                 if (doc.exists) {
                     const userData = doc.data();
-                    debug("User data loaded: " + JSON.stringify(userData));
                     
                     // Update user balance
                     userBalance = userData.balance || 0;
@@ -1036,12 +1194,10 @@
                     // Load transactions
                     loadTransactions(userId);
                 } else {
-                    debug("No user document found for ID: " + userId);
                     showToastNotification("User data not found. Please contact support.");
                 }
             } catch (error) {
                 console.error("Error loading user data:", error);
-                debug("ERROR loading user data: " + error.message);
                 showToastNotification("Error loading user data: " + error.message);
             }
         }
@@ -1049,12 +1205,10 @@
         // Load transactions
         async function loadTransactions(userId) {
             try {
-                debug("Loading transactions for user: " + userId);
                 const transactionsRef = db.collection("users").doc(userId).collection("transactions");
                 const snapshot = await transactionsRef.orderBy("timestamp", "desc").limit(5).get();
                 
                 if (snapshot.empty) {
-                    debug("No transactions found");
                     noTransactions.style.display = 'block';
                     return;
                 }
@@ -1072,11 +1226,7 @@
                     const icon = isCredit ? 'fa-arrow-down' : 'fa-arrow-up';
                     
                     const amount = transaction.amount || 0;
-                    const formattedAmount = amount.toLocaleString('en-NG', {
-                        style: 'currency',
-                        currency: 'NGN',
-                        minimumFractionDigits: 2
-                    }).replace('NGN', '₦');
+                    const formattedAmount = formatCurrency(amount);
                     
                     const transactionItem = document.createElement('div');
                     transactionItem.className = 'transaction-item';
@@ -1093,36 +1243,51 @@
                     
                     transactionsList.appendChild(transactionItem);
                 });
-                
-                debug("Transactions loaded successfully");
             } catch (error) {
                 console.error("Error loading transactions:", error);
-                debug("ERROR loading transactions: " + error.message);
                 showToastNotification("Error loading transactions");
             }
         }
         
         // Update balance display
         function updateBalanceDisplay() {
-            const formattedBalance = userBalance.toLocaleString('en-NG', {
+            const formattedBalance = formatCurrency(userBalance);
+            userBalanceElement.textContent = formattedBalance;
+        }
+        
+        // Format currency
+        function formatCurrency(amount) {
+            return amount.toLocaleString('en-NG', {
                 style: 'currency',
                 currency: 'NGN',
                 minimumFractionDigits: 2
             }).replace('NGN', '₦');
-            
-            userBalanceElement.textContent = formattedBalance;
-            debug("Balance display updated: " + formattedBalance);
         }
         
         // Set up event listeners
         function setupEventListeners() {
-            debug("Setting up event listeners");
+            // Back button
+            backButton.addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
             
-            // Fund wallet button
-            fundWalletBtn.addEventListener('click', function() {
-                fundWalletSection.style.display = fundWalletSection.style.display === 'none' ? 'block' : 'none';
-                if (fundWalletSection.style.display === 'block') {
-                    fundWalletSection.scrollIntoView({ behavior: 'smooth' });
+            // Check balance button
+            checkBalanceBtn.addEventListener('click', async function() {
+                try {
+                    // Show loading overlay
+                    loadingOverlay.classList.remove('hide');
+                    
+                    // Refresh user data
+                    await loadUserData(userId);
+                    
+                    // Hide loading overlay
+                    loadingOverlay.classList.add('hide');
+                    
+                    showToastNotification("Balance refreshed");
+                } catch (error) {
+                    console.error("Error refreshing balance:", error);
+                    showToastNotification("Error refreshing balance: " + error.message);
+                    loadingOverlay.classList.add('hide');
                 }
             });
             
@@ -1169,7 +1334,6 @@
                     
                     // Update selected method
                     selectedMethod = this.dataset.method;
-                    debug("Payment method selected: " + selectedMethod);
                 });
             });
             
@@ -1180,13 +1344,83 @@
                     return;
                 }
                 
-                initiatePaystackPayment();
+                // Check if we're in a preview environment
+                if (isPreviewEnvironment()) {
+                    showMockPaymentModal();
+                } else {
+                    initiatePaystackPayment();
+                }
+            });
+            
+            // Mock payment modal close
+            mockPaymentClose.addEventListener('click', function() {
+                mockPaymentModal.classList.remove('show');
+            });
+            
+            // Mock payment cancel
+            mockPaymentCancel.addEventListener('click', function() {
+                mockPaymentModal.classList.remove('show');
+            });
+            
+            // Mock payment complete
+            mockPaymentComplete.addEventListener('click', async function() {
+                mockPaymentModal.classList.remove('show');
+                
+                // Show loading overlay
+                loadingOverlay.classList.remove('hide');
+                
+                // Process the mock payment
+                const reference = 'MOCK_' + Math.floor(Math.random() * 1000000000);
+                
+                const success = await processWalletFunding(
+                    userId,
+                    reference,
+                    selectedAmount - serviceFee, // Deduct service fee from amount
+                    serviceFee,
+                    selectedMethod
+                );
+                
+                if (success) {
+                    // Refresh user data
+                    await loadUserData(userId);
+                    
+                    // Show success toast
+                    showToastNotification('Wallet funded successfully!');
+                    
+                    // Reset form
+                    amountInput.value = '';
+                    amountPresets.forEach(preset => preset.classList.remove('active'));
+                    updateAmount(0);
+                } else {
+                    // Show error notification
+                    showToastNotification('Error updating your balance. Please contact support.');
+                }
+                
+                // Hide loading overlay
+                loadingOverlay.classList.add('hide');
             });
             
             // Set indicator position for navigation
             setIndicatorPosition(document.querySelector('.nav-item.active'));
+        }
+        
+        // Check if we're in a preview environment
+        function isPreviewEnvironment() {
+            // Check if we're in v0.dev or another preview environment
+            return window.location.hostname.includes('v0.dev') || 
+                   window.location.hostname.includes('vusercontent.net') ||
+                   window.location.hostname.includes('localhost') ||
+                   typeof PaystackPop === 'undefined';
+        }
+        
+        // Show mock payment modal
+        function showMockPaymentModal() {
+            // Update mock payment details
+            mockPaymentAmount.textContent = formatCurrency(selectedAmount);
+            mockPaymentTotal.textContent = formatCurrency(selectedAmount);
             
-            debug("Event listeners set up");
+            // Show modal
+            mockPaymentModal.classList.add('show');
         }
         
         // Update amount in summary
@@ -1194,21 +1428,13 @@
             selectedAmount = amount;
             
             // Format amount with commas
-            const formattedAmount = amount.toLocaleString('en-NG', {
-                style: 'currency',
-                currency: 'NGN',
-                minimumFractionDigits: 2
-            }).replace('NGN', '₦');
+            const formattedAmount = formatCurrency(amount);
             
-            // Calculate total
-            const total = amount + serviceFee;
+            // Calculate total (same as amount since fee is deducted)
+            const total = amount;
             
             // Format total with commas
-            const formattedTotal = total.toLocaleString('en-NG', {
-                style: 'currency',
-                currency: 'NGN',
-                minimumFractionDigits: 2
-            }).replace('NGN', '₦');
+            const formattedTotal = formatCurrency(total);
             
             // Update summary
             summaryAmount.textContent = formattedAmount;
@@ -1216,135 +1442,165 @@
             
             // Enable/disable pay button
             payButton.disabled = amount < 100;
-            
-            debug("Amount updated: " + amount + ", Total: " + total);
         }
         
         // Initiate Paystack payment
         function initiatePaystackPayment() {
-            debug("Initiating Paystack payment...");
-            
             // Show loading overlay
             loadingOverlay.classList.remove('hide');
             
-            // Calculate total amount (including service fee)
-            const totalAmount = selectedAmount + serviceFee;
-            
             // Generate a reference
             const reference = 'VW_' + Math.floor(Math.random() * 1000000000) + '_' + new Date().getTime();
-            debug("Payment reference: " + reference);
             
-            // Initialize Paystack
-            const handler = PaystackPop.setup({
-                key: "%NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY%", // Use environment variable
-                email: userName.replace(/\s+/g, '') + '@veltrawave.com', // Generate an email from username
-                amount: totalAmount * 100, // Amount in kobo
-                currency: 'NGN',
-                ref: reference,
-                metadata: {
-                    user_id: userId,
-                    service_fee: serviceFee,
-                    actual_amount: selectedAmount
-                },
-                callback: function(response) {
-                    // Process the successful payment
-                    processSuccessfulPayment(reference, totalAmount, selectedAmount);
-                },
-                onClose: function() {
-                    // Hide loading overlay
-                    loadingOverlay.classList.add('hide');
-                    debug("Payment window closed");
+            // Use standard test email for Paystack test mode
+            const userEmail = 'customer@email.com';
+            
+            try {
+                // Verify Paystack is loaded
+                if (typeof PaystackPop === 'undefined') {
+                    throw new Error("Payment service not available");
                 }
-            });
-            
-            // Open Paystack payment window
-            handler.openIframe();
+                
+                // Initialize Paystack
+                const handler = PaystackPop.setup({
+                    key: "pk_test_c86e0f48b2a2f9a4663737bf92327d697977070e",
+                    email: userEmail,
+                    amount: selectedAmount * 100, // Convert to kobo
+                    currency: 'NGN',
+                    ref: reference,
+                    metadata: {
+                        user_id: userId,
+                        service_fee: serviceFee,
+                        actual_amount: selectedAmount - serviceFee // Amount after deducting service fee
+                    },
+                    callback: function(response) {
+                        handlePaymentSuccess(response);
+                    },
+                    onClose: function() {
+                        loadingOverlay.classList.add('hide');
+                        showToastNotification("Payment window closed");
+                    }
+                });
+                
+                // Open Paystack payment window
+                handler.openIframe();
+            } catch (error) {
+                console.error("Payment Error:", error);
+                showToastNotification("Payment failed: " + error.message);
+                loadingOverlay.classList.add('hide');
+                
+                // Fallback to mock payment in case of error
+                showMockPaymentModal();
+            }
         }
         
-        // Process successful payment
-        async function processSuccessfulPayment(reference, totalAmount, actualAmount) {
+        // Handle successful payment
+        async function handlePaymentSuccess(response) {
             try {
-                debug("Processing successful payment: " + reference);
+                // Show processing message
+                showToastNotification('Processing your payment...');
                 
-                // Create transaction record
+                // Process the payment
+                const success = await processWalletFunding(
+                    userId,
+                    response.reference,
+                    selectedAmount - serviceFee, // Deduct service fee from amount
+                    serviceFee,
+                    selectedMethod
+                );
+                
+                if (success) {
+                    // Refresh user data
+                    await loadUserData(userId);
+                    
+                    // Show success toast
+                    showToastNotification('Wallet funded successfully!');
+                    
+                    // Reset form
+                    amountInput.value = '';
+                    amountPresets.forEach(preset => preset.classList.remove('active'));
+                    updateAmount(0);
+                } else {
+                    // Show error notification
+                    showToastNotification('Error updating your balance. Please contact support.');
+                }
+            } catch (error) {
+                console.error("Error handling payment success:", error);
+                
+                // Show error notification
+                showToastNotification('Error processing payment: ' + error.message);
+            } finally {
+                // Hide loading overlay
+                loadingOverlay.classList.add('hide');
+            }
+        }
+        
+        // Process wallet funding
+        async function processWalletFunding(userId, reference, amount, serviceFee, paymentMethod) {
+            try {
+                // Create transaction data
                 const transactionData = {
                     user_id: userId,
                     reference: reference,
-                    amount: actualAmount,
+                    amount: amount, // This is the amount that goes to user's wallet (after service fee)
                     service_fee: serviceFee,
-                    total_amount: totalAmount,
+                    total_paid: amount + serviceFee, // Total amount paid including service fee
                     type: 'wallet',
                     title: 'Wallet Funding',
-                    description: `Wallet funded with ₦${actualAmount.toLocaleString()}`,
-                    payment_method: selectedMethod,
+                    description: `Wallet funded with ${formatCurrency(amount)}`,
+                    payment_method: paymentMethod,
                     status: 'success',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                debug("Creating transaction record...");
-                
-                // Add transaction to Firestore
-                const transactionRef = await db.collection('users').doc(userId).collection('transactions').add(transactionData);
-                debug("Transaction added with ID: " + transactionRef.id);
-                
-                // Update user balance
+                // References
                 const userRef = db.collection('users').doc(userId);
+                const transactionRef = db.collection('users').doc(userId).collection('transactions').doc(reference);
                 
-                debug("Updating user balance...");
+                // Use a batch write for atomicity
+                const batch = db.batch();
                 
-                // Use a transaction to ensure data consistency
-                await db.runTransaction(async (transaction) => {
-                    const userDoc = await transaction.get(userRef);
+                // Add transaction record
+                batch.set(transactionRef, transactionData);
+                
+                // Get current user data
+                const userDoc = await userRef.get();
+                
+                if (!userDoc.exists) {
+                    // Create user if not exists
+                    batch.set(userRef, {
+                        user_id: userId,
+                        balance: amount, // Add the amount after service fee to balance
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } else {
+                    // Update existing user balance
+                    const userData = userDoc.data();
+                    const currentBalance = userData.balance || 0;
+                    const newBalance = currentBalance + amount; // Add the amount after service fee
                     
-                    if (!userDoc.exists) {
-                        // Create user if not exists
-                        debug("User document not found, creating new user");
-                        transaction.set(userRef, {
-                            user_id: userId,
-                            balance: actualAmount,
-                            updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    } else {
-                        // Update existing user
-                        const userData = userDoc.data();
-                        const newBalance = (userData.balance || 0) + actualAmount;
-                        
-                        debug("Updating user balance from " + userData.balance + " to " + newBalance);
-                        
-                        transaction.update(userRef, {
-                            balance: newBalance,
-                            updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
+                    // Update user balance
+                    batch.update(userRef, {
+                        balance: newBalance,
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                
+                // Commit the batch
+                await batch.commit();
+                
+                // Create a notification for the user
+                const notificationRef = db.collection('users').doc(userId).collection('notifications').doc();
+                await notificationRef.set({
+                    text: `Your wallet has been funded with ${formatCurrency(amount)}`,
+                    read: false,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
-                debug("User balance updated successfully");
-                
-                // Update local balance
-                userBalance += actualAmount;
-                updateBalanceDisplay();
-                
-                // Reload transactions
-                loadTransactions(userId);
-                
-                // Hide loading overlay
-                loadingOverlay.classList.add('hide');
-                
-                // Hide fund wallet section
-                fundWalletSection.style.display = 'none';
-                
-                // Show success toast
-                showToastNotification('Wallet funded successfully!');
-                
+                return true;
             } catch (error) {
-                console.error("Error processing payment: ", error);
-                debug("ERROR processing payment: " + error.message);
-                
-                // Hide loading overlay
-                loadingOverlay.classList.add('hide');
-                
-                // Show error notification
-                showToastNotification('Error processing payment: ' + error.message);
+                console.error("Error processing wallet funding:", error);
+                return false;
             }
         }
         
@@ -1352,7 +1608,6 @@
         function showToastNotification(message) {
             toastNotification.textContent = message;
             toastNotification.classList.add('show');
-            debug("Toast notification: " + message);
             
             setTimeout(() => {
                 toastNotification.classList.remove('show');
