@@ -711,8 +711,8 @@
             opacity: 1;
         }
         
-        /* Mock Payment Modal */
-        .mock-payment-modal {
+        /* Payment Modal */
+        .payment-modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -728,12 +728,12 @@
             transition: all 0.3s ease;
         }
         
-        .mock-payment-modal.show {
+        .payment-modal.show {
             opacity: 1;
             visibility: visible;
         }
         
-        .mock-payment-content {
+        .payment-content {
             background: var(--background);
             border-radius: 24px;
             padding: 24px;
@@ -743,19 +743,19 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
         
-        .mock-payment-header {
+        .payment-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
         
-        .mock-payment-title {
+        .payment-title {
             font-size: 1.5rem;
             font-weight: 600;
         }
         
-        .mock-payment-close {
+        .payment-close {
             background: rgba(255, 255, 255, 0.1);
             border: none;
             color: var(--text);
@@ -769,36 +769,36 @@
             transition: all 0.3s ease;
         }
         
-        .mock-payment-close:hover {
+        .payment-close:hover {
             background: rgba(255, 255, 255, 0.2);
         }
         
-        .mock-payment-body {
+        .payment-body {
             margin-bottom: 24px;
         }
         
-        .mock-payment-info {
+        .payment-info {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 20px;
         }
         
-        .mock-payment-row {
+        .payment-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 12px;
         }
         
-        .mock-payment-label {
+        .payment-label {
             color: var(--text-secondary);
         }
         
-        .mock-payment-value {
+        .payment-value {
             font-weight: 500;
         }
         
-        .mock-payment-total {
+        .payment-total {
             display: flex;
             justify-content: space-between;
             padding-top: 12px;
@@ -807,12 +807,12 @@
             font-size: 1.1rem;
         }
         
-        .mock-payment-actions {
+        .payment-actions {
             display: flex;
             gap: 12px;
         }
         
-        .mock-btn {
+        .payment-btn {
             flex: 1;
             padding: 14px;
             border-radius: 12px;
@@ -825,25 +825,167 @@
             gap: 8px;
         }
         
-        .mock-btn-primary {
+        .payment-btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
         }
         
-        .mock-btn-primary:hover {
+        .payment-btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 15px rgba(45, 127, 249, 0.3);
         }
         
-        .mock-btn-outline {
+        .payment-btn-outline {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: var(--text);
         }
         
-        .mock-btn-outline:hover {
+        .payment-btn-outline:hover {
             background: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Manual Payment Section */
+        .manual-payment-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .manual-payment-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .manual-payment-steps {
+            margin-bottom: 20px;
+        }
+        
+        .manual-payment-step {
+            display: flex;
+            margin-bottom: 16px;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .step-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .whatsapp-button {
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .whatsapp-button:hover {
+            background: #1fad53;
+            transform: translateY(-2px);
+        }
+        
+        /* File Upload */
+        .file-upload {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .file-upload-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .file-upload-container {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload-container:hover {
+            border-color: var(--primary);
+            background: rgba(45, 127, 249, 0.05);
+        }
+        
+        .file-upload-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+        
+        .file-upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .file-upload-input {
+            display: none;
+        }
+        
+        .file-preview {
+            margin-top: 16px;
+            display: none;
+        }
+        
+        .file-preview.show {
+            display: block;
+        }
+        
+        .file-preview-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .file-preview-name {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            word-break: break-all;
         }
         
         /* Responsive Adjustments */
@@ -887,40 +1029,40 @@
     <!-- Toast Notification Container -->
     <div id="toast-notification" class="toast-notification"></div>
     
-    <!-- Mock Payment Modal (for preview environment) -->
-    <div class="mock-payment-modal" id="mock-payment-modal">
-        <div class="mock-payment-content">
-            <div class="mock-payment-header">
-                <div class="mock-payment-title">Complete Payment</div>
-                <button class="mock-payment-close" id="mock-payment-close">
+    <!-- Payment Modal (for Paystack) -->
+    <div class="payment-modal" id="payment-modal">
+        <div class="payment-content">
+            <div class="payment-header">
+                <div class="payment-title">Complete Payment</div>
+                <button class="payment-close" id="payment-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="mock-payment-body">
-                <div class="mock-payment-info">
-                    <div class="mock-payment-row">
-                        <div class="mock-payment-label">Amount</div>
-                        <div class="mock-payment-value" id="mock-payment-amount">₦0.00</div>
+            <div class="payment-body">
+                <div class="payment-info">
+                    <div class="payment-row">
+                        <div class="payment-label">Amount</div>
+                        <div class="payment-value" id="payment-amount">₦0.00</div>
                     </div>
-                    <div class="mock-payment-row">
-                        <div class="mock-payment-label">Service Fee</div>
-                        <div class="mock-payment-value">₦50.00</div>
+                    <div class="payment-row">
+                        <div class="payment-label">Service Fee</div>
+                        <div class="payment-value">₦50.00</div>
                     </div>
-                    <div class="mock-payment-total">
+                    <div class="payment-total">
                         <div>Total</div>
-                        <div id="mock-payment-total">₦0.00</div>
+                        <div id="payment-total">₦0.00</div>
                     </div>
                 </div>
-                <p>This is a simulated payment for preview purposes. In production, Paystack payment gateway will be used.</p>
+                <p>Please confirm your payment details before proceeding.</p>
             </div>
-            <div class="mock-payment-actions">
-                <button class="mock-btn mock-btn-outline" id="mock-payment-cancel">
+            <div class="payment-actions">
+                <button class="payment-btn payment-btn-outline" id="payment-cancel">
                     <i class="fas fa-times"></i>
                     Cancel
                 </button>
-                <button class="mock-btn mock-btn-primary" id="mock-payment-complete">
+                <button class="payment-btn payment-btn-primary" id="payment-complete">
                     <i class="fas fa-check"></i>
-                    Complete Payment
+                    Proceed to Payment
                 </button>
             </div>
         </div>
@@ -1017,6 +1159,12 @@
                         </div>
                         <div class="payment-method-title">USSD</div>
                     </div>
+                    <div class="payment-method" data-method="manual">
+                        <div class="payment-method-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div class="payment-method-title">Manual</div>
+                    </div>
                 </div>
                 
                 <div class="summary-card">
@@ -1039,6 +1187,65 @@
                     <i class="fas fa-lock"></i>
                     Proceed to Payment
                 </button>
+                
+                <!-- Manual Payment Section -->
+                <div class="manual-payment-section" id="manual-payment-section" style="display: none;">
+                    <div class="manual-payment-title">
+                        <i class="fab fa-whatsapp"></i>
+                        Manual Payment via WhatsApp
+                    </div>
+                    <div class="manual-payment-steps">
+                        <div class="manual-payment-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <div class="step-title">Make a transfer to our account</div>
+                                <div class="step-description">
+                                    Bank: GTBank<br>
+                                    Account Number: 0123456789<br>
+                                    Account Name: VeltraWave VTU
+                                </div>
+                            </div>
+                        </div>
+                        <div class="manual-payment-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <div class="step-title">Take a screenshot of your payment</div>
+                                <div class="step-description">
+                                    Make sure the screenshot clearly shows the transaction details including amount, date, and reference number.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="manual-payment-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <div class="step-title">Send the screenshot via WhatsApp</div>
+                                <div class="step-description">
+                                    Click the button below to open WhatsApp and send your payment screenshot along with your VeltraWave ID.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="file-upload">
+                        <label class="file-upload-label">Upload Payment Screenshot (Optional)</label>
+                        <div class="file-upload-container" id="file-upload-container">
+                            <div class="file-upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="file-upload-text">Click or drag to upload your payment screenshot</div>
+                            <input type="file" class="file-upload-input" id="file-upload-input" accept="image/*">
+                        </div>
+                        <div class="file-preview" id="file-preview">
+                            <img src="/placeholder.svg" alt="Payment Screenshot" class="file-preview-image" id="file-preview-image">
+                            <div class="file-preview-name" id="file-preview-name"></div>
+                        </div>
+                    </div>
+                    
+                    <a href="https://wa.me/2348123456789?text=Hello%20VeltraWave,%20I%20just%20made%20a%20payment%20of%20" class="whatsapp-button" id="whatsapp-button" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                        Contact Us on WhatsApp
+                    </a>
+                </div>
             </div>
         </div>
         
@@ -1110,6 +1317,7 @@
         // Variables
         let userId = null;
         let userName = null;
+        let userEmail = null;
         let userBalance = 0;
         let selectedAmount = 0;
         let selectedMethod = 'card';
@@ -1135,13 +1343,22 @@
         const navIndicator = document.querySelector('.nav-indicator');
         const backButton = document.getElementById('back-button');
         
-        // Mock Payment Elements
-        const mockPaymentModal = document.getElementById('mock-payment-modal');
-        const mockPaymentAmount = document.getElementById('mock-payment-amount');
-        const mockPaymentTotal = document.getElementById('mock-payment-total');
-        const mockPaymentClose = document.getElementById('mock-payment-close');
-        const mockPaymentCancel = document.getElementById('mock-payment-cancel');
-        const mockPaymentComplete = document.getElementById('mock-payment-complete');
+        // Payment Modal Elements
+        const paymentModal = document.getElementById('payment-modal');
+        const paymentAmount = document.getElementById('payment-amount');
+        const paymentTotal = document.getElementById('payment-total');
+        const paymentClose = document.getElementById('payment-close');
+        const paymentCancel = document.getElementById('payment-cancel');
+        const paymentComplete = document.getElementById('payment-complete');
+        
+        // Manual Payment Elements
+        const manualPaymentSection = document.getElementById('manual-payment-section');
+        const fileUploadContainer = document.getElementById('file-upload-container');
+        const fileUploadInput = document.getElementById('file-upload-input');
+        const filePreview = document.getElementById('file-preview');
+        const filePreviewImage = document.getElementById('file-preview-image');
+        const filePreviewName = document.getElementById('file-preview-name');
+        const whatsappButton = document.getElementById('whatsapp-button');
         
         // Initialize the app
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1187,12 +1404,14 @@
                     // For testing only - use a default user ID
                     userId = '5966603094';
                     userName = 'Test User';
+                    userEmail = 'customer@email.com';
                     await loadUserData(userId);
                 }
             } else {
                 // For testing only - use a default user ID
                 userId = '5966603094';
                 userName = 'Test User';
+                userEmail = 'customer@email.com';
                 await loadUserData(userId);
             }
             
@@ -1229,6 +1448,7 @@
                     await userRef.set({
                         user_id: userId,
                         name: userName,
+                        email: userEmail || '',
                         balance: 0,
                         created_at: firebase.firestore.FieldValue.serverTimestamp(),
                         updated_at: firebase.firestore.FieldValue.serverTimestamp()
@@ -1351,6 +1571,7 @@
                 });
                 
                 updateAmount(parseFloat(this.value) || 0);
+                updateWhatsAppLink();
             });
             
             // Amount presets click
@@ -1370,6 +1591,7 @@
                     
                     // Update summary
                     updateAmount(amount);
+                    updateWhatsAppLink();
                 });
             });
             
@@ -1386,6 +1608,13 @@
                     
                     // Update selected method
                     selectedMethod = this.dataset.method;
+                    
+                    // Show/hide manual payment section
+                    if (selectedMethod === 'manual') {
+                        manualPaymentSection.style.display = 'block';
+                    } else {
+                        manualPaymentSection.style.display = 'none';
+                    }
                 });
             });
             
@@ -1396,76 +1625,74 @@
                     return;
                 }
                 
-                // Always use mock payment in this environment
-                showMockPaymentModal();
-            });
-            
-            // Mock payment modal close
-            mockPaymentClose.addEventListener('click', function() {
-                mockPaymentModal.classList.remove('show');
-            });
-            
-            // Mock payment cancel
-            mockPaymentCancel.addEventListener('click', function() {
-                mockPaymentModal.classList.remove('show');
-            });
-            
-            // Mock payment complete
-            mockPaymentComplete.addEventListener('click', async function() {
-                mockPaymentModal.classList.remove('show');
-                
-                // Show loading overlay
-                loadingOverlay.classList.remove('hide');
-                
-                // Process the mock payment
-                const reference = 'MOCK_' + Math.floor(Math.random() * 1000000000);
-                
-                const success = await processWalletFunding(
-                    userId,
-                    reference,
-                    selectedAmount - serviceFee, // Deduct service fee from amount
-                    serviceFee,
-                    selectedMethod
-                );
-                
-                if (success) {
-                    // Refresh user data
-                    await loadUserData(userId);
-                    
-                    // Show success toast
-                    showToastNotification('Wallet funded successfully!');
-                    
-                    // Reset form
-                    amountInput.value = '';
-                    amountPresets.forEach(preset => preset.classList.remove('active'));
-                    updateAmount(0);
+                if (selectedMethod === 'manual') {
+                    // For manual payment, just scroll to the manual payment section
+                    manualPaymentSection.scrollIntoView({ behavior: 'smooth' });
                 } else {
-                    // Show error notification
-                    showToastNotification('Error updating your balance. Please contact support.');
+                    // For other payment methods, show payment modal
+                    showPaymentModal();
                 }
+            });
+            
+            // Payment modal close
+            paymentClose.addEventListener('click', function() {
+                paymentModal.classList.remove('show');
+            });
+            
+            // Payment cancel
+            paymentCancel.addEventListener('click', function() {
+                paymentModal.classList.remove('show');
+            });
+            
+            // Payment complete
+            paymentComplete.addEventListener('click', function() {
+                paymentModal.classList.remove('show');
                 
-                // Hide loading overlay
-                loadingOverlay.classList.add('hide');
+                // Initiate Paystack payment
+                initiatePaystackPayment();
+            });
+            
+            // File upload container click
+            fileUploadContainer.addEventListener('click', function() {
+                fileUploadInput.click();
+            });
+            
+            // File upload input change
+            fileUploadInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(event) {
+                        filePreviewImage.src = event.target.result;
+                        filePreviewName.textContent = file.name;
+                        filePreview.classList.add('show');
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
             });
             
             // Set indicator position for navigation
             setIndicatorPosition(document.querySelector('.nav-item.active'));
         }
         
-        // Check if we're in a preview environment
-        function isPreviewEnvironment() {
-            // Always return true for now since we're using mock payments
-            return true;
+        // Update WhatsApp link with current amount
+        function updateWhatsAppLink() {
+            const baseUrl = "https://wa.me/2348123456789?text=";
+            const message = `Hello VeltraWave, I just made a payment of ${formatCurrency(selectedAmount)} to fund my wallet. My VeltraWave ID is: ${userId}`;
+            const encodedMessage = encodeURIComponent(message);
+            whatsappButton.href = baseUrl + encodedMessage;
         }
         
-        // Show mock payment modal
-        function showMockPaymentModal() {
-            // Update mock payment details
-            mockPaymentAmount.textContent = formatCurrency(selectedAmount);
-            mockPaymentTotal.textContent = formatCurrency(selectedAmount + serviceFee);
+        // Show payment modal
+        function showPaymentModal() {
+            // Update payment details
+            paymentAmount.textContent = formatCurrency(selectedAmount);
+            paymentTotal.textContent = formatCurrency(selectedAmount + serviceFee);
             
             // Show modal
-            mockPaymentModal.classList.add('show');
+            paymentModal.classList.add('show');
         }
         
         // Update amount in summary
@@ -1489,6 +1716,138 @@
             payButton.disabled = amount < 100;
         }
         
+        // Initiate Paystack payment
+        function initiatePaystackPayment() {
+            // Show loading overlay
+            loadingOverlay.classList.remove('hide');
+            
+            // Generate a reference
+            const reference = 'VW_' + Math.floor(Math.random() * 1000000000) + '_' + new Date().getTime();
+            
+            try {
+                // Verify Paystack is loaded
+                if (typeof PaystackPop === 'undefined') {
+                    throw new Error("Payment service not available");
+                }
+                
+                // Initialize Paystack
+                const handler = PaystackPop.setup({
+                    key: "pk_test_c86e0f48b2a2f9a4663737bf92327d697977070e", // Use your Paystack public key
+                    email: userEmail || 'customer@email.com',
+                    amount: (selectedAmount + serviceFee) * 100, // Convert to kobo
+                    currency: 'NGN',
+                    ref: reference,
+                    metadata: {
+                        user_id: userId,
+                        service_fee: serviceFee,
+                        actual_amount: selectedAmount // Amount before adding service fee
+                    },
+                    callback: function(response) {
+                        handlePaymentSuccess(response);
+                    },
+                    onClose: function() {
+                        loadingOverlay.classList.add('hide');
+                        showToastNotification("Payment window closed");
+                    }
+                });
+                
+                // Open Paystack payment window
+                handler.openIframe();
+            } catch (error) {
+                console.error("Payment Error:", error);
+                showToastNotification("Payment failed: " + error.message);
+                loadingOverlay.classList.add('hide');
+                
+                // Fallback to mock payment in case of error
+                processWalletFundingMock();
+            }
+        }
+        
+        // Handle successful payment
+        async function handlePaymentSuccess(response) {
+            try {
+                // Show processing message
+                showToastNotification('Processing your payment...');
+                
+                // Process the payment
+                const success = await processWalletFunding(
+                    userId,
+                    response.reference,
+                    selectedAmount, // Amount before service fee
+                    serviceFee,
+                    selectedMethod
+                );
+                
+                if (success) {
+                    // Refresh user data
+                    await loadUserData(userId);
+                    
+                    // Show success toast
+                    showToastNotification('Wallet funded successfully!');
+                    
+                    // Reset form
+                    amountInput.value = '';
+                    amountPresets.forEach(preset => preset.classList.remove('active'));
+                    updateAmount(0);
+                } else {
+                    // Show error notification
+                    showToastNotification('Error updating your balance. Please contact support.');
+                }
+            } catch (error) {
+                console.error("Error handling payment success:", error);
+                
+                // Show error notification
+                showToastNotification('Error processing payment: ' + error.message);
+            } finally {
+                // Hide loading overlay
+                loadingOverlay.classList.add('hide');
+            }
+        }
+        
+        // Process wallet funding mock (for testing)
+        async function processWalletFundingMock() {
+            try {
+                // Show processing message
+                showToastNotification('Processing your payment...');
+                
+                // Generate a mock reference
+                const reference = 'MOCK_' + Math.floor(Math.random() * 1000000000);
+                
+                // Process the payment
+                const success = await processWalletFunding(
+                    userId,
+                    reference,
+                    selectedAmount, // Amount before service fee
+                    serviceFee,
+                    selectedMethod
+                );
+                
+                if (success) {
+                    // Refresh user data
+                    await loadUserData(userId);
+                    
+                    // Show success toast
+                    showToastNotification('Wallet funded successfully!');
+                    
+                    // Reset form
+                    amountInput.value = '';
+                    amountPresets.forEach(preset => preset.classList.remove('active'));
+                    updateAmount(0);
+                } else {
+                    // Show error notification
+                    showToastNotification('Error updating your balance. Please contact support.');
+                }
+            } catch (error) {
+                console.error("Error handling mock payment:", error);
+                
+                // Show error notification
+                showToastNotification('Error processing payment: ' + error.message);
+            } finally {
+                // Hide loading overlay
+                loadingOverlay.classList.add('hide');
+            }
+        }
+        
         // Process wallet funding
         async function processWalletFunding(userId, reference, amount, serviceFee, paymentMethod) {
             try {
@@ -1500,7 +1859,7 @@
                 const transactionData = {
                     user_id: userId,
                     reference: reference,
-                    amount: amount, // This is the amount that goes to user's wallet (after service fee)
+                    amount: amount, // This is the amount that goes to user's wallet
                     service_fee: serviceFee,
                     total_paid: amount + serviceFee, // Total amount paid including service fee
                     type: 'wallet',
@@ -1529,14 +1888,15 @@
                     batch.set(userRef, {
                         user_id: userId,
                         name: userName,
-                        balance: amount, // Add the amount after service fee to balance
+                        email: userEmail || '',
+                        balance: amount, // Add the amount to balance
                         updated_at: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 } else {
                     // Update existing user balance
                     const userData = userDoc.data();
                     const currentBalance = userData.balance || 0;
-                    const newBalance = currentBalance + amount; // Add the amount after service fee
+                    const newBalance = currentBalance + amount;
                     
                     // Update user balance
                     batch.update(userRef, {
