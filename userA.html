@@ -723,6 +723,17 @@
             }
         }
 
+        /* Form Checkbox */
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .form-checkbox input {
+            margin-right: 0.5rem;
+        }
+
         /* Toast Notification */
         .toast {
             position: fixed;
@@ -1000,6 +1011,7 @@
                     </li>
                     <li class="sidebar-menu-item">
                         <a href="#" class="sidebar-menu-link" data-section="transactions">
+                            <i class="fas fa-exchange-alt  data-section="transactions">
                             <i class="fas fa-exchange-alt"></i>
                             <span>Transactions</span>
                         </a>
@@ -1762,7 +1774,7 @@
                         active++;
                     }
                     
-                    if (user.isTelegramUser) {
+                    if (user.user_id && user.user_id.toString().startsWith('5')) {
                         telegramCount++;
                     }
                     
@@ -1784,7 +1796,7 @@
         async function loadRecentUsers() {
             try {
                 const usersSnapshot = await db.collection('users')
-                    .orderBy('createdAt', 'desc')
+                    .orderBy('updated_at', 'desc')
                     .limit(5)
                     .get();
                 
@@ -1813,7 +1825,7 @@
                     }
                     
                     row.innerHTML = `
-                        <td>${userId.substring(0, 8)}</td>
+                        <td>${user.user_id || userId.substring(0, 8)}</td>
                         <td>${user.first_name || ''} ${user.last_name || ''}</td>
                         <td>${user.email || 'No email'}</td>
                         <td>${user.phone_number || 'No phone'}</td>
@@ -1856,14 +1868,49 @@
         // Load recent transactions
         async function loadRecentTransactions() {
             try {
-                const transactionsSnapshot = await db.collection('transactions')
-                    .orderBy('timestamp', 'desc')
-                    .limit(5)
-                    .get();
+                // Check if transactions subcollection exists
+                const usersWithTransactions = await db.collection('users').get();
+                let allTransactions = [];
+                
+                for (const userDoc of usersWithTransactions.docs) {
+                    const userId = userDoc.id;
+                    const userData = userDoc.data();
+                    
+                    // Check if user has transactions array
+                    if (userData.transactions && Array.isArray(userData.transactions)) {
+                        userData.transactions.forEach(transaction => {
+                            transaction.userId = userId;
+                            transaction.userName = `${userData.first_name || ''} ${userData.last_name || ''}`;
+                            allTransactions.push(transaction);
+                        });
+                    }
+                    
+                    // Also check transactions subcollection
+                    const transactionsSnapshot = await db.collection('users').doc(userId)
+                        .collection('transactions').orderBy('timestamp', 'desc').limit(5).get();
+                    
+                    transactionsSnapshot.forEach(doc => {
+                        const transaction = doc.data();
+                        transaction.id = doc.id;
+                        transaction.userId = userId;
+                        transaction.userName = `${userData.first_name || ''} ${userData.last_name || ''}`;
+                        allTransactions.push(transaction);
+                    });
+                }
+                
+                // Sort transactions by timestamp
+                allTransactions.sort((a, b) => {
+                    const timestampA = a.timestamp ? new Date(a.timestamp.toDate()) : new Date(0);
+                    const timestampB = b.timestamp ? new Date(b.timestamp.toDate()) : new Date(0);
+                    return timestampB - timestampA;
+                });
+                
+                // Limit to 5 most recent
+                allTransactions = allTransactions.slice(0, 5);
                 
                 recentTransactions.innerHTML = '';
                 
-                if (transactionsSnapshot.empty) {
+                if (allTransactions.length === 0) {
                     recentTransactions.innerHTML = `
                         <div class="empty-state" style="padding: 1rem;">
                             <p>No transactions found</p>
@@ -1872,19 +1919,7 @@
                     return;
                 }
                 
-                for (const doc of transactionsSnapshot.docs) {
-                    const transaction = doc.data();
-                    const transactionId = doc.id;
-                    
-                    // Get user data
-                    let userData = { first_name: 'Unknown', last_name: 'User' };
-                    if (transaction.userId) {
-                        const userDoc = await db.collection('users').doc(transaction.userId).get();
-                        if (userDoc.exists) {
-                            userData = userDoc.data();
-                        }
-                    }
-                    
+                for (const transaction of allTransactions) {
                     // Format date
                     const date = transaction.timestamp ? new Date(transaction.timestamp.toDate()) : new Date();
                     const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
@@ -1905,14 +1940,14 @@
                         </div>
                         <div class="transaction-details">
                             <div class="transaction-title">${transaction.description || (isCredit ? 'Wallet Funded' : 'Wallet Debited')}</div>
-                            <div class="transaction-date">${formattedDate} • ${userData.first_name} ${userData.last_name}</div>
+                            <div class="transaction-date">${formattedDate} • ${transaction.userName || 'Unknown User'}</div>
                         </div>
                         <div class="transaction-amount ${iconClass}">${sign}₦${parseFloat(transaction.amount || 0).toFixed(2)}</div>
                     `;
                     
                     // Add event listener to view transaction details
                     transactionItem.addEventListener('click', () => {
-                        viewTransactionDetails(transactionId);
+                        viewTransactionDetails(transaction);
                     });
                     
                     recentTransactions.appendChild(transactionItem);
@@ -1930,7 +1965,7 @@
                 usersEmpty.style.display = 'none';
                 usersTable.innerHTML = '';
                 
-                let query = db.collection('users').orderBy('createdAt', 'desc');
+                let query = db.collection('users');
                 
                 if (status !== 'all') {
                     query = query.where('status', '==', status);
@@ -1983,7 +2018,7 @@
                 }
                 
                 row.innerHTML = `
-                    <td>${user.id.substring(0, 8)}</td>
+                    <td>${user.user_id || user.id.substring(0, 8)}</td>
                     <td>${user.first_name || ''} ${user.last_name || ''}</td>
                     <td>${user.email || 'No email'}</td>
                     <td>${user.phone_number || 'No phone'}</td>
@@ -2027,8 +2062,8 @@
                 telegramUsersTable.innerHTML = '';
                 
                 const usersSnapshot = await db.collection('users')
-                    .where('isTelegramUser', '==', true)
-                    .orderBy('createdAt', 'desc')
+                    .where('user_id', '>=', '5')
+                    .where('user_id', '<', '6')
                     .get();
                 
                 telegramUsersLoading.style.display = 'none';
@@ -2076,10 +2111,10 @@
                 }
                 
                 row.innerHTML = `
-                    <td>${user.id.substring(0, 8)}</td>
+                    <td>${user.user_id || user.id.substring(0, 8)}</td>
                     <td>${user.first_name || ''} ${user.last_name || ''}</td>
-                    <td>${user.telegramUsername || 'No username'}</td>
-                    <td>${user.telegramChatId || 'No chat ID'}</td>
+                    <td>${user.telegram_username || 'No username'}</td>
+                    <td>${user.user_id || 'No chat ID'}</td>
                     <td>₦${parseFloat(user.balance || 0).toFixed(2)}</td>
                     <td><span class="status-badge ${statusClass}">${user.status || 'active'}</span></td>
                     <td>
@@ -2119,38 +2154,55 @@
                 transactionsEmpty.style.display = 'none';
                 transactionsTable.innerHTML = '';
                 
-                let query = db.collection('transactions').orderBy('timestamp', 'desc');
+                // Get all users
+                const usersSnapshot = await db.collection('users').get();
+                let allTransactions = [];
                 
-                if (type !== 'all') {
-                    query = query.where('type', '==', type);
+                for (const userDoc of usersSnapshot.docs) {
+                    const userId = userDoc.id;
+                    const userData = userDoc.data();
+                    
+                    // Check if user has transactions array
+                    if (userData.transactions && Array.isArray(userData.transactions)) {
+                        userData.transactions.forEach(transaction => {
+                            if (type === 'all' || transaction.type === type) {
+                                transaction.userId = userId;
+                                transaction.userName = `${userData.first_name || ''} ${userData.last_name || ''}`;
+                                allTransactions.push(transaction);
+                            }
+                        });
+                    }
+                    
+                    // Also check transactions subcollection
+                    const transactionsSnapshot = await db.collection('users').doc(userId)
+                        .collection('transactions').get();
+                    
+                    transactionsSnapshot.forEach(doc => {
+                        const transaction = doc.data();
+                        if (type === 'all' || transaction.type === type) {
+                            transaction.id = doc.id;
+                            transaction.userId = userId;
+                            transaction.userName = `${userData.first_name || ''} ${userData.last_name || ''}`;
+                            allTransactions.push(transaction);
+                        }
+                    });
                 }
                 
-                const transactionsSnapshot = await query.get();
+                // Sort transactions by timestamp
+                allTransactions.sort((a, b) => {
+                    const timestampA = a.timestamp ? new Date(a.timestamp.toDate()) : new Date(0);
+                    const timestampB = b.timestamp ? new Date(b.timestamp.toDate()) : new Date(0);
+                    return timestampB - timestampA;
+                });
                 
                 transactionsLoading.style.display = 'none';
                 
-                if (transactionsSnapshot.empty) {
+                if (allTransactions.length === 0) {
                     transactionsEmpty.style.display = 'flex';
                     return;
                 }
                 
-                transactions = [];
-                
-                for (const doc of transactionsSnapshot.docs) {
-                    const transaction = doc.data();
-                    transaction.id = doc.id;
-                    
-                    // Get user data
-                    if (transaction.userId) {
-                        const userDoc = await db.collection('users').doc(transaction.userId).get();
-                        if (userDoc.exists) {
-                            transaction.user = userDoc.data();
-                        }
-                    }
-                    
-                    transactions.push(transaction);
-                }
-                
+                transactions = allTransactions;
                 renderTransactions(transactions);
             } catch (error) {
                 console.error('Error loading transactions:', error);
@@ -2183,22 +2235,23 @@
                 const typeClass = isCredit ? 'success' : 'error';
                 
                 row.innerHTML = `
-                    <td>${transaction.id.substring(0, 8)}</td>
-                    <td>${transaction.user ? `${transaction.user.first_name} ${transaction.user.last_name}` : 'Unknown User'}</td>
+                    <td>${transaction.id ? transaction.id.substring(0, 8) : 'N/A'}</td>
+                    <td>${transaction.userName || 'Unknown User'}</td>
                     <td><span class="status-badge ${isCredit ? 'active' : 'inactive'}">${isCredit ? 'Credit' : 'Debit'}</span></td>
                     <td class="text-${typeClass}">₦${parseFloat(transaction.amount || 0).toFixed(2)}</td>
                     <td>${transaction.description || (isCredit ? 'Wallet Funded' : 'Wallet Debited')}</td>
                     <td>${formattedDate}</td>
                     <td>
-                        <button class="btn-icon view" data-id="${transaction.id}">
+                        <button class="btn-icon view" data-index="${transactions.indexOf(transaction)}">
                             <i class="fas fa-eye"></i>
                         </button>
                     </td>
                 `;
                 
                 // Add event listener to view button
-                row.querySelector('.btn-icon.view').addEventListener('click', () => {
-                    viewTransactionDetails(transaction.id);
+                row.querySelector('.btn-icon.view').addEventListener('click', (e) => {
+                    const index = e.currentTarget.dataset.index;
+                    viewTransactionDetails(transactions[index]);
                 });
                 
                 transactionsTable.appendChild(row);
@@ -2220,21 +2273,32 @@
                 const userData = userDoc.data();
                 
                 // Get user transactions
-                const transactionsSnapshot = await db.collection('transactions')
-                    .where('userId', '==', userId)
-                    .orderBy('timestamp', 'desc')
-                    .limit(5)
-                    .get();
+                let userTransactions = [];
                 
-                const userTransactions = [];
+                // Check if user has transactions array
+                if (userData.transactions && Array.isArray(userData.transactions)) {
+                    userTransactions = userData.transactions.slice(0, 5);
+                }
+                
+                // Also check transactions subcollection
+                const transactionsSnapshot = await db.collection('users').doc(userId)
+                    .collection('transactions').orderBy('timestamp', 'desc').limit(5).get();
+                
                 transactionsSnapshot.forEach(doc => {
                     const transaction = doc.data();
                     transaction.id = doc.id;
                     userTransactions.push(transaction);
                 });
                 
+                // Sort transactions by timestamp
+                userTransactions.sort((a, b) => {
+                    const timestampA = a.timestamp ? new Date(a.timestamp.toDate()) : new Date(0);
+                    const timestampB = b.timestamp ? new Date(b.timestamp.toDate()) : new Date(0);
+                    return timestampB - timestampA;
+                });
+                
                 // Format created date
-                const createdDate = userData.createdAt ? new Date(userData.createdAt.toDate()) : new Date();
+                const createdDate = userData.updated_at ? new Date(userData.updated_at.toDate()) : new Date();
                 const formattedCreatedDate = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
                 
                 // Build user details HTML
@@ -2242,7 +2306,7 @@
                     <div class="detail-list">
                         <div class="detail-item">
                             <div class="detail-label">User ID</div>
-                            <div class="detail-value">${userId}</div>
+                            <div class="detail-value">${userData.user_id || userId}</div>
                         </div>
                         
                         <div class="detail-item">
@@ -2278,25 +2342,20 @@
                         </div>
                         
                         <div class="detail-item">
-                            <div class="detail-label">Created</div>
+                            <div class="detail-label">Last Updated</div>
                             <div class="detail-value">${formattedCreatedDate}</div>
                         </div>
                     </div>
                 `;
                 
                 // Add telegram info if user is a telegram user
-                if (userData.isTelegramUser) {
+                if (userData.user_id && userData.user_id.toString().startsWith('5')) {
                     detailsHTML += `
                         <h3 style="margin-top: 1.5rem; margin-bottom: 1rem;">Telegram Information</h3>
                         <div class="detail-list">
                             <div class="detail-item">
-                                <div class="detail-label">Username</div>
-                                <div class="detail-value">${userData.telegramUsername || 'Not provided'}</div>
-                            </div>
-                            
-                            <div class="detail-item">
-                                <div class="detail-label">Chat ID</div>
-                                <div class="detail-value">${userData.telegramChatId || 'Not provided'}</div>
+                                <div class="detail-label">User ID</div>
+                                <div class="detail-value">${userData.user_id || 'Not provided'}</div>
                             </div>
                         </div>
                     `;
@@ -2326,7 +2385,7 @@
                         const sign = isCredit ? '+' : '-';
                         
                         detailsHTML += `
-                            <div class="transaction-item" data-id="${transaction.id}">
+                            <div class="transaction-item" data-index="${userTransactions.indexOf(transaction)}">
                                 <div class="transaction-icon ${iconClass}">
                                     <i class="fas ${icon}"></i>
                                 </div>
@@ -2362,8 +2421,8 @@
                 const transactionItems = userDetailContent.querySelectorAll('.transaction-item');
                 transactionItems.forEach(item => {
                     item.addEventListener('click', () => {
-                        const transactionId = item.dataset.id;
-                        viewTransactionDetails(transactionId);
+                        const index = item.dataset.index;
+                        viewTransactionDetails(userTransactions[index]);
                     });
                 });
                 
@@ -2389,34 +2448,14 @@
         }
         
         // View transaction details
-        async function viewTransactionDetails(transactionId) {
+        function viewTransactionDetails(transaction) {
             try {
-                currentTransactionId = transactionId;
-                
-                const transactionDoc = await db.collection('transactions').doc(transactionId).get();
-                
-                if (!transactionDoc.exists) {
-                    showToast('Transaction not found', 'error');
-                    return;
-                }
-                
-                const transactionData = transactionDoc.data();
-                
-                // Get user data
-                let userData = { first_name: 'Unknown', last_name: 'User' };
-                if (transactionData.userId) {
-                    const userDoc = await db.collection('users').doc(transactionData.userId).get();
-                    if (userDoc.exists) {
-                        userData = userDoc.data();
-                    }
-                }
-                
                 // Format date
-                const date = transactionData.timestamp ? new Date(transactionData.timestamp.toDate()) : new Date();
+                const date = transaction.timestamp ? new Date(transaction.timestamp.toDate()) : new Date();
                 const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
                 
                 // Determine transaction type
-                const isCredit = transactionData.type === 'credit';
+                const isCredit = transaction.type === 'credit';
                 const typeClass = isCredit ? 'success' : 'error';
                 
                 // Build transaction details HTML
@@ -2424,12 +2463,12 @@
                     <div class="detail-list">
                         <div class="detail-item">
                             <div class="detail-label">Transaction ID</div>
-                            <div class="detail-value">${transactionId}</div>
+                            <div class="detail-value">${transaction.id || 'N/A'}</div>
                         </div>
                         
                         <div class="detail-item">
                             <div class="detail-label">User</div>
-                            <div class="detail-value">${userData.first_name} ${userData.last_name}</div>
+                            <div class="detail-value">${transaction.userName || 'Unknown User'}</div>
                         </div>
                         
                         <div class="detail-item">
@@ -2441,12 +2480,12 @@
                         
                         <div class="detail-item">
                             <div class="detail-label">Amount</div>
-                            <div class="detail-value" style="color: var(--${isCredit ? 'success' : 'error'});">₦${parseFloat(transactionData.amount || 0).toFixed(2)}</div>
+                            <div class="detail-value" style="color: var(--${isCredit ? 'success' : 'error'});">₦${parseFloat(transaction.amount || 0).toFixed(2)}</div>
                         </div>
                         
                         <div class="detail-item">
                             <div class="detail-label">Description</div>
-                            <div class="detail-value">${transactionData.description || (isCredit ? 'Wallet Funded' : 'Wallet Debited')}</div>
+                            <div class="detail-value">${transaction.description || (isCredit ? 'Wallet Funded' : 'Wallet Debited')}</div>
                         </div>
                         
                         <div class="detail-item">
@@ -2456,12 +2495,12 @@
                         
                         <div class="detail-item">
                             <div class="detail-label">Admin</div>
-                            <div class="detail-value">${transactionData.adminName || 'System'}</div>
+                            <div class="detail-value">${transaction.adminName || 'System'}</div>
                         </div>
                     </div>
                     
                     <div style="margin-top: 1.5rem;">
-                        <button class="btn btn-outline" id="viewUserBtn" data-id="${transactionData.userId}">
+                        <button class="btn btn-outline" id="viewUserBtn" data-id="${transaction.userId}">
                             <i class="fas fa-user"></i>
                             View User
                         </button>
@@ -2522,13 +2561,16 @@
                 document.getElementById('userRole').value = userData.role || 'user';
                 document.getElementById('userStatus').value = userData.status || 'active';
                 document.getElementById('initialBalance').value = userData.balance || '0';
-                document.getElementById('isTelegramUser').checked = userData.isTelegramUser || false;
+                
+                // Check if user is a telegram user
+                const isTelegramUserCheck = userData.user_id && userData.user_id.toString().startsWith('5');
+                document.getElementById('isTelegramUser').checked = isTelegramUserCheck;
                 
                 // Show/hide telegram fields
-                if (userData.isTelegramUser) {
+                if (isTelegramUserCheck) {
                     telegramFields.style.display = 'block';
-                    document.getElementById('telegramUsername').value = userData.telegramUsername || '';
-                    document.getElementById('telegramChatId').value = userData.telegramChatId || '';
+                    document.getElementById('telegramUsername').value = userData.telegram_username || '';
+                    document.getElementById('telegramChatId').value = userData.user_id || '';
                 } else {
                     telegramFields.style.display = 'none';
                 }
@@ -2552,10 +2594,10 @@
                 const role = document.getElementById('userRole').value;
                 const status = document.getElementById('userStatus').value;
                 const balance = parseFloat(document.getElementById('initialBalance').value || '0');
-                const isTelegramUser = document.getElementById('isTelegramUser').checked;
+                const isTelegramUserCheck = document.getElementById('isTelegramUser').checked;
                 
                 // Validate required fields
-                if (!firstName || !lastName || !email) {
+                if (!firstName || !lastName) {
                     showToast('Please fill in all required fields', 'error');
                     return;
                 }
@@ -2564,13 +2606,13 @@
                 let telegramUsername = '';
                 let telegramChatId = '';
                 
-                if (isTelegramUser) {
+                if (isTelegramUserCheck) {
                     telegramUsername = document.getElementById('telegramUsername').value.trim();
                     telegramChatId = document.getElementById('telegramChatId').value.trim();
                     
                     // Validate telegram fields
-                    if (!telegramUsername) {
-                        showToast('Please enter a Telegram username', 'error');
+                    if (!telegramChatId) {
+                        showToast('Please enter a Telegram Chat ID', 'error');
                         return;
                     }
                 }
@@ -2584,28 +2626,30 @@
                     role: role,
                     status: status,
                     balance: balance,
-                    isTelegramUser: isTelegramUser,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedBy: currentUser.uid
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
                 // Add telegram fields if user is a telegram user
-                if (isTelegramUser) {
-                    userData.telegramUsername = telegramUsername;
-                    userData.telegramChatId = telegramChatId;
+                if (isTelegramUserCheck) {
+                    userData.telegram_username = telegramUsername;
+                    userData.user_id = telegramChatId;
                 }
                 
                 if (isEditMode) {
-                    // Update existing user
-                    await db.collection('users').doc(currentUserId).update(  {
                     // Update existing user
                     await db.collection('users').doc(currentUserId).update(userData);
                     
                     showToast('User updated successfully', 'success');
                 } else {
                     // Add new user
-                    userData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    userData.createdBy = currentUser.uid;
+                    // Generate a VTU ID (last 6 digits of user_id or random)
+                    const vtuId = isTelegramUserCheck && telegramChatId ? 
+                        telegramChatId.substring(Math.max(0, telegramChatId.length - 6)) : 
+                        Math.floor(100000 + Math.random() * 900000).toString();
+                    
+                    userData.vtu_id = vtuId;
+                    userData.user_id = isTelegramUserCheck ? telegramChatId : '';
+                    userData.transactions = [];
                     
                     await db.collection('users').doc().set(userData);
                     
@@ -2693,16 +2737,8 @@
                     newBalance -= amount;
                 }
                 
-                // Update user balance
-                await db.collection('users').doc(currentUserId).update({
-                    balance: newBalance,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedBy: currentUser.uid
-                });
-                
                 // Create transaction record
                 const transactionData = {
-                    userId: currentUserId,
                     amount: amount,
                     type: type,
                     description: description || (type === 'credit' ? 'Wallet Funded by Admin' : 'Wallet Debited by Admin'),
@@ -2711,7 +2747,16 @@
                     adminName: currentUser.displayName || currentUser.email
                 };
                 
-                await db.collection('transactions').doc().set(transactionData);
+                // Update user balance and add transaction to array
+                await db.collection('users').doc(currentUserId).update({
+                    balance: newBalance,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    transactions: firebase.firestore.FieldValue.arrayUnion(transactionData)
+                });
+                
+                // Also add to transactions subcollection for better querying
+                await db.collection('users').doc(currentUserId)
+                    .collection('transactions').add(transactionData);
                 
                 // Hide modal
                 fundWalletModal.classList.remove('active');
@@ -2769,12 +2814,17 @@
                 telegramFields.style.display = 'block';
             });
             
-            addFirstUserBtn?.addEventListener('click', addNewUser);
-            addFirstTelegramUserBtn?.addEventListener('click', () => {
-                addNewUser();
-                document.getElementById('isTelegramUser').checked = true;
-                telegramFields.style.display = 'block';
-            });
+            if (addFirstUserBtn) {
+                addFirstUserBtn.addEventListener('click', addNewUser);
+            }
+            
+            if (addFirstTelegramUserBtn) {
+                addFirstTelegramUserBtn.addEventListener('click', () => {
+                    addNewUser();
+                    document.getElementById('isTelegramUser').checked = true;
+                    telegramFields.style.display = 'block';
+                });
+            }
             
             // Refresh users button
             refreshUsers.addEventListener('click', () => {
@@ -2865,20 +2915,26 @@
             });
             
             // Search inputs
-            document.getElementById('userSearch')?.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                filterUsers(searchTerm);
-            });
+            if (document.getElementById('userSearch')) {
+                document.getElementById('userSearch').addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    filterUsers(searchTerm);
+                });
+            }
             
-            document.getElementById('telegramUserSearch')?.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                filterTelegramUsers(searchTerm);
-            });
+            if (document.getElementById('telegramUserSearch')) {
+                document.getElementById('telegramUserSearch').addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    filterTelegramUsers(searchTerm);
+                });
+            }
             
-            document.getElementById('transactionSearch')?.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                filterTransactions(searchTerm);
-            });
+            if (document.getElementById('transactionSearch')) {
+                document.getElementById('transactionSearch').addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    filterTransactions(searchTerm);
+                });
+            }
             
             // Toggle telegram fields
             isTelegramUser.addEventListener('change', () => {
@@ -2950,7 +3006,7 @@
                     (user.last_name && user.last_name.toLowerCase().includes(searchTerm)) ||
                     (user.email && user.email.toLowerCase().includes(searchTerm)) ||
                     (user.phone_number && user.phone_number.toLowerCase().includes(searchTerm)) ||
-                    (user.id && user.id.toLowerCase().includes(searchTerm))
+                    (user.user_id && user.user_id.toLowerCase().includes(searchTerm))
                 );
             });
             
@@ -2968,9 +3024,8 @@
                 return (
                     (user.first_name && user.first_name.toLowerCase().includes(searchTerm)) ||
                     (user.last_name && user.last_name.toLowerCase().includes(searchTerm)) ||
-                    (user.telegramUsername && user.telegramUsername.toLowerCase().includes(searchTerm)) ||
-                    (user.telegramChatId && user.telegramChatId.toLowerCase().includes(searchTerm)) ||
-                    (user.id && user.id.toLowerCase().includes(searchTerm))
+                    (user.telegram_username && user.telegram_username.toLowerCase().includes(searchTerm)) ||
+                    (user.user_id && user.user_id.toLowerCase().includes(searchTerm))
                 );
             });
             
@@ -2987,8 +3042,7 @@
             const filteredTransactions = transactions.filter(transaction => {
                 return (
                     (transaction.description && transaction.description.toLowerCase().includes(searchTerm)) ||
-                    (transaction.user && transaction.user.first_name && transaction.user.first_name.toLowerCase().includes(searchTerm)) ||
-                    (transaction.user && transaction.user.last_name && transaction.user.last_name.toLowerCase().includes(searchTerm)) ||
+                    (transaction.userName && transaction.userName.toLowerCase().includes(searchTerm)) ||
                     (transaction.id && transaction.id.toLowerCase().includes(searchTerm))
                 );
             });
@@ -3010,7 +3064,7 @@
                 await db.collection('admins').doc(currentUser.uid).set({
                     name: adminName,
                     email: currentUser.email,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 
                 // Update display name
@@ -3047,7 +3101,7 @@
                         transaction: transactionNotification,
                         lowBalance: lowBalanceNotification
                     },
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 
                 showToast('Notification settings saved successfully', 'success');
