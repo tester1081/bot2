@@ -462,14 +462,15 @@
     </div>
     
     <script>
-        // Firebase Configuration
+        // Firebase Configuration - Hardcoded for reliability
         const firebaseConfig = {
-            apiKey: "AIzaSyDQnOWm9MPNK1CMB3YC_XbxVJwlXl5fFZU",
+            apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
             authDomain: "veltrawave-vtu.firebaseapp.com",
             projectId: "veltrawave-vtu",
-            storageBucket: "veltrawave-vtu.appspot.com",
-            messagingSenderId: "1098979571490",
-            appId: "1:1098979571490:web:c9b6f1a7d9956e5c4d2fb6"
+            storageBucket: "veltrawave-vtu.firebasestorage.app",
+            messagingSenderId: "431351611304",
+            appId: "1:431351611304:web:7381dd659920f9f325a79d",
+            measurementId: "G-HRHN8GJCR3"
         };
 
         // Initialize Firebase
@@ -518,8 +519,8 @@
                         const adminDoc = await db.collection('admins').doc(user.uid).get();
                         
                         if (adminDoc.exists) {
-                            // User is an admin, redirect to topupA.html
-                            window.location.href = 'topupA.html';
+                            // User is an admin, redirect to admin page
+                            window.location.href = 'admin.html';
                         } else {
                             // User is not an admin, sign them out
                             isSigningOut = true;
@@ -569,7 +570,7 @@
                         // Show success toast
                         showToastNotification('Login successful! Redirecting...');
                         
-                        // User is an admin, redirect to topupA.html
+                        // User is an admin, redirect to admin page
                         setTimeout(() => {
                             window.location.href = 'topupA.html';
                         }, 1000);
