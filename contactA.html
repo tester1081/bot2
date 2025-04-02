@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Requests Management - VeltraWave VTU</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #2D7FF9;
+            --primary-light: #5A9DFF;
+            --primary-dark: #0D5ED6;
+            --secondary: #8C52FF;
+            --accent: #FF5E8A;
+            --background: #0A0F1E;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --surface: rgba(255, 255, 255, 0.12);
+            --text: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --success: #00E1A0;
+            --warning: #FFB547;
+            --error: #FF5E7D;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            transform: translateX(0);
+        }
+        
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-sidebar:hover {
+            color: var(--text);
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-label {
+            padding: 10px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+        
+        .sidebar.collapsed .menu-label {
+            display: none;
+        }
+        
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border-left-color: var(--primary);
+        }
+        
+        .menu-item i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar.collapsed .menu-item span {
+            display: none;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .header-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .header-btn i {
+            font-size: 1rem;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+        }
+        
+        .tab:hover {
+            color: var(--text);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Tables */
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .table-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th, .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .table td {
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-new {
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+        
+        .status-inprogress {
+            background: rgba(45, 127, 249, 0.2);
+            color: var(--primary-light);
+        }
+        
+        .status-resolved {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .status-closed {
+            background: rgba(255, 94, 125, 0.2);
+            color: var(--error);
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            padding: 5px;
+        }
+        
+        .action-btn:hover {
+            color: var(--text);
+        }
+        
+        .action-btn.view:hover {
+            color: var(--primary);
+        }
+        
+        .action-btn.delete:hover {
+            color: var(--error);
+        }
+        
+        /* Search */
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        /* Filters */
+        .filters-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .filter-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: var(--background);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: var(--text);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255, 255, 255, 0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #d93d5d;
+        }
+        
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            background: rgba(20, 30, 50, 0.95);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast i {
+            font-size: 1.2rem;
+        }
+        
+        .toast-success i {
+            color: var(--success);
+        }
+        
+        .toast-error i {
+            color: var(--error);
+        }
+        
+        .toast-warning i {
+            color: var(--warning);
+        }
+        
+        .toast-info i {
+            color: var(--primary);
+        }
+        
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 15, 30, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 99;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Contact Details */
+        .contact-details {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .contact-detail-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .contact-detail-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .contact-detail-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+        
+        .contact-detail-value {
+            font-size: 1rem;
+            word-break: break-word;
+        }
+        
+        .contact-message {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 5px;
+            white-space: pre-wrap;
+        }
+        
+        .contact-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        /* Response Section */
+        .response-section {
+            margin-top: 20px;
+        }
+        
+        .response-history {
+            margin-top: 15px;
+        }
+        
+        .response-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .response-content {
+            white-space: pre-wrap;
+        }
+        
+        /* Statistics Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-icon.total {
+            background: rgba(45, 127, 249, 0.2);
+            color: var(--primary);
+        }
+        
+        .stat-icon.new {
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+        
+        .stat-icon.inprogress {
+            background: rgba(140, 82, 255, 0.2);
+            color: var(--secondary);
+        }
+        
+        .stat-icon.resolved {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .sidebar .logo span, .sidebar .menu-label, .sidebar .menu-item span {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+            
+            .main-content.expanded {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 250px;
+            }
+            
+            .sidebar.mobile-active {
+                transform: translateX(0);
+            }
+            
+            .sidebar.mobile-active .logo span, 
+            .sidebar.mobile-active .menu-label, 
+            .sidebar.mobile-active .menu-item span {
+                display: block;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .main-content.expanded {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+            
+            .filter-select {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <img src="public/logo.png" alt="VeltraWave" class="logo-image">
+                <span>VeltraWave</span>
+            </div>
+            <button class="toggle-sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-label">Main</div>
+            <a href="admin.html" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="overviewA.html" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Overview</span>
+            </a>
+            <a href="userA.html" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            
+            <div class="menu-label">Management</div>
+            <a href="dataA.html" class="menu-item">
+                <i class="fas fa-wifi"></i>
+                <span>Data</span>
+            </a>
+            <a href="storeA.html" class="menu-item">
+                <i class="fas fa-store"></i>
+                <span>Store</span>
+            </a>
+            <a href="requestA.html" class="menu-item">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Requests</span>
+            </a>
+            <a href="contactA.html" class="menu-item active">
+                <i class="fas fa-headset"></i>
+                <span>Contact</span>
+            </a>
+            <a href="reviewA.html" class="menu-item">
+                <i class="fas fa-star"></i>
+                <span>Reviews</span>
+            </a>
+            <a href="topupA.html" class="menu-item">
+                <i class="fas fa-gamepad"></i>
+                <span>Game Top-up</span>
+            </a>
+            <a href="templateA.html" class="menu-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Templates</span>
+            </a>
+            
+            <div class="menu-label">Settings</div>
+            <a href="settingsA.html" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="#" class="menu-item" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Contact Requests Management</h1>
+            <div class="header-actions">
+                <button class="header-btn" id="refresh-btn">
+                    <i class="fas fa-sync"></i>
+                    <span>Refresh</span>
+                </button>
+                <button class="header-btn" id="export-btn">
+                    <i class="fas fa-file-export"></i>
+                    <span>Export</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-value" id="total-contacts">0</div>
+                <div class="stat-label">Total Contacts</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon new">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <div class="stat-value" id="new-contacts">0</div>
+                <div class="stat-label">New</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon inprogress">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div class="stat-value" id="inprogress-contacts">0</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon resolved">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value" id="resolved-contacts">0</div>
+                <div class="stat-label">Resolved</div>
+            </div>
+        </div>
+        
+        <!-- Search and Filters -->
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="search-contacts" placeholder="Search contacts by name, email, subject...">
+        </div>
+        
+        <div class="filters-container">
+            <div class="filter-group">
+                <span class="filter-label">Status:</span>
+                <select class="filter-select" id="status-filter">
+                    <option value="all">All</option>
+                    <option value="new">New</option>
+                    <option value="inprogress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <span class="filter-label">Date Range:</span>
+                <select class="filter-select" id="date-filter">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="all">All Contacts</div>
+            <div class="tab" data-tab="new">New</div>
+            <div class="tab" data-tab="inprogress">In Progress</div>
+            <div class="tab" data-tab="resolved">Resolved</div>
+            <div class="tab" data-tab="closed">Closed</div>
+        </div>
+        
+        <!-- Tab Content -->
+        <div class="tab-content active" id="all-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">All Contact Requests</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-secondary" id="refresh-contacts-btn">
+                            <i class="fas fa-sync"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+                <table class="table" id="contacts-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contacts-table-body">
+                        <!-- Contacts will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- New Tab Content -->
+        <div class="tab-content" id="new-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">New Contact Requests</h3>
+                </div>
+                <table class="table" id="new-contacts-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="new-contacts-table-body">
+                        <!-- New contacts will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- In Progress Tab Content -->
+        <div class="tab-content" id="inprogress-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">In Progress Contact Requests</h3>
+                </div>
+                <table class="table" id="inprogress-contacts-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inprogress-contacts-table-body">
+                        <!-- In progress contacts will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Resolved Tab Content -->
+        <div class="tab-content" id="resolved-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Resolved Contact Requests</h3>
+                </div>
+                <table class="table" id="resolved-contacts-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resolved-contacts-table-body">
+                        <!-- Resolved contacts will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Closed Tab Content -->
+        <div class="tab-content" id="closed-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Closed Contact Requests</h3>
+                </div>
+                <table class="table" id="closed-contacts-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="closed-contacts-table-body">
+                        <!-- Closed contacts will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Contact Details Modal -->
+    <div class="modal-overlay" id="contact-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="contact-modal-title">Contact Request Details</h3>
+                <button class="modal-close" id="contact-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="contact-details" id="contact-details">
+                    <!-- Contact details will be loaded dynamically -->
+                </div>
+                
+                <div class="form-group">
+                    <label for="contact-status" class="form-label">Update Status</label>
+                    <select id="contact-status" class="form-select">
+                        <option value="new">New</option>
+                        <option value="inprogress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contact-response" class="form-label">Response</label>
+                    <textarea id="contact-response" class="form-textarea" placeholder="Enter your response..."></textarea>
+                </div>
+                
+                <div class="response-section">
+                    <h4>Response History</h4>
+                    <div class="response-history" id="response-history">
+                        <!-- Response history will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <input type="hidden" id="contact-id">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="contact-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="contact-modal-save">Save & Send Response</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="delete-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Delete</h3>
+                <button class="modal-close" id="delete-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this contact request? This action cannot be undone.</p>
+                <input type="hidden" id="delete-contact-id">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="delete-modal-cancel">Cancel</button>
+                <button class="btn btn-danger" id="delete-modal-confirm">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
+            authDomain: "veltrawave-vtu.firebaseapp.com",
+            projectId: "veltrawave-vtu",
+            storageBucket: "veltrawave-vtu.firebasestorage.app",
+            messagingSenderId: "431351611304",
+            appId: "1:431351611304:web:7381dd659920f9f325a79d",
+            measurementId: "G-HRHN8GJCR3"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        // Flag to prevent auth state change loop
+        let isCheckingAdmin = false;
+        let isSigningOut = false;
+        
+        // DOM Elements
+        const sidebar = document.querySelector('.sidebar');
+        const toggleSidebarBtn = document.querySelector('.toggle-sidebar');
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mainContent = document.querySelector('.main-content');
+        const logoutBtn = document.getElementById('logout-btn');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const searchInput = document.getElementById('search-contacts');
+        const statusFilter = document.getElementById('status-filter');
+        const dateFilter = document.getElementById('date-filter');
+        
+        // Modal Elements
+        const contactModalOverlay = document.getElementById('contact-modal-overlay');
+        const contactModalClose = document.getElementById('contact-modal-close');
+        const contactModalCancel = document.getElementById('contact-modal-cancel');
+        const contactModalSave = document.getElementById('contact-modal-save');
+        const contactDetails = document.getElementById('contact-details');
+        const contactStatus = document.getElementById('contact-status');
+        const contactResponse = document.getElementById('contact-response');
+        const responseHistory = document.getElementById('response-history');
+        const contactId = document.getElementById('contact-id');
+        
+        const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+        const deleteModalClose = document.getElementById('delete-modal-close');
+        const deleteModalCancel = document.getElementById('delete-modal-cancel');
+        const deleteModalConfirm = document.getElementById('delete-modal-confirm');
+        const deleteContactId = document.getElementById('delete-contact-id');
+        
+        // Button Elements
+        const refreshBtn = document.getElementById('refresh-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const refreshContactsBtn = document.getElementById('refresh-contacts-btn');
+        
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            showLoading();
+            
+            auth.onAuthStateChanged(user => {
+                // Skip if we're in the process of checking admin status or signing out
+                if (isCheckingAdmin || isSigningOut) {
+                    hideLoading();
+                    return;
+                }
+                
+                if (!user) {
+                    // User is not logged in, redirect to login page
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Set flag to prevent loop
+                isCheckingAdmin = true;
+                
+                // Check if user is an admin
+                db.collection('admins').doc(user.uid).get()
+                    .then(doc => {
+                        if (!doc.exists) {
+                            // User is not an admin, redirect to login page
+                            isSigningOut = true;
+                            return auth.signOut().then(() => {
+                                window.location.href = 'login.html';
+                            });
+                        } else {
+                            // User is an admin, initialize the app
+                            initApp();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking admin status:', error);
+                        showToast('Error checking admin status: ' + error.message, 'error');
+                        
+                        // Redirect to login page on error
+                        isSigningOut = true;
+                        auth.signOut().then(() => {
+                            window.location.href = 'login.html';
+                        });
+                    })
+                    .finally(() => {
+                        isCheckingAdmin = false;
+                        isSigningOut = false;
+                        hideLoading();
+                    });
+            });
+        });
+        
+        // Initialize App
+        async function initApp() {
+            try {
+                showLoading();
+                
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Load contact requests
+                await loadContactRequests();
+                
+                // Update statistics
+                updateStatistics();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                showToast('Failed to initialize the app', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Toggle Sidebar
+            toggleSidebarBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            });
+            
+            // Mobile Menu Toggle
+            mobileMenuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-active');
+            });
+            
+            // Logout Button
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+            
+            // Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // Search
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                filterContacts(searchTerm);
+            });
+            
+            // Filters
+            statusFilter.addEventListener('change', function() {
+                applyFilters();
+            });
+            
+            dateFilter.addEventListener('change', function() {
+                applyFilters();
+            });
+            
+            // Refresh Button
+            refreshBtn.addEventListener('click', function() {
+                loadContactRequests();
+            });
+            
+            // Export Button
+            exportBtn.addEventListener('click', function() {
+                exportContacts();
+            });
+            
+            // Refresh Contacts Button
+            refreshContactsBtn.addEventListener('click', function() {
+                loadContactRequests();
+            });
+            
+            // Contact Modal
+            contactModalClose.addEventListener('click', function() {
+                closeContactModal();
+            });
+            
+            contactModalCancel.addEventListener('click', function() {
+                closeContactModal();
+            });
+            
+            contactModalSave.addEventListener('click', function() {
+                saveContactResponse();
+            });
+            
+            // Delete Modal
+            deleteModalClose.addEventListener('click', function() {
+                closeDeleteModal();
+            });
+            
+            deleteModalCancel.addEventListener('click', function() {
+                closeDeleteModal();
+            });
+            
+            deleteModalConfirm.addEventListener('click', function() {
+                confirmDeleteContact();
+            });
+        }
+        
+        // Load Contact Requests
+        async function loadContactRequests() {
+            try {
+                showLoading();
+                
+                // Get all contact requests
+                const contactsSnapshot = await db.collection('customRequests').orderBy('timestamp', 'desc').get();
+                const contacts = [];
+                
+                contactsSnapshot.forEach(doc => {
+                    contacts.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                // Render contacts
+                renderContacts(contacts);
+                
+                // Update statistics
+                updateStatistics();
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error loading contact requests:', error);
+                showToast('Failed to load contact requests', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Render Contacts
+        function renderContacts(contacts) {
+            // Clear existing contacts
+            const allContactsTableBody = document.getElementById('contacts-table-body');
+            const newContactsTableBody = document.getElementById('new-contacts-table-body');
+            const inProgressContactsTableBody = document.getElementById('inprogress-contacts-table-body');
+            const resolvedContactsTableBody = document.getElementById('resolved-contacts-table-body');
+            const closedContactsTableBody = document.getElementById('closed-contacts-table-body');
+            
+            allContactsTableBody.innerHTML = '';
+            newContactsTableBody.innerHTML = '';
+            inProgressContactsTableBody.innerHTML = '';
+            resolvedContactsTableBody.innerHTML = '';
+            closedContactsTableBody.innerHTML = '';
+            
+            if (contacts.length === 0) {
+                allContactsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No contact requests found</td></tr>';
+                newContactsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No new contact requests</td></tr>';
+                inProgressContactsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No in-progress contact requests</td></tr>';
+                resolvedContactsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No resolved contact requests</td></tr>';
+                closedContactsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No closed contact requests</td></tr>';
+                return;
+            }
+            
+            // Group contacts by status
+            const newContacts = contacts.filter(contact => !contact.status || contact.status === 'new');
+            const inProgressContacts = contacts.filter(contact => contact.status === 'inprogress');
+            const resolvedContacts = contacts.filter(contact => contact.status === 'resolved');
+            const closedContacts = contacts.filter(contact => contact.status === 'closed');
+            
+            // Render all contacts
+            renderContactsInTable(contacts, allContactsTableBody, true);
+            
+            // Render contacts by status
+            renderContactsInTable(newContacts, newContactsTableBody);
+            renderContactsInTable(inProgressContacts, inProgressContactsTableBody);
+            renderContactsInTable(resolvedContacts, resolvedContactsTableBody);
+            renderContactsInTable(closedContacts, closedContactsTableBody);
+        }
+        
+        // Render Contacts in Table
+        function renderContactsInTable(contacts, tableBody, includeStatus = false) {
+            if (contacts.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="${includeStatus ? 7 : 6}" style="text-align: center;">No contact requests found</td></tr>`;
+                return;
+            }
+            
+            contacts.forEach(contact => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                const date = contact.timestamp ? new Date(contact.timestamp.toDate()) : new Date();
+                const formattedDate = date.toLocaleString();
+                
+                // Status class
+                let statusClass = 'status-new';
+                let statusText = 'New';
+                
+                if (contact.status) {
+                    switch (contact.status) {
+                        case 'inprogress':
+                            statusClass = 'status-inprogress';
+                            statusText = 'In Progress';
+                            break;
+                        case 'resolved':
+                            statusClass = 'status-resolved';
+                            statusText = 'Resolved';
+                            break;
+                        case 'closed':
+                            statusClass = 'status-closed';
+                            statusText = 'Closed';
+                            break;
+                    }
+                }
+                
+                // Create row HTML
+                let rowHTML = `
+                    <td>${contact.id.substring(0, 8)}...</td>
+                    <td>${formattedDate}</td>
+                    <td>${contact.name || 'N/A'}</td>
+                    <td>${contact.email || 'N/A'}</td>
+                    <td>${contact.subject || 'N/A'}</td>
+                `;
+                
+                if (includeStatus) {
+                    rowHTML += `<td><span class="status ${statusClass}">${statusText}</span></td>`;
+                }
+                
+                rowHTML += `
+                    <td>
+                        <button class="action-btn view" data-id="${contact.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-btn delete" data-id="${contact.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                row.innerHTML = rowHTML;
+                tableBody.appendChild(row);
+                
+                // Add event listeners to view and delete buttons
+                const viewBtn = row.querySelector('.view');
+                const deleteBtn = row.querySelector('.delete');
+                
+                viewBtn.addEventListener('click', function() {
+                    const contactId = this.getAttribute('data-id');
+                    openContactModal(contactId);
+                });
+                
+                deleteBtn.addEventListener('click', function() {
+                    const contactId = this.getAttribute('data-id');
+                    openDeleteModal(contactId);
+                });
+            });
+        }
+        
+        // Update Statistics
+        function updateStatistics() {
+            db.collection('customRequests').get().then(snapshot => {
+                const totalContacts = snapshot.size;
+                document.getElementById('total-contacts').textContent = totalContacts;
+                
+                // Count contacts by status
+                let newCount = 0;
+                let inProgressCount = 0;
+                let resolvedCount = 0;
+                
+                snapshot.forEach(doc => {
+                    const status = doc.data().status;
+                    
+                    if (!status || status === 'new') {
+                        newCount++;
+                    } else if (status === 'inprogress') {
+                        inProgressCount++;
+                    } else if (status === 'resolved') {
+                        resolvedCount++;
+                    }
+                });
+                
+                document.getElementById('new-contacts').textContent = newCount;
+                document.getElementById('inprogress-contacts').textContent = inProgressCount;
+                document.getElementById('resolved-contacts').textContent = resolvedCount;
+            }).catch(error => {
+                console.error('Error updating statistics:', error);
+            });
+        }
+        
+        // Filter Contacts
+        function filterContacts(searchTerm) {
+            const rows = document.querySelectorAll('#contacts-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // Apply Filters
+        function applyFilters() {
+            const status = statusFilter.value;
+            const dateRange = dateFilter.value;
+            
+            // Get all rows
+            const rows = document.querySelectorAll('#contacts-table tbody tr');
+            
+            rows.forEach(row => {
+                let showRow = true;
+                
+                // Apply status filter
+                if (status !== 'all') {
+                    const statusCell = row.querySelector('td:nth-child(6) .status');
+                    if (statusCell) {
+                        const rowStatus = statusCell.textContent.toLowerCase();
+                        
+                        if (status === 'new' && rowStatus !== 'new') {
+                            showRow = false;
+                        } else if (status === 'inprogress' && rowStatus !== 'in progress') {
+                            showRow = false;
+                        } else if (status === 'resolved' && rowStatus !== 'resolved') {
+                            showRow = false;
+                        } else if (status === 'closed' && rowStatus !== 'closed') {
+                            showRow = false;
+                        }
+                    }
+                }
+                
+                // Apply date filter
+                if (dateRange !== 'all' && showRow) {
+                    const dateCell = row.querySelector('td:nth-child(2)');
+                    if (dateCell) {
+                        const rowDate = new Date(dateCell.textContent);
+                        const now = new Date();
+                        
+                        if (dateRange === 'today') {
+                            // Check if date is today
+                            if (rowDate.toDateString() !== now.toDateString()) {
+                                showRow = false;
+                            }
+                        } else if (dateRange === 'week') {
+                            // Check if date is within the last 7 days
+                            const weekAgo = new Date();
+                            weekAgo.setDate(now.getDate() - 7);
+                            
+                            if (rowDate < weekAgo) {
+                                showRow = false;
+                            }
+                        } else if (dateRange === 'month') {
+                            // Check if date is within the last 30 days
+                            const monthAgo = new Date();
+                            monthAgo.setDate(now.getDate() - 30);
+                            
+                            if (rowDate < monthAgo) {
+                                showRow = false;
+                            }
+                        }
+                    }
+                }
+                
+                // Show or hide row
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+        
+        // Open Contact Modal
+        async function openContactModal(contactId) {
+            try {
+                showLoading();
+                
+                const contactDoc = await db.collection('customRequests').doc(contactId).get();
+                
+                if (!contactDoc.exists) {
+                    showToast('Contact not found', 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                const contact = contactDoc.data();
+                
+                // Format date
+                const date = contact.timestamp ? new Date(contact.timestamp.toDate()) : new Date();
+                const formattedDate = date.toLocaleString();
+                
+                // Populate contact details
+                contactDetails.innerHTML = `
+                    <div class="contact-detail-item">
+                        <div class="contact-detail-label">Date</div>
+                        <div class="contact-detail-value">${formattedDate}</div>
+                    </div>
+                    <div class="contact-detail-item">
+                        <div class="contact-detail-label">Name</div>
+                        <div class="contact-detail-value">${contact.name || 'N/A'}</div>
+                    </div>
+                    <div class="contact-detail-item">
+                        <div class="contact-detail-label">Email</div>
+                        <div class="contact-detail-value">${contact.email || 'N/A'}</div>
+                    </div>
+                    <div class="contact-detail-item">
+                        <div class="contact-detail-label">Phone</div>
+                        <div class="contact-detail-value">${contact.phone || 'N/A'}</div>
+                    </div>
+                    <div class="contact-detail-item">
+                        <div class="contact-detail-label">Subject</div>
+                        <div class="contact-detail-value">${contact.subject || 'N/A'}</div>
+                    </div>
+                    <div class="contact-detail-item">
+                        <div class="contact-detail-label">Message</div>
+                        <div class="contact-detail-value">
+                            <div class="contact-message">${contact.message || 'N/A'}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Set current status
+                contactStatus.value = contact.status || 'new';
+                
+                // Clear response textarea
+                contactResponse.value = '';
+                
+                // Load response history
+                await loadResponseHistory(contactId);
+                
+                // Set contact ID
+                document.getElementById('contact-id').value = contactId;
+                
+                contactModalOverlay.classList.add('active');
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error opening contact modal:', error);
+                showToast('Failed to load contact details', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Load Response History
+        async function loadResponseHistory(contactId) {
+            try {
+                const responsesSnapshot = await db.collection('customRequests').doc(contactId)
+                    .collection('responses')
+                    .orderBy('timestamp', 'desc')
+                    .get();
+                
+                responseHistory.innerHTML = '';
+                
+                if (responsesSnapshot.empty) {
+                    responseHistory.innerHTML = '<p>No responses yet.</p>';
+                    return;
+                }
+                
+                responsesSnapshot.forEach(doc => {
+                    const response = doc.data();
+                    const responseDate = response.timestamp ? new Date(response.timestamp.toDate()) : new Date();
+                    const formattedResponseDate = responseDate.toLocaleString();
+                    
+                    const responseItem = document.createElement('div');
+                    responseItem.className = 'response-item';
+                    responseItem.innerHTML = `
+                        <div class="response-header">
+                            <span>Admin Response</span>
+                            <span>${formattedResponseDate}</span>
+                        </div>
+                        <div class="response-content">${response.text}</div>
+                    `;
+                    
+                    responseHistory.appendChild(responseItem);
+                });
+            } catch (error) {
+                console.error('Error loading response history:', error);
+                responseHistory.innerHTML = '<p>Error loading responses.</p>';
+            }
+        }
+        
+        // Close Contact Modal
+        function closeContactModal() {
+            contactModalOverlay.classList.remove('active');
+        }
+        
+        // Save Contact Response
+        async function saveContactResponse() {
+            try {
+                showLoading();
+                
+                const contactIdValue = document.getElementById('contact-id').value;
+                const status = contactStatus.value;
+                const responseText = contactResponse.value.trim();
+                
+                if (!responseText) {
+                    showToast('Please enter a response', 'warning');
+                    hideLoading();
+                    return;
+                }
+                
+                // Update contact status
+                await db.collection('customRequests').doc(contactIdValue).update({
+                    status: status,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Add response to history
+                await db.collection('customRequests').doc(contactIdValue)
+                    .collection('responses')
+                    .add({
+                        text: responseText,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        adminId: auth.currentUser.uid
+                    });
+                
+                // Send email notification (in a real app, this would be handled by a Cloud Function)
+                // For now, we'll just log it
+                console.log(`Email notification would be sent for contact ${contactIdValue}`);
+                
+                // Reload contacts
+                await loadContactRequests();
+                
+                // Close modal
+                closeContactModal();
+                
+                showToast('Response sent successfully', 'success');
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error saving response:', error);
+                showToast('Failed to send response', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Open Delete Modal
+        function openDeleteModal(contactId) {
+            document.getElementById('delete-contact-id').value = contactId;
+            deleteModalOverlay.classList.add('active');
+        }
+        
+        // Close Delete Modal
+        function closeDeleteModal() {
+            deleteModalOverlay.classList.remove('active');
+        }
+        
+        // Confirm Delete Contact
+        async function confirmDeleteContact() {
+            try {
+                showLoading();
+                
+                const contactId = document.getElementById('delete-contact-id').value;
+                
+                // Delete all responses
+                const responsesSnapshot = await db.collection('customRequests').doc(contactId)
+                    .collection('responses')
+                    .get();
+                
+                const batch = db.batch();
+                
+                responsesSnapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                // Delete the contact
+                batch.delete(db.collection('customRequests').doc(contactId));
+                
+                await batch.commit();
+                
+                // Reload contacts
+                await loadContactRequests();
+                
+                // Close modal
+                closeDeleteModal();
+                
+                showToast('Contact deleted successfully', 'success');
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error deleting contact:', error);
+                showToast('Failed to delete contact', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Export Contacts
+        function exportContacts() {
+            db.collection('customRequests').orderBy('timestamp', 'desc').get()
+                .then(snapshot => {
+                    const contacts = [];
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const date = data.timestamp ? new Date(data.timestamp.toDate()) : new Date();
+                        
+                        contacts.push({
+                            id: doc.id,
+                            date: date.toLocaleString(),
+                            name: data.name || 'N/A',
+                            email: data.email || 'N/A',
+                            phone: data.phone || 'N/A',
+                            subject: data.subject || 'N/A',
+                            message: data.message || 'N/A',
+                            status: data.status || 'new'
+                        });
+                    });
+                    
+                    // Create CSV content
+                    let csvContent = 'ID,Date,Name,Email,Phone,Subject,Message,Status\n';
+                    
+                    contacts.forEach(contact => {
+                        // Escape fields that might contain commas
+                        const escapedSubject = `"${contact.subject.replace(/"/g, '""')}"`;
+                        const escapedMessage = `"${contact.message.replace(/"/g, '""')}"`;
+                        
+                        csvContent += `${contact.id},${contact.date},"${contact.name}","${contact.email}","${contact.phone}",${escapedSubject},${escapedMessage},${contact.status}\n`;
+                    });
+                    
+                    // Create download link
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', 'veltrawave_contacts.csv');
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    showToast('Contacts exported successfully', 'success');
+                })
+                .catch(error => {
+                    console.error('Error exporting contacts:', error);
+                    showToast('Failed to export contacts', 'error');
+                });
+        }
+        
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                isSigningOut = true;
+                auth.signOut().then(() => {
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    console.error('Error signing out:', error);
+                    showToast('Failed to logout', 'error');
+                }).finally(() => {
+                    isSigningOut = false;
+                });
+            }
+        }
+        
+        // Show Toast Notification
+        function showToast(message, type = 'info') {
+            const toastContainer = document.querySelector('.toast-container');
+            
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let icon = '';
+            switch (type) {
+                case 'success':
+                    icon = '<i class="fas fa-check-circle"></i>';
+                    break;
+                case 'error':
+                    icon = '<i class="fas fa-exclamation-circle"></i>';
+                    break;
+                case 'warning':
+                    icon = '<i class="fas fa-exclamation-triangle"></i>';
+                    break;
+                default:
+                    icon = '<i class="fas fa-info-circle"></i>';
+            }
+            
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            toastContainer.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                
+                // Remove toast after animation
+                setTimeout(() => {
+                    toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Show Loading
+        function showLoading() {
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            loadingOverlay.style.display = 'flex';
+        }
+        
+        // Hide Loading
+        function hideLoading() {
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            loadingOverlay.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+
