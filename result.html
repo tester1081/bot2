@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>N3TData - Result Checker</title>
+<title>Veltrawave Result Checker</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -40,7 +40,6 @@ body {
     color: var(--text);
     min-height: 100vh;
     position: relative;
-    padding-bottom: 80px; /* Space for bottom nav */
 }
 
 /* Liquid Blob Background */
@@ -109,7 +108,7 @@ body {
     max-width: 500px;
     margin: 0 auto;
     padding: 0 1rem;
-    padding-bottom: 80px;
+    padding-bottom: 2rem;
     position: relative;
     z-index: 1;
 }
@@ -444,53 +443,6 @@ body {
     color: white;
 }
 
-/* Bottom Navigation */
-.bottom-nav {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 40px);
-    max-width: 500px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    padding: 12px;
-    display: flex;
-    justify-content: space-around;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-}
-
-.nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px 16px;
-    border-radius: 16px;
-    cursor: pointer;
-    position: relative;
-    z-index: 2;
-    transition: color 0.3s ease;
-    text-decoration: none;
-    color: var(--text-secondary);
-}
-
-.nav-item.active {
-    color: var(--primary);
-}
-
-.nav-item i {
-    font-size: 1.2rem;
-    margin-bottom: 4px;
-}
-
-.nav-item span {
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
 /* Toast Notification */
 .toast {
     position: fixed;
@@ -726,10 +678,6 @@ body {
 
 /* Responsive Adjustments */
 @media (max-width: 480px) {
-    .nav-item span {
-        font-size: 0.7rem;
-    }
-    
     .exam-cards {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -787,7 +735,7 @@ body {
 <!-- Exam Page -->
 <div class="exam-container">
     <div class="page-header">
-        <button class="back-button" onclick="window.location.href='dashboard.html'">
+        <button class="back-button" onclick="window.location.href='index.html'">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5"></path>
                 <path d="M12 19l-7-7 7-7"></path>
@@ -894,26 +842,6 @@ body {
     </div>
 </div>
 
-<!-- Bottom Navigation -->
-<div class="bottom-nav">
-    <a href="dashboard.html" class="nav-item">
-        <i class="fas fa-home"></i>
-        <span>Home</span>
-    </a>
-    <a href="service.html" class="nav-item active">
-        <i class="fas fa-bolt"></i>
-        <span>Service</span>
-    </a>
-    <a href="games.html" class="nav-item">
-        <i class="fas fa-gamepad"></i>
-        <span>Games</span>
-    </a>
-    <a href="profile.html" class="nav-item">
-        <i class="fas fa-user"></i>
-        <span>Profile</span>
-    </a>
-</div>
-
 <script>
 // API credentials
 const ACCESS_TOKEN = "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d";
@@ -1001,6 +929,10 @@ function initPage() {
 
     // Set up email input
     emailInput.addEventListener('input', updateSubmitButtonState);
+}
+
+// Select exam
+function selectExam(exam, examI  updateSubmitButtonState);
 }
 
 // Select exam
@@ -1273,3 +1205,4 @@ initPage();
 </script>
 </body>
 </html>
+
