@@ -603,6 +603,163 @@
             }
         }
         
+        /* Dropdown Menus */
+        .dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: rgba(20, 30, 50, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            min-width: 200px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .dropdown-item:first-child {
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .dropdown-item:last-child {
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .dropdown-item i {
+            color: var(--primary);
+        }
+        
+        /* Notification Dropdown */
+        .notification-dropdown {
+            min-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .notification-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: rgba(20, 30, 50, 0.95);
+            z-index: 1;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+        }
+        
+        .mark-read {
+            font-size: 0.8rem;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        .notification-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .notification-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--error);
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-message {
+            margin-bottom: 4px;
+        }
+        
+        .notification-time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        /* User Profile Dropdown */
+        .user-profile-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .user-email, .user-phone {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .contact-container {
@@ -668,9 +825,40 @@
             <div class="header-icon" id="notification-icon">
                 <i class="fas fa-bell"></i>
                 <div class="notification-badge" id="notification-count">0</div>
+                
+                <!-- Notification Dropdown -->
+                <div class="dropdown notification-dropdown" id="notification-dropdown">
+                    <div class="notification-header">
+                        <div class="notification-title">Notifications</div>
+                        <div class="mark-read" id="mark-all-read">Mark all as read</div>
+                    </div>
+                    <div class="notification-list" id="notification-list">
+                        <!-- Notifications will be loaded here -->
+                        <div class="notification-empty">No notifications yet</div>
+                    </div>
+                </div>
             </div>
             <div class="header-icon" id="profile-icon">
                 <i class="fas fa-user"></i>
+                
+                <!-- Profile Dropdown -->
+                <div class="dropdown" id="profile-dropdown">
+                    <div class="user-profile-header">
+                        <div class="user-avatar" id="user-avatar">U</div>
+                        <div class="user-info">
+                            <div class="user-name" id="dropdown-user-name">User Name</div>
+                            <div class="user-phone" id="dropdown-user-phone">+234...</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-item" id="my-profile-link" onclick="window.location.href='profile.html'">
+                        <i class="fas fa-user-circle"></i>
+                        <span>My Profile</span>
+                    </div>
+                    <div class="dropdown-item" id="contact-us-link" onclick="window.location.href='contact.html'">
+                        <i class="fas fa-headset"></i>
+                        <span>Contact Us</span>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -738,7 +926,7 @@
                     </div>
                     <div class="contact-method-details">
                         <h4>Phone</h4>
-                        <p><a href="tel:08168586378">08168586378</a></p>
+                        <p><a href="tel:07067479043">07067479043</a></p>
                     </div>
                 </div>
                 
@@ -748,7 +936,7 @@
                     </div>
                     <div class="contact-method-details">
                         <h4>WhatsApp</h4>
-                        <p><a href="https://wa.me/2348168586378" target="_blank">08168586378</a></p>
+                        <p><a href="https://wa.me/2347067479043" target="_blank">07067479043</a></p>
                     </div>
                 </div>
                 
@@ -817,6 +1005,16 @@
         const loadingOverlay = document.querySelector('.loading-overlay');
         const navItems = document.querySelectorAll('.nav-item');
         const navIndicator = document.querySelector('.nav-indicator');
+        const notificationIcon = document.getElementById('notification-icon');
+        const notificationDropdown = document.getElementById('notification-dropdown');
+        const notificationList = document.getElementById('notification-list');
+        const notificationCount = document.getElementById('notification-count');
+        const markAllRead = document.getElementById('mark-all-read');
+        const profileIcon = document.getElementById('profile-icon');
+        const profileDropdown = document.getElementById('profile-dropdown');
+        const userAvatar = document.getElementById('user-avatar');
+        const dropdownUserName = document.getElementById('dropdown-user-name');
+        const dropdownUserPhone = document.getElementById('dropdown-user-phone');
         
         // Current user ID
         let currentUserId = null;
@@ -869,6 +1067,9 @@
             
             // Set initial indicator position for navigation
             setIndicatorPosition(document.querySelector('.nav-item[data-page="services"]'));
+            
+            // Load notifications
+            loadNotifications(currentUserId);
         }
         
         // Load user data from Firestore
@@ -882,8 +1083,14 @@
                     
                     // Pre-fill form with user data if available
                     if (userData.first_name) {
-                        document.getElementById('name').value = `${userData.first_name} ${userData.last_name ||  {
                         document.getElementById('name').value = `${userData.first_name} ${userData.last_name || ''}`.trim();
+                        
+                        // Update profile dropdown
+                        const fullName = `${userData.first_name} ${userData.last_name || ''}`.trim();
+                        dropdownUserName.textContent = fullName;
+                        
+                        // Set avatar initial
+                        userAvatar.textContent = userData.first_name.charAt(0).toUpperCase();
                     }
                     
                     if (userData.email) {
@@ -892,6 +1099,7 @@
                     
                     if (userData.phone_number) {
                         document.getElementById('phone').value = userData.phone_number;
+                        dropdownUserPhone.textContent = userData.phone_number;
                     }
                 } else {
                     console.log("No user document found for ID: " + userId);
@@ -899,6 +1107,112 @@
             } catch (error) {
                 console.error("Error loading user data:", error);
             }
+        }
+        
+        // Load notifications from Firebase
+        function loadNotifications(userId) {
+            // Clear the notification list
+            notificationList.innerHTML = '';
+            
+            // Get notifications for the current user
+            db.collection('users').doc(userId).collection('notifications')
+                .orderBy('timestamp', 'desc')
+                .limit(10)
+                .get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        notificationList.innerHTML = '<div class="notification-empty">No notifications yet</div>';
+                        notificationCount.textContent = '0';
+                        notificationCount.style.display = 'none';
+                        return;
+                    }
+                    
+                    let unreadCount = 0;
+                    
+                    querySnapshot.forEach((doc) => {
+                        const notification = doc.data();
+                        const notificationItem = document.createElement('div');
+                        notificationItem.className = 'notification-item';
+                        
+                        // Check if notification is unread
+                        if (!notification.read) {
+                            unreadCount++;
+                            notificationItem.innerHTML = `
+                                <div class="notification-dot"></div>
+                                <div class="notification-content">
+                                    <div class="notification-message">${notification.text}</div>
+                                    <div class="notification-time">${formatTimestamp(notification.timestamp)}</div>
+                                </div>
+                            `;
+                        } else {
+                            notificationItem.innerHTML = `
+                                <div class="notification-content">
+                                    <div class="notification-message">${notification.text}</div>
+                                    <div class="notification-time">${formatTimestamp(notification.timestamp)}</div>
+                                </div>
+                            `;
+                        }
+                        
+                        // Add click event to mark as read
+                        notificationItem.addEventListener('click', function() {
+                            markNotificationAsRead(userId, doc.id);
+                        });
+                        
+                        notificationList.appendChild(notificationItem);
+                    });
+                    
+                    // Update notification count
+                    notificationCount.textContent = unreadCount.toString();
+                    if (unreadCount === 0) {
+                        notificationCount.style.display = 'none';
+                    } else {
+                        notificationCount.style.display = 'flex';
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error loading notifications: ", error);
+                    notificationList.innerHTML = '<div class="notification-empty">Error loading notifications</div>';
+                });
+        }
+        
+        // Mark a notification as read
+        function markNotificationAsRead(userId, notificationId) {
+            db.collection('users').doc(userId).collection('notifications').doc(notificationId).update({
+                read: true
+            })
+            .then(() => {
+                // Reload notifications
+                loadNotifications(userId);
+            })
+            .catch((error) => {
+                console.error("Error marking notification as read: ", error);
+                showToastNotification("Failed to mark notification as read");
+            });
+        }
+        
+        // Mark all notifications as read
+        function markAllNotificationsAsRead() {
+            db.collection('users').doc(currentUserId).collection('notifications')
+                .where('read', '==', false)
+                .get()
+                .then((querySnapshot) => {
+                    const batch = db.batch();
+                    
+                    querySnapshot.forEach((doc) => {
+                        batch.update(doc.ref, { read: true });
+                    });
+                    
+                    return batch.commit();
+                })
+                .then(() => {
+                    // Reload notifications
+                    loadNotifications(currentUserId);
+                    showToastNotification("All notifications marked as read");
+                })
+                .catch((error) => {
+                    console.error("Error marking all notifications as read: ", error);
+                    showToastNotification("Failed to mark all notifications as read");
+                });
         }
         
         // Set up event listeners
@@ -913,6 +1227,31 @@
                 input.addEventListener('input', () => {
                     input.classList.remove('error');
                 });
+            });
+            
+            // Notification icon click
+            notificationIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle('show');
+                profileDropdown.classList.remove('show');
+            });
+            
+            // Profile icon click
+            profileIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('show');
+                notificationDropdown.classList.remove('show');
+            });
+            
+            // Mark all notifications as read
+            markAllRead.addEventListener('click', function() {
+                markAllNotificationsAsRead();
+            });
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function() {
+                notificationDropdown.classList.remove('show');
+                profileDropdown.classList.remove('show');
             });
             
             // Set up navigation indicator
@@ -1051,6 +1390,44 @@
             setTimeout(() => {
                 errorDiv.remove();
             }, 5000);
+        }
+        
+        // Format timestamp
+        function formatTimestamp(timestamp) {
+            if (!timestamp) {
+                return 'Just now';
+            }
+            
+            let date;
+            if (timestamp.toDate) {
+                // Firestore Timestamp
+                date = timestamp.toDate();
+            } else if (timestamp.seconds) {
+                // Firestore Timestamp as object
+                date = new Date(timestamp.seconds * 1000);
+            } else {
+                // Regular date
+                date = new Date(timestamp);
+            }
+            
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+            
+            if (diffSec < 60) {
+                return 'Just now';
+            } else if (diffMin < 60) {
+                return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
+            } else if (diffHour < 24) {
+                return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
+            } else if (diffDay < 7) {
+                return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
+            } else {
+                return date.toLocaleDateString();
+            }
         }
         
         // Set indicator position for navigation
