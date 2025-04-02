@@ -986,6 +986,227 @@
             font-weight: 600;
         }
         
+        /* Game Plans Section */
+        .game-plans-section {
+            margin-top: 30px;
+        }
+        
+        .game-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: thin;
+        }
+        
+        .game-selector::-webkit-scrollbar {
+            height: 5px;
+        }
+        
+        .game-selector::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        
+        .game-item {
+            min-width: 120px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .game-item:hover, .game-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .game-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 10px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .game-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .game-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .game-plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .game-plan-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .game-plan-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .game-plan-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .game-plan-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .game-plan-price {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .game-plan-features {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .game-plan-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .game-plan-feature i {
+            color: var(--primary-light);
+            font-size: 0.8rem;
+        }
+        
+        /* Custom Requests Section */
+        .custom-requests-container {
+            margin-top: 30px;
+        }
+        
+        .custom-request-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-request-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+        }
+        
+        .custom-request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .custom-request-info {
+            flex: 1;
+        }
+        
+        .custom-request-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .custom-request-contact {
+            display: flex;
+            gap: 15px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .custom-request-date {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .custom-request-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .custom-request-status.new {
+            background: rgba(140, 82, 255, 0.2);
+            color: var(--secondary);
+        }
+        
+        .custom-request-status.processing {
+            background: rgba(255, 181, 71, 0.2);
+            color: var(--warning);
+        }
+        
+        .custom-request-status.completed {
+            background: rgba(0, 225, 160, 0.2);
+            color: var(--success);
+        }
+        
+        .custom-request-content {
+            margin-bottom: 15px;
+        }
+        
+        .custom-request-subject {
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .custom-request-message {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .custom-request-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
         /* Responsive */
         @media (max-width: 992px) {
             .sidebar {
@@ -1127,6 +1348,10 @@
                     <i class="fas fa-plus"></i>
                     <span>Add Diamond Pack</span>
                 </button>
+                <button class="header-btn" id="add-game-btn">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Add Game</span>
+                </button>
                 <button class="header-btn" id="import-diamonds-btn">
                     <i class="fas fa-file-import"></i>
                     <span>Import Packs</span>
@@ -1171,8 +1396,10 @@
         <div class="tabs">
             <div class="tab active" data-tab="diamonds">Diamond Packs</div>
             <div class="tab" data-tab="special">Special Deals</div>
+            <div class="tab" data-tab="games">Game Plans</div>
             <div class="tab" data-tab="requests">All Requests</div>
             <div class="tab" data-tab="user-requests">User Requests</div>
+            <div class="tab" data-tab="custom-requests">Custom Requests</div>
         </div>
         
         <!-- Diamond Packs Tab Content -->
@@ -1223,6 +1450,32 @@
             </div>
         </div>
         
+        <!-- Game Plans Tab Content -->
+        <div class="tab-content" id="games-tab">
+            <div class="game-plans-section">
+                <div class="game-selector" id="game-selector">
+                    <!-- Games will be loaded dynamically -->
+                </div>
+                
+                <div class="provider-card">
+                    <div class="provider-header">
+                        <h2 class="provider-title" id="selected-game-title">Select a Game</h2>
+                        <div class="provider-actions">
+                            <button class="btn btn-secondary btn-sm" id="add-game-plan">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Plan</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="game-plans-grid" id="game-plans-grid">
+                        <!-- Game plans will be loaded dynamically -->
+                        <div class="empty-message">Select a game to view available plans</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- All Requests Tab Content -->
         <div class="tab-content" id="requests-tab">
             <div class="table-container">
@@ -1264,6 +1517,25 @@
             
             <div id="users-container">
                 <!-- Users with their requests will be loaded dynamically -->
+            </div>
+        </div>
+        
+        <!-- Custom Requests Tab Content -->
+        <div class="tab-content" id="custom-requests-tab">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Custom User Requests</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-secondary" id="refresh-custom-requests-btn">
+                            <i class="fas fa-sync"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="custom-requests-container" id="custom-requests-container">
+                    <!-- Custom requests will be loaded dynamically -->
+                </div>
             </div>
         </div>
     </div>
@@ -1332,6 +1604,98 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="diamond-modal-cancel">Cancel</button>
                 <button class="btn btn-primary" id="diamond-modal-save">Save Pack</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Game Modal -->
+    <div class="modal-overlay" id="game-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="game-modal-title">Add New Game</h3>
+                <button class="modal-close" id="game-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="game-form">
+                    <input type="hidden" id="game-id">
+                    
+                    <div class="form-group">
+                        <label for="game-name" class="form-label">Game Name</label>
+                        <input type="text" id="game-name" class="form-input" placeholder="e.g. PUBG Mobile" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="game-description" class="form-label">Description</label>
+                        <textarea id="game-description" class="form-input" placeholder="Brief description of the game"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="game-icon-url" class="form-label">Icon URL</label>
+                        <input type="text" id="game-icon-url" class="form-input" placeholder="URL to game icon">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="game-status" class="checkbox-input" checked>
+                            <span class="checkbox-label">Active</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="game-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="game-modal-save">Save Game</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Game Plan Modal -->
+    <div class="modal-overlay" id="game-plan-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="game-plan-modal-title">Add Game Plan</h3>
+                <button class="modal-close" id="game-plan-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="game-plan-form">
+                    <input type="hidden" id="game-plan-id">
+                    <input type="hidden" id="game-plan-game-id">
+                    
+                    <div class="form-group">
+                        <label for="game-plan-title" class="form-label">Plan Title</label>
+                        <input type="text" id="game-plan-title" class="form-input" placeholder="e.g. Weekly Pass" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="game-plan-subtitle" class="form-label">Subtitle</label>
+                        <input type="text" id="game-plan-subtitle" class="form-input" placeholder="e.g. 7 days of premium access">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="game-plan-price" class="form-label">Price (₦)</label>
+                        <input type="number" id="game-plan-price" class="form-input" placeholder="e.g. 5000" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="game-plan-features" class="form-label">Features (one per line)</label>
+                        <textarea id="game-plan-features" class="form-input" placeholder="e.g. Exclusive skins&#10;Daily rewards&#10;Premium missions" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="game-plan-status" class="checkbox-input" checked>
+                            <span class="checkbox-label">Active</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="game-plan-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="game-plan-modal-save">Save Plan</button>
             </div>
         </div>
     </div>
@@ -1418,16 +1782,49 @@
         </div>
     </div>
     
+    <!-- Process Custom Request Modal -->
+    <div class="modal-overlay" id="custom-request-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="custom-request-modal-title">Process Custom Request</h3>
+                <button class="modal-close" id="custom-request-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="custom-request-details">
+                    <!-- Custom request details will be loaded dynamically -->
+                </div>
+                <div class="form-group">
+                    <label for="custom-request-status" class="form-label">Update Status</label>
+                    <select id="custom-request-status" class="form-select" required>
+                        <option value="new">New</option>
+                        <option value="processing">Processing</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="custom-request-response" class="form-label">Admin Response</label>
+                    <textarea id="custom-request-response" class="form-input" placeholder="Your response to the customer..." rows="4"></textarea>
+                </div>
+                <input type="hidden" id="custom-request-id">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="custom-request-modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="custom-request-modal-save">Update Request</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
+            apiKey: "AIzaSyDQnOWm9MPNK1CMB3YC_XbxVJwlXl5fFZU",
             authDomain: "veltrawave-vtu.firebaseapp.com",
             projectId: "veltrawave-vtu",
-            storageBucket: "veltrawave-vtu.firebasestorage.app",
-            messagingSenderId: "431351611304",
-            appId: "1:431351611304:web:7381dd659920f9f325a79d",
-            measurementId: "G-HRHN8GJCR3"
+            storageBucket: "veltrawave-vtu.appspot.com",
+            messagingSenderId: "1098979571490",
+            appId: "1:1098979571490:web:c9b6f1a7d9956e5c4d2fb6"
         };
 
         // Initialize Firebase
@@ -1466,6 +1863,18 @@
         const diamondBadge = document.getElementById('diamond-badge');
         const diamondStatus = document.getElementById('diamond-status');
         
+        // Game Modal Elements
+        const gameModalOverlay = document.getElementById('game-modal-overlay');
+        const gameModalClose = document.getElementById('game-modal-close');
+        const gameModalCancel = document.getElementById('game-modal-cancel');
+        const gameModalSave = document.getElementById('game-modal-save');
+        
+        // Game Plan Modal Elements
+        const gamePlanModalOverlay = document.getElementById('game-plan-modal-overlay');
+        const gamePlanModalClose = document.getElementById('game-plan-modal-close');
+        const gamePlanModalCancel = document.getElementById('game-plan-modal-cancel');
+        const gamePlanModalSave = document.getElementById('game-plan-modal-save');
+        
         const importModalOverlay = document.getElementById('import-modal-overlay');
         const importModalClose = document.getElementById('import-modal-close');
         const importModalCancel = document.getElementById('import-modal-cancel');
@@ -1488,10 +1897,22 @@
         const requestNotes = document.getElementById('request-notes');
         const requestId = document.getElementById('request-id');
         
+        // Custom Request Modal Elements
+        const customRequestModalOverlay = document.getElementById('custom-request-modal-overlay');
+        const customRequestModalClose = document.getElementById('custom-request-modal-close');
+        const customRequestModalCancel = document.getElementById('custom-request-modal-cancel');
+        const customRequestModalSave = document.getElementById('custom-request-modal-save');
+        const customRequestDetails = document.getElementById('custom-request-details');
+        const customRequestStatus = document.getElementById('custom-request-status');
+        const customRequestResponse = document.getElementById('custom-request-response');
+        const customRequestId = document.getElementById('custom-request-id');
+        
         // Button Elements
         const addDiamondBtn = document.getElementById('add-diamond-btn');
+        const addGameBtn = document.getElementById('add-game-btn');
         const addFreefireDiamondBtn = document.getElementById('add-freefire-diamond');
         const addSpecialDealBtn = document.getElementById('add-special-deal');
+        const addGamePlanBtn = document.getElementById('add-game-plan');
         const importDiamondsBtn = document.getElementById('import-diamonds-btn');
         const exportDiamondsBtn = document.getElementById('export-diamonds-btn');
         const syncDiamondsBtn = document.getElementById('sync-diamonds-btn');
@@ -1499,6 +1920,7 @@
         const deactivateAllBtn = document.getElementById('deactivate-all-btn');
         const deleteAllBtn = document.getElementById('delete-all-btn');
         const refreshRequestsBtn = document.getElementById('refresh-requests-btn');
+        const refreshCustomRequestsBtn = document.getElementById('refresh-custom-requests-btn');
         
         // Default diamond packs
         const defaultDiamondPacks = [
@@ -1596,6 +2018,62 @@
             }
         ];
         
+        // Default games
+        const defaultGames = [
+            {
+                id: "freefire",
+                name: "Free Fire",
+                description: "Battle royale game by Garena",
+                iconUrl: "https://play-lh.googleusercontent.com/JMoA-lK4Uio0kXKJ9x3Bey0BuCZGcVRYoGm_MbLuFOXKOQ6qdGFmVvFNJwOFGW2Ekg=w240-h480-rw",
+                status: true
+            },
+            {
+                id: "pubg",
+                name: "PUBG Mobile",
+                description: "Battle royale game by Tencent Games",
+                iconUrl: "https://play-lh.googleusercontent.com/JRd05pyBH41qjgsJuWduRJpDeZG0Hnb0yjf2nWqO7VaGKL10-G5UIygxED-WNOc3pg=w240-h480-rw",
+                status: true
+            },
+            {
+                id: "codm",
+                name: "Call of Duty Mobile",
+                description: "First-person shooter game by Activision",
+                iconUrl: "https://play-lh.googleusercontent.com/aOVexQckoyjN2WJp_py5mXNTBYgV5Gs5bOa3XmY9YJeO6nXjfzCwqQCgkqoXVmGtJbQ=w240-h480-rw",
+                status: true
+            }
+        ];
+        
+        // Default game plans
+        const defaultGamePlans = [
+            {
+                id: "freefire-weekly",
+                gameId: "freefire",
+                title: "Weekly Pass",
+                subtitle: "7 days of premium access",
+                price: 5000,
+                features: ["Exclusive skins", "Daily rewards", "Premium missions"],
+                status: true
+            },
+            {
+                id: "freefire-monthly",
+                gameId: "freefire",
+                title: "Monthly Pass",
+                subtitle: "30 days of premium access",
+                price: 15000,
+                features: ["All weekly benefits", "Exclusive character", "VIP status", "Monthly rewards"],
+                status: true
+            },
+            {
+                id: "pubg-weekly",
+                gameId: "pubg",
+                title: "Weekly Elite Pass",
+                subtitle: "7 days of elite access",
+                price: 6000,
+                features: ["Elite missions", "Weekly rewards", "Premium outfits"],
+                status: true
+            }
+        ];
+        
         // Check if user is logged in
         document.addEventListener('DOMContentLoaded', function() {
             showLoading();
@@ -1660,11 +2138,17 @@
                 // Load special deals
                 await loadSpecialDeals();
                 
+                // Load games and game plans
+                await loadGames();
+                
                 // Load top-up requests
                 await loadTopupRequests();
                 
                 // Load user requests
                 await loadUserRequests();
+                
+                // Load custom requests
+                await loadCustomRequests();
                 
                 hideLoading();
             } catch (error) {
@@ -1726,6 +2210,11 @@
                 openAddDiamondModal('freefire-diamonds');
             });
             
+            // Add Game Button
+            addGameBtn.addEventListener('click', function() {
+                openAddGameModal();
+            });
+            
             // Add Free Fire Diamond Button
             addFreefireDiamondBtn.addEventListener('click', function() {
                 openAddDiamondModal('freefire-diamonds');
@@ -1734,6 +2223,16 @@
             // Add Special Deal Button
             addSpecialDealBtn.addEventListener('click', function() {
                 openAddDiamondModal('special-deals');
+            });
+            
+            // Add Game Plan Button
+            addGamePlanBtn.addEventListener('click', function() {
+                const selectedGameId = document.querySelector('.game-item.active')?.getAttribute('data-id');
+                if (selectedGameId) {
+                    openAddGamePlanModal(selectedGameId);
+                } else {
+                    showToast('Please select a game first', 'warning');
+                }
             });
             
             // Diamond Modal
@@ -1747,6 +2246,32 @@
             
             diamondModalSave.addEventListener('click', function() {
                 saveDiamond();
+            });
+            
+            // Game Modal
+            gameModalClose.addEventListener('click', function() {
+                closeGameModal();
+            });
+            
+            gameModalCancel.addEventListener('click', function() {
+                closeGameModal();
+            });
+            
+            gameModalSave.addEventListener('click', function() {
+                saveGame();
+            });
+            
+            // Game Plan Modal
+            gamePlanModalClose.addEventListener('click', function() {
+                closeGamePlanModal();
+            });
+            
+            gamePlanModalCancel.addEventListener('click', function() {
+                closeGamePlanModal();
+            });
+            
+            gamePlanModalSave.addEventListener('click', function() {
+                saveGamePlan();
             });
             
             // Import Diamonds Button
@@ -1798,10 +2323,28 @@
                 updateRequest();
             });
             
+            // Custom Request Modal
+            customRequestModalClose.addEventListener('click', function() {
+                closeCustomRequestModal();
+            });
+            
+            customRequestModalCancel.addEventListener('click', function() {
+                closeCustomRequestModal();
+            });
+            
+            customRequestModalSave.addEventListener('click', function() {
+                updateCustomRequest();
+            });
+            
             // Refresh Requests Button
             refreshRequestsBtn.addEventListener('click', function() {
                 loadTopupRequests();
                 loadUserRequests();
+            });
+            
+            // Refresh Custom Requests Button
+            refreshCustomRequestsBtn.addEventListener('click', function() {
+                loadCustomRequests();
             });
             
             // Bulk Action Buttons
@@ -1896,6 +2439,42 @@
             }
         }
         
+        // Load Games
+        async function loadGames() {
+            try {
+                showLoading();
+                
+                // Check if games collection exists and has documents
+                const gamesSnapshot = await db.collection('games').get();
+                
+                if (gamesSnapshot.empty) {
+                    // If no games exist, add default games
+                    await addDefaultGames();
+                    showToast('Default games have been added', 'success');
+                }
+                
+                // Get all games
+                const updatedGamesSnapshot = await db.collection('games').get();
+                const games = [];
+                
+                updatedGamesSnapshot.forEach(doc => {
+                    games.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                // Render games
+                renderGames(games);
+                
+                hideLoading();
+            } catch (error) {
+                console.error('Error loading games:', error);
+                showToast('Failed to load games', 'error');
+                hideLoading();
+            }
+        }
+        
         // Load Top-up Requests
         async function loadTopupRequests() {
             try {
@@ -1967,224 +2546,688 @@
             }
         }
         
-        // Add Default Diamond Packs
-        async function addDefaultDiamondPacks() {
+        // Load Custom Requests
+        async function loadCustomRequests() {
             try {
-                const batch = db.batch();
+                showLoading();
                 
-                defaultDiamondPacks.forEach(pack => {
-                    const packRef = db.collection('diamondPacks').doc();
-                    batch.set(packRef, {
-                        name: pack.name,
-                        amount: pack.amount,
-                        bonus: pack.bonus,
-                        price: pack.price,
-                        originalPrice: pack.originalPrice,
-                        badge: pack.badge,
-                        category: pack.category,
-                        status: pack.status,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                // Get all custom requests
+                const requestsSnapshot = await db.collection('customRequests').orderBy('timestamp', 'desc').get();
+                const requests = [];
+                
+                requestsSnapshot.forEach(doc => {
+                    requests.push({
+                        id: doc.id,
+                        ...doc.data()
                     });
                 });
                 
-                await batch.commit();
+                // Render custom requests
+                renderCustomRequests(requests);
+                
+                hideLoading();
             } catch (error) {
-                console.error('Error adding default diamond packs:', error);
-                throw error;
+                console.error('Error loading custom requests:', error);
+                showToast('Failed to load custom requests', 'error');
+                hideLoading();
             }
         }
         
-        // Add Default Special Deals
-        async function addDefaultSpecialDeals() {
-            try {
-                const batch = db.batch();
-                
-                defaultSpecialDeals.forEach(deal => {
-                    const dealRef = db.collection('diamondPacks').doc();
-                    batch.set(dealRef, {
-                        name: deal.name,
-                        amount: deal.amount,
-                        bonus: deal.bonus,
-                        price: deal.price,
-                        originalPrice: deal.originalPrice,
-                        badge: deal.badge,
-                        category: deal.category,
-                        status: deal.status,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                });
-                
-                await batch.commit();
-            } catch (error) {
-                console.error('Error adding default special deals:', error);
-                throw error;
-            }
-        }
-        
-        // Render Diamond Packs
-        function renderDiamondPacks(packs) {
-            const diamondPacksContainer = document.getElementById('freefire-diamonds');
-            diamondPacksContainer.innerHTML = '';
-            
-            if (packs.length === 0) {
-                diamondPacksContainer.innerHTML = '<div class="empty-message">No diamond packs found</div>';
-                return;
-            }
-            
-            packs.forEach(pack => {
-                const packCard = document.createElement('div');
-                packCard.className = 'diamond-card';
-                packCard.setAttribute('data-id', pack.id);
-                
-                const statusClass = pack.status ? 'diamond-status-active' : 'diamond-status-inactive';
-                const statusText = pack.status ? 'Active' : 'Inactive';
-                
-                let badgeHtml = '';
-                if (pack.badge) {
-                    let badgeClass = '';
-                    switch (pack.badge) {
-                        case 'hot':
-                            badgeClass = 'hot';
-                            break;
-                        case 'popular':
-                            badgeClass = 'popular';
-                            break;
-                        case 'new':
-                            badgeClass = '';
-                            break;
-                    }
-                    badgeHtml = `<span class="special-badge ${badgeClass}">${pack.badge.toUpperCase()}</span>`;
-                }
-                
-                packCard.innerHTML = `
-                    <div class="diamond-name">${pack.name} ${badgeHtml} <span class="diamond-status ${statusClass}">${statusText}</span></div>
-                    <div class="diamond-price">₦${pack.price.toLocaleString()}</div>
-                    <div class="diamond-bonus">Diamond</div>
-                    <div class="diamond-bonus">+ ${pack.bonus} Free Diamond</div>
-                    <div class="diamond-actions">
-                        <button class="action-btn edit" data-id="${pack.id}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete" data-id="${pack.id}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                
-                diamondPacksContainer.appendChild(packCard);
-                
-                // Add event listeners to edit and delete buttons
-                const editBtn = packCard.querySelector('.edit');
-                const deleteBtn = packCard.querySelector('.delete');
-                
-                editBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const packId = this.getAttribute('data-id');
-                    openEditDiamondModal(packId);
-                });
-                
-                deleteBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const packId = this.getAttribute('data-id');
-                    openDeleteModal(packId);
-                });
-                
-                // Add click event to the entire card for editing
-                packCard.addEventListener('click', function() {
-                    const packId = this.getAttribute('data-id');
-                    openEditDiamondModal(packId);
-                });
-            });
-        }
-        
-        // Render Special Deals
-        function renderSpecialDeals(deals) {
-            const specialDealsContainer = document.getElementById('special-deals');
-            specialDealsContainer.innerHTML = '';
-            
-            if (deals.length === 0) {
-                specialDealsContainer.innerHTML = '<div class="empty-message">No special deals found</div>';
-                return;
-            }
-            
-            deals.forEach(deal => {
-                const dealCard = document.createElement('div');
-                dealCard.className = 'diamond-card';
-                dealCard.setAttribute('data-id', deal.id);
-                
-                const statusClass = deal.status ? 'diamond-status-active' : 'diamond-status-inactive';
-                const statusText = deal.status ? 'Active' : 'Inactive';
-                
-                let badgeHtml = '';
-                if (deal.badge) {
-                    let badgeClass = '';
-                    switch (deal.badge) {
-                        case 'hot':
-                            badgeClass = 'hot';
-                            break;
-                        case 'popular':
-                            badgeClass = 'popular';
-                            break;
-                        case 'new':
-                            badgeClass = '';
-                            break;
-                    }
-                    badgeHtml = `<span class="special-badge ${badgeClass}">${deal.badge.toUpperCase()}</span>`;
-                }
-                
-                dealCard.innerHTML = `
-                    <div class="diamond-name">${deal.name} ${badgeHtml} <span class="diamond-status ${statusClass}">${statusText}</span></div>
-                    <div class="diamond-price">₦${deal.price.toLocaleString()}</div>
-                    <div class="diamond-bonus">${deal.bonus}</div>
-                    <div class="diamond-actions">
-                        <button class="action-btn edit" data-id="${deal.id}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete" data-id="${deal.id}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                
-                specialDealsContainer.appendChild(dealCard);
-                
-                // Add event listeners to edit and delete buttons
-                const editBtn = dealCard.querySelector('.edit');
-                const deleteBtn = dealCard.querySelector('.delete');
-                
-                editBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const dealId = this.getAttribute('data-id');
-                    openEditDiamondModal(dealId);
-                });
-                
-                deleteBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const dealId = this.getAttribute('data-id');
-                    openDeleteModal(dealId);
-                });
-                
-                // Add click event to the entire card for editing
-                dealCard.addEventListener('click', function() {
-                    const dealId = this.getAttribute('data-id');
-                    openEditDiamondModal(dealId);
-                });
-            });
-        }
-        
-        // Render Requests
-        function renderRequests(requests) {
-            const requestsTableBody = document.getElementById('requests-table-body');
-            requestsTableBody.innerHTML = '';
+        // Render Custom Requests
+        function renderCustomRequests(requests) {
+            const customRequestsContainer = document.getElementById('custom-requests-container');
+            customRequestsContainer.innerHTML = '';
             
             if (requests.length === 0) {
-                requestsTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No top-up requests found</td></tr>';
+                customRequestsContainer.innerHTML = '<div class="empty-message" style="text-align: center; padding: 20px;">No custom requests found</div>';
                 return;
             }
             
             requests.forEach(request => {
-                const row = document.createElement('tr');
+                const requestCard = document.createElement('div');
+                requestCard.className = 'custom-request-card';
+                requestCard.setAttribute('data-id', request.id);
                 
+                // Format date
+                const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+                const formattedDate = date.toLocaleString();
+                
+                // Status class
+                let statusClass = 'new';
+                let statusText = 'New';
+                
+                if (request.status) {
+                    if (request.status === 'processing') {
+                        statusClass = 'processing';
+                        statusText = 'Processing';
+                    } else if (request.status === 'completed') {
+                        statusClass = 'completed';
+                        statusText = 'Completed';
+                    }
+                }
+                
+                requestCard.innerHTML = `
+                    <div class="custom-request-header">
+                        <div class="custom-request-info">
+                            <div class="custom-request-name">${request.name || 'Unknown User'}</div>
+                            <div class="custom-request-contact">
+                                <span><i class="fas fa-envelope"></i> ${request.email || 'No Email'}</span>
+                                <span><i class="fas fa-phone"></i> ${request.phone || 'No Phone'}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="custom-request-status ${statusClass}">${statusText}</span>
+                            <div class="custom-request-date">${formattedDate}</div>
+                        </div>
+                    </div>
+                    <div class="custom-request-content">
+                        <div class="custom-request-subject">${request.subject || 'No Subject'}</div>
+                        <div class="custom-request-message">${request.message || 'No Message'}</div>
+                    </div>
+                    <div class="custom-request-actions">
+                        <button class="btn btn-secondary process-btn" data-id="${request.id}">
+                            <i class="fas fa-cog"></i> Process
+                        </button>
+                    </div>
+                `;
+                
+                customRequestsContainer.appendChild(requestCard);
+                
+                // Add event listener to process button
+                const processBtn = requestCard.querySelector('.process-btn');
+                processBtn.addEventListener('click', function() {
+                    const requestId = this.getAttribute('data-id');
+                    openCustomRequestModal(requestId);
+                });
+                
+                // Add click event to the entire card for processing
+                requestCard.addEventListener('click', function(e) {
+                    if (!e.target.closest('.btn')) {
+                        const requestId = this.getAttribute('data-id');
+                        openCustomRequestModal(requestId);
+                    }
+                });
+            });
+        }
+        
+       // Open Custom Request Modal
+       async function openCustomRequestModal(requestId) {
+        try {
+            showLoading();
+            
+            const requestDoc = await db.collection('customRequests').doc(requestId).get();
+            
+            if (!requestDoc.exists) {
+                showToast('Request not found', 'error');
+                hideLoading();
+                return;
+            }
+            
+            const request = requestDoc.data();
+            
+            // Format date
+            const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+            const formattedDate = date.toLocaleString();
+            
+            // Populate request details
+            document.getElementById('custom-request-details').innerHTML = `
+                <div class="request-detail-item">
+                    <strong>Request ID:</strong> ${requestId}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Date:</strong> ${formattedDate}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Name:</strong> ${request.name || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Email:</strong> ${request.email || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Phone:</strong> ${request.phone || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Subject:</strong> ${request.subject || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Message:</strong> <p>${request.message || 'N/A'}</p>
+                </div>
+                <div class="request-detail-item">
+                    <strong>Current Status:</strong> ${request.status || 'new'}
+                </div>
+            `;
+            
+            // Set current status
+            document.getElementById('custom-request-status').value = request.status || 'new';
+            
+            // Set response
+            document.getElementById('custom-request-response').value = request.adminResponse || '';
+            
+            // Set request ID
+            document.getElementById('custom-request-id').value = requestId;
+            
+            customRequestModalOverlay.classList.add('active');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error opening custom request modal:', error);
+            showToast('Failed to load custom request details', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Close Custom Request Modal
+    function closeCustomRequestModal() {
+        customRequestModalOverlay.classList.remove('active');
+    }
+    
+    // Update Custom Request
+    async function updateCustomRequest() {
+        try {
+            showLoading();
+            
+            const requestId = document.getElementById('custom-request-id').value;
+            const status = document.getElementById('custom-request-status').value;
+            const response = document.getElementById('custom-request-response').value;
+            
+            // Update request
+            await db.collection('customRequests').doc(requestId).update({
+                status: status,
+                adminResponse: response,
+                processedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Reload custom requests
+            await loadCustomRequests();
+            
+            // Close modal
+            closeCustomRequestModal();
+            
+            showToast('Custom request updated successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error updating custom request:', error);
+            showToast('Failed to update custom request', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Render Games
+    function renderGames(games) {
+        const gameSelector = document.getElementById('game-selector');
+        gameSelector.innerHTML = '';
+        
+        if (games.length === 0) {
+            gameSelector.innerHTML = '<div class="empty-message">No games found</div>';
+            return;
+        }
+        
+        games.forEach(game => {
+            if (!game.status) return; // Skip inactive games
+            
+            const gameItem = document.createElement('div');
+            gameItem.className = 'game-item';
+            gameItem.setAttribute('data-id', game.id);
+            
+            gameItem.innerHTML = `
+                <div class="game-icon">
+                    <img src="${game.iconUrl || 'https://via.placeholder.com/50'}" alt="${game.name}">
+                </div>
+                <div class="game-name">${game.name}</div>
+            `;
+            
+            gameSelector.appendChild(gameItem);
+            
+            // Add click event to select game
+            gameItem.addEventListener('click', function() {
+                // Remove active class from all games
+                document.querySelectorAll('.game-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add active class to clicked game
+                this.classList.add('active');
+                
+                // Update selected game title
+                document.getElementById('selected-game-title').textContent = game.name;
+                
+                // Load game plans
+                loadGamePlans(game.id);
+            });
+        });
+    }
+    
+    // Load Game Plans
+    async function loadGamePlans(gameId) {
+        try {
+            showLoading();
+            
+            // Get game plans for selected game
+            const plansSnapshot = await db.collection('gamePlans').where('gameId', '==', gameId).get();
+            const plans = [];
+            
+            plansSnapshot.forEach(doc => {
+                plans.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+            
+            // Render game plans
+            renderGamePlans(plans);
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error loading game plans:', error);
+            showToast('Failed to load game plans', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Render Game Plans
+    function renderGamePlans(plans) {
+        const gamePlansGrid = document.getElementById('game-plans-grid');
+        gamePlansGrid.innerHTML = '';
+        
+        if (plans.length === 0) {
+            gamePlansGrid.innerHTML = '<div class="empty-message">No plans found for this game</div>';
+            return;
+        }
+        
+        plans.forEach(plan => {
+            if (!plan.status) return; // Skip inactive plans
+            
+            const planCard = document.createElement('div');
+            planCard.className = 'game-plan-card';
+            planCard.setAttribute('data-id', plan.id);
+            
+            // Create features HTML
+            let featuresHtml = '';
+            if (plan.features && plan.features.length > 0) {
+                plan.features.forEach(feature => {
+                    featuresHtml += `
+                        <div class="game-plan-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>${feature}</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            planCard.innerHTML = `
+                <div class="game-plan-header">
+                    <div>
+                        <div class="game-plan-title">${plan.title}</div>
+                        <div class="game-plan-subtitle">${plan.subtitle || ''}</div>
+                    </div>
+                    <div class="game-plan-price">₦${plan.price.toLocaleString()}</div>
+                </div>
+                <div class="game-plan-features">
+                    ${featuresHtml}
+                </div>
+                <div class="diamond-actions">
+                    <button class="action-btn edit" data-id="${plan.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="action-btn delete" data-id="${plan.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            gamePlansGrid.appendChild(planCard);
+            
+            // Add event listeners to edit and delete buttons
+            const editBtn = planCard.querySelector('.edit');
+            const deleteBtn = planCard.querySelector('.delete');
+            
+            editBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const planId = this.getAttribute('data-id');
+                openEditGamePlanModal(planId);
+            });
+            
+            deleteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const planId = this.getAttribute('data-id');
+                // Implement delete game plan functionality
+                if (confirm('Are you sure you want to delete this game plan?')) {
+                    deleteGamePlan(planId);
+                }
+            });
+        });
+    }
+    
+    // Delete Game Plan
+    async function deleteGamePlan(planId) {
+        try {
+            showLoading();
+            
+            // Get the plan to determine its game ID
+            const planDoc = await db.collection('gamePlans').doc(planId).get();
+            const planData = planDoc.data();
+            const gameId = planData.gameId;
+            
+            // Delete the plan
+            await db.collection('gamePlans').doc(planId).delete();
+            
+            // Reload game plans
+            await loadGamePlans(gameId);
+            
+            showToast('Game plan deleted successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error deleting game plan:', error);
+            showToast('Failed to delete game plan', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Open Add Game Modal
+    function openAddGameModal() {
+        document.getElementById('game-modal-title').textContent = 'Add New Game';
+        document.getElementById('game-id').value = '';
+        document.getElementById('game-form').reset();
+        document.getElementById('game-status').checked = true;
+        
+        gameModalOverlay.classList.add('active');
+    }
+    
+    // Open Edit Game Modal
+    async function openEditGameModal(gameId) {
+        try {
+            showLoading();
+            
+            const gameDoc = await db.collection('games').doc(gameId).get();
+            
+            if (!gameDoc.exists) {
+                showToast('Game not found', 'error');
+                hideLoading();
+                return;
+            }
+            
+            const game = gameDoc.data();
+            
+            document.getElementById('game-modal-title').textContent = 'Edit Game';
+            document.getElementById('game-id').value = gameId;
+            document.getElementById('game-name').value = game.name;
+            document.getElementById('game-description').value = game.description || '';
+            document.getElementById('game-icon-url').value = game.iconUrl || '';
+            document.getElementById('game-status').checked = game.status;
+            
+            gameModalOverlay.classList.add('active');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error opening edit game modal:', error);
+            showToast('Failed to load game details', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Close Game Modal
+    function closeGameModal() {
+        gameModalOverlay.classList.remove('active');
+    }
+    
+    // Save Game
+    async function saveGame() {
+        try {
+            // Validate form
+            const gameForm = document.getElementById('game-form');
+            if (!gameForm.checkValidity()) {
+                gameForm.reportValidity();
+                return;
+            }
+            
+            showLoading();
+            
+            // Get values from form
+            const gameIdValue = document.getElementById('game-id').value;
+            const nameValue = document.getElementById('game-name').value;
+            const descriptionValue = document.getElementById('game-description').value;
+            const iconUrlValue = document.getElementById('game-icon-url').value;
+            const statusValue = document.getElementById('game-status').checked;
+            
+            // Create game data object
+            const gameData = {
+                name: nameValue,
+                description: descriptionValue,
+                iconUrl: iconUrlValue,
+                status: statusValue
+            };
+            
+            if (gameIdValue) {
+                // Update existing game
+                await db.collection('games').doc(gameIdValue).update(gameData);
+                showToast('Game updated successfully', 'success');
+            } else {
+                // Add new game
+                gameData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection('games').add(gameData);
+                showToast('Game added successfully', 'success');
+            }
+            
+            // Reload games
+            await loadGames();
+            
+            // Close modal
+            closeGameModal();
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error saving game:', error);
+            showToast('Failed to save game: ' + error.message, 'error');
+            hideLoading();
+        }
+    }
+    
+    // Open Add Game Plan Modal
+    function openAddGamePlanModal(gameId) {
+        document.getElementById('game-plan-modal-title').textContent = 'Add Game Plan';
+        document.getElementById('game-plan-id').value = '';
+        document.getElementById('game-plan-game-id').value = gameId;
+        document.getElementById('game-plan-form').reset();
+        document.getElementById('game-plan-status').checked = true;
+        
+        gamePlanModalOverlay.classList.add('active');
+    }
+    
+    // Open Edit Game Plan Modal
+    async function openEditGamePlanModal(planId) {
+        try {
+            showLoading();
+            
+            const planDoc = await db.collection('gamePlans').doc(planId).get();
+            
+            if (!planDoc.exists) {
+                showToast('Plan not found', 'error');
+                hideLoading();
+                return;
+            }
+            
+            const plan = planDoc.data();
+            
+            document.getElementById('game-plan-modal-title').textContent = 'Edit Game Plan';
+            document.getElementById('game-plan-id').value = planId;
+            document.getElementById('game-plan-game-id').value = plan.gameId;
+            document.getElementById('game-plan-title').value = plan.title;
+            document.getElementById('game-plan-subtitle').value = plan.subtitle || '';
+            document.getElementById('game-plan-price').value = plan.price;
+            
+            // Set features
+            if (plan.features && plan.features.length > 0) {
+                document.getElementById('game-plan-features').value = plan.features.join('\n');
+            } else {
+                document.getElementById('game-plan-features').value = '';
+            }
+            
+            document.getElementById('game-plan-status').checked = plan.status;
+            
+            gamePlanModalOverlay.classList.add('active');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error opening edit game plan modal:', error);
+            showToast('Failed to load game plan details', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Close Game Plan Modal
+    function closeGamePlanModal() {
+        gamePlanModalOverlay.classList.remove('active');
+    }
+    
+    // Save Game Plan
+    async function saveGamePlan() {
+        try {
+            // Validate form
+            const gamePlanForm = document.getElementById('game-plan-form');
+            if (!gamePlanForm.checkValidity()) {
+                gamePlanForm.reportValidity();
+                return;
+            }
+            
+            showLoading();
+            
+            // Get values from form
+            const planIdValue = document.getElementById('game-plan-id').value;
+            const gameIdValue = document.getElementById('game-plan-game-id').value;
+            const titleValue = document.getElementById('game-plan-title').value;
+            const subtitleValue = document.getElementById('game-plan-subtitle').value;
+            const priceValue = Number(document.getElementById('game-plan-price').value);
+            const featuresValue = document.getElementById('game-plan-features').value;
+            const statusValue = document.getElementById('game-plan-status').checked;
+            
+            // Parse features
+            const features = featuresValue.split('\n').filter(feature => feature.trim() !== '');
+            
+            // Create plan data object
+            const planData = {
+                gameId: gameIdValue,
+                title: titleValue,
+                subtitle: subtitleValue,
+                price: priceValue,
+                features: features,
+                status: statusValue
+            };
+            
+            if (planIdValue) {
+                // Update existing plan
+                await db.collection('gamePlans').doc(planIdValue).update(planData);
+                showToast('Game plan updated successfully', 'success');
+            } else {
+                // Add new plan
+                planData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection('gamePlans').add(planData);
+                showToast('Game plan added successfully', 'success');
+            }
+            
+            // Reload game plans
+            await loadGamePlans(gameIdValue);
+            
+            // Close modal
+            closeGamePlanModal();
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error saving game plan:', error);
+            showToast('Failed to save game plan: ' + error.message, 'error');
+            hideLoading();
+        }
+    }
+    
+    // Render Requests
+    function renderRequests(requests) {
+        const requestsTableBody = document.getElementById('requests-table-body');
+        requestsTableBody.innerHTML = '';
+        
+        if (requests.length === 0) {
+            requestsTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No top-up requests found</td></tr>';
+            return;
+        }
+        
+        requests.forEach(request => {
+            const row = document.createElement('tr');
+            
+            // Format date
+            const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+            const formattedDate = date.toLocaleString();
+            
+            // Status class
+            let statusClass = 'request-status-pending';
+            if (request.status === 'completed') {
+                statusClass = 'request-status-completed';
+            } else if (request.status === 'rejected') {
+                statusClass = 'request-status-rejected';
+            }
+            
+            row.innerHTML = `
+                <td>${request.id.substring(0, 8)}...</td>
+                <td>${formattedDate}</td>
+                <td>${request.customerName || 'N/A'}</td>
+                <td>${request.gameId || 'N/A'}</td>
+                <td>${request.packName || 'N/A'}</td>
+                <td>₦${(request.amount || 0).toLocaleString()}</td>
+                <td><span class="status ${statusClass}">${request.status || 'pending'}</span></td>
+                <td>
+                    <button class="action-btn process" data-id="${request.id}">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </td>
+            `;
+            
+            requestsTableBody.appendChild(row);
+            
+            // Add event listener to process button
+            const processBtn = row.querySelector('.process');
+            processBtn.addEventListener('click', function() {
+                const requestId = this.getAttribute('data-id');
+                openRequestModal(requestId);
+            });
+            
+            // Add click event to the entire row for processing
+            row.addEventListener('click', function() {
+                const processBtn = this.querySelector('.process');
+                if (processBtn) {
+                    const requestId = processBtn.getAttribute('data-id');
+                    openRequestModal(requestId);
+                }
+            });
+        });
+    }
+    
+    // Render User Requests
+    function renderUserRequests(users) {
+        const usersContainer = document.getElementById('users-container');
+        usersContainer.innerHTML = '';
+        
+        if (users.length === 0) {
+            usersContainer.innerHTML = '<div class="empty-message" style="text-align: center; padding: 20px;">No users with requests found</div>';
+            return;
+        }
+        
+        users.forEach(user => {
+            const userCard = document.createElement('div');
+            userCard.className = 'user-card';
+            
+            const userHeader = document.createElement('div');
+            userHeader.className = 'user-header';
+            userHeader.innerHTML = `
+                <div>
+                    <div class="user-name">${user.name || user.first_name + ' ' + (user.last_name || '') || 'Unknown User'}</div>
+                    <div class="user-email">${user.email || 'No Email'}</div>
+                </div>
+                <div class="user-requests-count">${user.requests.length} Requests</div>
+            `;
+            
+            const userRequests = document.createElement('div');
+            userRequests.className = 'user-requests';
+            
+            user.requests.forEach(request => {
                 // Format date
                 const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
                 const formattedDate = date.toLocaleString();
@@ -2197,735 +3240,731 @@
                     statusClass = 'request-status-rejected';
                 }
                 
-                row.innerHTML = `
-                    <td>${request.id.substring(0, 8)}...</td>
-                    <td>${formattedDate}</td>
-                    <td>${request.customerName || 'N/A'}</td>
-                    <td>${request.gameId || 'N/A'}</td>
-                    <td>${request.packName || 'N/A'}</td>
-                    <td>₦${(request.amount || 0).toLocaleString()}</td>
-                    <td><span class="status ${statusClass}">${request.status || 'pending'}</span></td>
-                    <td>
-                        <button class="action-btn process" data-id="${request.id}">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                    </td>
+                const requestItem = document.createElement('div');
+                requestItem.className = 'user-request-item';
+                requestItem.setAttribute('data-id', request.id);
+                
+                requestItem.innerHTML = `
+                    <div class="user-request-header">
+                        <div class="user-request-date">${formattedDate}</div>
+                        <span class="status ${statusClass}">${request.status || 'pending'}</span>
+                    </div>
+                    <div class="user-request-details">
+                        <div class="user-request-pack">${request.packName || 'N/A'} (ID: ${request.gameId || 'N/A'})</div>
+                        <div class="user-request-amount">₦${(request.amount || 0).toLocaleString()}</div>
+                    </div>
                 `;
                 
-                requestsTableBody.appendChild(row);
+                userRequests.appendChild(requestItem);
                 
-                // Add event listener to process button
-                const processBtn = row.querySelector('.process');
-                processBtn.addEventListener('click', function() {
+                // Add click event to the request item
+                requestItem.addEventListener('click', function() {
                     const requestId = this.getAttribute('data-id');
                     openRequestModal(requestId);
                 });
-                
-                // Add click event to the entire row for processing
-                row.addEventListener('click', function() {
-                    const processBtn = this.querySelector('.process');
-                    if (processBtn) {
-                        const requestId = processBtn.getAttribute('data-id');
-                        openRequestModal(requestId);
-                    }
-                });
             });
+            
+            userCard.appendChild(userHeader);
+            userCard.appendChild(userRequests);
+            usersContainer.appendChild(userCard);
+        });
+    }
+    
+    // Render Custom Requests
+    function renderCustomRequests(requests) {
+        const customRequestsContainer = document.getElementById('custom-requests-container');
+        customRequestsContainer.innerHTML = '';
+        
+        if (requests.length === 0) {
+            customRequestsContainer.innerHTML = '<div class="empty-message" style="text-align: center; padding: 20px;">No custom requests found</div>';
+            return;
         }
         
-        // Render User Requests
-        function renderUserRequests(users) {
-            const usersContainer = document.getElementById('users-container');
-            usersContainer.innerHTML = '';
+        requests.forEach(request => {
+            const requestCard = document.createElement('div');
+            requestCard.className = 'custom-request-card';
+            requestCard.setAttribute('data-id', request.id);
             
-            if (users.length === 0) {
-                usersContainer.innerHTML = '<div class="empty-message" style="text-align: center; padding: 20px;">No users with requests found</div>';
+            // Format date
+            const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+            const formattedDate = date.toLocaleString();
+            
+            // Status class
+            let statusClass = 'new';
+            if (request.status === 'processing') {
+                statusClass = 'processing';
+            } else if (request.status === 'completed') {
+                statusClass = 'completed';
+            }
+            
+            requestCard.innerHTML = `
+                <div class="custom-request-header">
+                    <div class="custom-request-info">
+                        <div class="custom-request-name">${request.name || 'Unknown User'}</div>
+                        <div class="custom-request-contact">
+                            <div>${request.email || 'No Email'}</div>
+                            <div>${request.phone || 'No Phone'}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="custom-request-date">${formattedDate}</div>
+                        <div class="custom-request-status ${statusClass}">${request.status || 'new'}</div>
+                    </div>
+                </div>
+                <div class="custom-request-content">
+                    <div class="custom-request-subject">${request.subject || 'No Subject'}</div>
+                    <div class="custom-request-message">${request.message || 'No Message'}</div>
+                </div>
+                <div class="custom-request-actions">
+                    <button class="btn btn-secondary" data-id="${request.id}">
+                        <i class="fas fa-reply"></i>
+                        <span>Process Request</span>
+                    </button>
+                </div>
+            `;
+            
+            customRequestsContainer.appendChild(requestCard);
+            
+            // Add event listener to process button
+            const processBtn = requestCard.querySelector('.custom-request-actions button');
+            processBtn.addEventListener('click', function() {
+                const requestId = this.getAttribute('data-id');
+                openCustomRequestModal(requestId);
+            });
+            
+            // Add click event to the entire card for processing
+            requestCard.addEventListener('click', function() {
+                const requestId = this.getAttribute('data-id');
+                openCustomRequestModal(requestId);
+            });
+        });
+    }
+    
+    // Filter Diamonds
+    function filterDiamonds(searchTerm) {
+        const diamondCards = document.querySelectorAll('.diamond-card');
+        
+        diamondCards.forEach(card => {
+            const diamondName = card.querySelector('.diamond-name').textContent.toLowerCase();
+            const diamondPrice = card.querySelector('.diamond-price').textContent.toLowerCase();
+            
+            if (diamondName.includes(searchTerm) || diamondPrice.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    // Filter Requests
+    function filterRequests(searchTerm) {
+        const requestRows = document.querySelectorAll('#requests-table-body tr');
+        
+        requestRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            let found = false;
+            
+            cells.forEach(cell => {
+                if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                    found = true;
+                }
+            });
+            
+            if (found) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    // Filter Users
+    function filterUsers(searchTerm) {
+        const userCards = document.querySelectorAll('.user-card');
+        
+        userCards.forEach(card => {
+            const userName = card.querySelector('.user-name').textContent.toLowerCase();
+            const userEmail = card.querySelector('.user-email').textContent.toLowerCase();
+            
+            if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    // Open Add Diamond Modal
+    function openAddDiamondModal(category) {
+        diamondModalTitle.textContent = category === 'special-deals' ? 'Add Special Deal' : 'Add Diamond Pack';
+        diamondId.value = '';
+        diamondForm.reset();
+        diamondStatus.checked = true;
+        
+        diamondModalOverlay.classList.add('active');
+    }
+    
+    // Open Edit Diamond Modal
+    async function openEditDiamondModal(packId) {
+        try {
+            showLoading();
+            
+            const packDoc = await db.collection('diamondPacks').doc(packId).get();
+            
+            if (!packDoc.exists) {
+                showToast('Pack not found', 'error');
+                hideLoading();
                 return;
             }
             
-            users.forEach(user => {
-                const userCard = document.createElement('div');
-                userCard.className = 'user-card';
-                
-                const userHeader = document.createElement('div');
-                userHeader.className = 'user-header';
-                userHeader.innerHTML = `
-                    <div>
-                        <div class="user-name">${user.name || 'Unknown User'}</div>
-                        <div class="user-email">${user.email || 'No Email'}</div>
-                    </div>
-                    <div class="user-requests-count">${user.requests.length} Requests</div>
-                `;
-                
-                const userRequests = document.createElement('div');
-                userRequests.className = 'user-requests';
-                
-                user.requests.forEach(request => {
-                    // Format date
-                    const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
-                    const formattedDate = date.toLocaleString();
-                    
-                    // Status class
-                    let statusClass = 'request-status-pending';
-                    if (request.status === 'completed') {
-                        statusClass = 'request-status-completed';
-                    } else if (request.status === 'rejected') {
-                        statusClass = 'request-status-rejected';
-                    }
-                    
-                    const requestItem = document.createElement('div');
-                    requestItem.className = 'user-request-item';
-                    requestItem.setAttribute('data-id', request.id);
-                    
-                    requestItem.innerHTML = `
-                        <div class="user-request-header">
-                            <div class="user-request-date">${formattedDate}</div>
-                            <span class="status ${statusClass}">${request.status || 'pending'}</span>
-                        </div>
-                        <div class="user-request-details">
-                            <div class="user-request-pack">${request.packName || 'N/A'} (ID: ${request.gameId || 'N/A'})</div>
-                            <div class="user-request-amount">₦${(request.amount || 0).toLocaleString()}</div>
-                        </div>
-                    `;
-                    
-                    userRequests.appendChild(requestItem);
-                    
-                    // Add click event to the request item
-                    requestItem.addEventListener('click', function() {
-                        const requestId = this.getAttribute('data-id');
-                        openRequestModal(requestId);
-                    });
-                });
-                
-                userCard.appendChild(userHeader);
-                userCard.appendChild(userRequests);
-                usersContainer.appendChild(userCard);
-            });
-        }
-        
-        // Filter Diamonds
-        function filterDiamonds(searchTerm) {
-            const diamondCards = document.querySelectorAll('.diamond-card');
+            const pack = packDoc.data();
             
-            diamondCards.forEach(card => {
-                const diamondName = card.querySelector('.diamond-name').textContent.toLowerCase();
-                const diamondPrice = card.querySelector('.diamond-price').textContent.toLowerCase();
-                
-                if (diamondName.includes(searchTerm) || diamondPrice.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-        
-        // Filter Requests
-        function filterRequests(searchTerm) {
-            const requestRows = document.querySelectorAll('#requests-table-body tr');
+            diamondModalTitle.textContent = pack.category === 'special-deals' ? 'Edit Special Deal' : 'Edit Diamond Pack';
+            document.getElementById('diamond-id').value = packId;
+            diamondName.value = pack.name;
+            diamondAmount.value = pack.amount;
+            diamondBonus.value = pack.bonus || '';
             
-            requestRows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                let found = false;
-                
-                cells.forEach(cell => {
-                    if (cell.textContent.toLowerCase().includes(searchTerm)) {
-                        found = true;
-                    }
-                });
-                
-                if (found) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-        
-        // Filter Users
-        function filterUsers(searchTerm) {
-            const userCards = document.querySelectorAll('.user-card');
+            if (pack.originalPrice) {
+                diamondOriginalPrice.value = pack.originalPrice;
+            }
             
-            userCards.forEach(card => {
-                const userName = card.querySelector('.user-name').textContent.toLowerCase();
-                const userEmail = card.querySelector('.user-email').textContent.toLowerCase();
-                
-                if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-        
-        // Open Add Diamond Modal
-        function openAddDiamondModal(category) {
-            diamondModalTitle.textContent = category === 'special-deals' ? 'Add Special Deal' : 'Add Diamond Pack';
-            diamondId.value = '';
-            diamondForm.reset();
-            diamondStatus.checked = true;
+            diamondPrice.value = pack.price;
+            
+            if (pack.badge) {
+                diamondBadge.value = pack.badge;
+            }
+            
+            diamondStatus.checked = pack.status;
             
             diamondModalOverlay.classList.add('active');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error opening edit diamond modal:', error);
+            showToast('Failed to load pack details', 'error');
+            hideLoading();
         }
-        
-        // Open Edit Diamond Modal
-        async function openEditDiamondModal(packId) {
-            try {
-                showLoading();
-                
-                const packDoc = await db.collection('diamondPacks').doc(packId).get();
-                
-                if (!packDoc.exists) {
-                    showToast('Pack not found', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                const pack = packDoc.data();
-                
-                diamondModalTitle.textContent = pack.category === 'special-deals' ? 'Edit Special Deal' : 'Edit Diamond Pack';
-                document.getElementById('diamond-id').value = packId;
-                diamondName.value = pack.name;
-                diamondAmount.value = pack.amount;
-                diamondBonus.value = pack.bonus || '';
-                
-                if (pack.originalPrice) {
-                    diamondOriginalPrice.value = pack.originalPrice;
-                }
-                
-                diamondPrice.value = pack.price;
-                
-                if (pack.badge) {
-                    diamondBadge.value = pack.badge;
-                }
-                
-                diamondStatus.checked = pack.status;
-                
-                diamondModalOverlay.classList.add('active');
-                
+    }
+    
+    // Open Request Modal
+    async function openRequestModal(requestId) {
+        try {
+            showLoading();
+            
+            const requestDoc = await db.collection('topupRequests').doc(requestId).get();
+            
+            if (!requestDoc.exists) {
+                showToast('Request not found', 'error');
                 hideLoading();
-            } catch (error) {
-                console.error('Error opening edit diamond modal:', error);
-                showToast('Failed to load pack details', 'error');
-                hideLoading();
+                return;
             }
+            
+            const request = requestDoc.data();
+            
+            // Format date
+            const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
+            const formattedDate = date.toLocaleString();
+            
+            // Populate request details
+            requestDetails.innerHTML = `
+                <div class="request-detail-item">
+                    <strong>Request ID:</strong> ${requestId}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Date:</strong> ${formattedDate}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Customer:</strong> ${request.customerName || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Game ID:</strong> ${request.gameId || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Pack:</strong> ${request.packName || 'N/A'}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Amount:</strong> ₦${(request.amount || 0).toLocaleString()}
+                </div>
+                <div class="request-detail-item">
+                    <strong>Current Status:</strong> ${request.status || 'pending'}
+                </div>
+            `;
+            
+            // Set current status
+            requestStatus.value = request.status || 'pending';
+            
+            // Set notes
+            requestNotes.value = request.adminNotes || '';
+            
+            // Set request ID
+            document.getElementById('request-id').value = requestId;
+            
+            requestModalOverlay.classList.add('active');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error opening request modal:', error);
+            showToast('Failed to load request details', 'error');
+            hideLoading();
         }
-        
-        // Open Request Modal
-        async function openRequestModal(requestId) {
-            try {
-                showLoading();
-                
-                const requestDoc = await db.collection('topupRequests').doc(requestId).get();
-                
-                if (!requestDoc.exists) {
-                    showToast('Request not found', 'error');
-                    hideLoading();
-                    return;
-                }
-                
-                const request = requestDoc.data();
-                
-                // Format date
-                const date = request.timestamp ? new Date(request.timestamp.toDate()) : new Date();
-                const formattedDate = date.toLocaleString();
-                
-                // Populate request details
-                requestDetails.innerHTML = `
-                    <div class="request-detail-item">
-                        <strong>Request ID:</strong> ${requestId}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Date:</strong> ${formattedDate}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Customer:</strong> ${request.customerName || 'N/A'}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Game ID:</strong> ${request.gameId || 'N/A'}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Pack:</strong> ${request.packName || 'N/A'}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Amount:</strong> ₦${(request.amount || 0).toLocaleString()}
-                    </div>
-                    <div class="request-detail-item">
-                        <strong>Current Status:</strong> ${request.status || 'pending'}
-                    </div>
-                `;
-                
-                // Set current status
-                requestStatus.value = request.status || 'pending';
-                
-                // Set notes
-                requestNotes.value = request.adminNotes || '';
-                
-                // Set request ID
-                document.getElementById('request-id').value = requestId;
-                
-                requestModalOverlay.classList.add('active');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error opening request modal:', error);
-                showToast('Failed to load request details', 'error');
-                hideLoading();
+    }
+    
+    // Close Diamond Modal
+    function closeDiamondModal() {
+        diamondModalOverlay.classList.remove('active');
+    }
+    
+    // Close Import Modal
+    function closeImportModal() {
+        importModalOverlay.classList.remove('active');
+    }
+    
+    // Close Delete Modal
+    function closeDeleteModal() {
+        deleteModalOverlay.classList.remove('active');
+    }
+    
+    // Close Request Modal
+    function closeRequestModal() {
+        requestModalOverlay.classList.remove('active');
+    }
+    
+    // Save Diamond
+    async function saveDiamond() {
+        try {
+            // Validate form
+            if (!diamondForm.checkValidity()) {
+                diamondForm.reportValidity();
+                return;
             }
-        }
-        
-        // Close Diamond Modal
-        function closeDiamondModal() {
-            diamondModalOverlay.classList.remove('active');
-        }
-        
-        // Close Import Modal
-        function closeImportModal() {
-            importModalOverlay.classList.remove('active');
-        }
-        
-        // Close Delete Modal
-        function closeDeleteModal() {
-            deleteModalOverlay.classList.remove('active');
-        }
-        
-        // Close Request Modal
-        function closeRequestModal() {
-            requestModalOverlay.classList.remove('active');
-        }
-        
-        // Save Diamond
-        async function saveDiamond() {
-            try {
-                // Validate form
-                if (!diamondForm.checkValidity()) {
-                    diamondForm.reportValidity();
-                    return;
-                }
-                
-                showLoading();
-                
-                // Get values from form
-                const packIdValue = document.getElementById('diamond-id').value;
-                const nameValue = diamondName.value;
-                const amountValue = diamondAmount.value;
-                const bonusValue = diamondBonus.value;
-                const priceValue = Number(diamondPrice.value);
-                const originalPriceValue = diamondOriginalPrice.value ? Number(diamondOriginalPrice.value) : priceValue;
-                const badgeValue = diamondBadge.value;
-                const statusValue = diamondStatus.checked;
-                
-                // Determine category based on modal title
-                const isSpecialDeal = diamondModalTitle.textContent.includes('Special Deal');
-                const categoryValue = isSpecialDeal ? 'special-deals' : 'freefire-diamonds';
-                
-                // Create pack data object
-                const packData = {
-                    name: nameValue,
-                    amount: amountValue,
-                    bonus: bonusValue,
-                    price: priceValue,
-                    originalPrice: originalPriceValue,
-                    badge: badgeValue,
-                    category: categoryValue,
-                    status: statusValue
-                };
-                
-                if (packIdValue) {
-                    // Update existing pack
-                    await db.collection('diamondPacks').doc(packIdValue).update(packData);
-                    showToast('Pack updated successfully', 'success');
-                } else {
-                    // Add new pack
-                    packData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-                    await db.collection('diamondPacks').add(packData);
-                    showToast('Pack added successfully', 'success');
-                }
-                
-                // Reload packs
-                if (categoryValue === 'freefire-diamonds') {
-                    await loadDiamondPacks();
-                } else {
-                    await loadSpecialDeals();
-                }
-                
-                // Close modal
-                closeDiamondModal();
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error saving diamond pack:', error);
-                showToast('Failed to save pack: ' + error.message, 'error');
-                hideLoading();
+            
+            showLoading();
+            
+            // Get values from form
+            const packIdValue = document.getElementById('diamond-id').value;
+            const nameValue = diamondName.value;
+            const amountValue = diamondAmount.value;
+            const bonusValue = diamondBonus.value;
+            const priceValue = Number(diamondPrice.value);
+            const originalPriceValue = diamondOriginalPrice.value ? Number(diamondOriginalPrice.value) : priceValue;
+            const badgeValue = diamondBadge.value;
+            const statusValue = diamondStatus.checked;
+            
+            // Determine category based on modal title
+            const isSpecialDeal = diamondModalTitle.textContent.includes('Special Deal');
+            const categoryValue = isSpecialDeal ? 'special-deals' : 'freefire-diamonds';
+            
+            // Create pack data object
+            const packData = {
+                name: nameValue,
+                amount: amountValue,
+                bonus: bonusValue,
+                price: priceValue,
+                originalPrice: originalPriceValue,
+                badge: badgeValue,
+                category: categoryValue,
+                status: statusValue
+            };
+            
+            if (packIdValue) {
+                // Update existing pack
+                await db.collection('diamondPacks').doc(packIdValue).update(packData);
+                showToast('Pack updated successfully', 'success');
+            } else {
+                // Add new pack
+                packData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection('diamondPacks').add(packData);
+                showToast('Pack added successfully', 'success');
             }
-        }
-        
-        // Update Request
-        async function updateRequest() {
-            try {
-                showLoading();
-                
-                const requestIdValue = document.getElementById('request-id').value;
-                const status = requestStatus.value;
-                const notes = requestNotes.value;
-                
-                // Update request
-                await db.collection('topupRequests').doc(requestIdValue).update({
-                    status: status,
-                    adminNotes: notes,
-                    processedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // Reload requests
-                await loadTopupRequests();
-                await loadUserRequests();
-                
-                // Close modal
-                closeRequestModal();
-                
-                showToast('Request updated successfully', 'success');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error updating request:', error);
-                showToast('Failed to update request', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Open Import Modal
-        function openImportModal() {
-            importData.value = '';
-            importReplace.checked = false;
-            importModalOverlay.classList.add('active');
-        }
-        
-        // Import Diamonds
-        async function importDiamonds() {
-            try {
-                // Validate JSON
-                let packs;
-                try {
-                    packs = JSON.parse(importData.value);
-                    
-                    if (!Array.isArray(packs)) {
-                        throw new Error('Invalid format. Expected an array of packs.');
-                    }
-                } catch (error) {
-                    showToast('Invalid JSON format: ' + error.message, 'error');
-                    return;
-                }
-                
-                showLoading();
-                
-                // Check if replacing existing packs
-                if (importReplace.checked) {
-                    // Delete all existing packs
-                    await deleteAllDiamonds(false);
-                }
-                
-                // Add new packs
-                const batch = db.batch();
-                
-                packs.forEach(pack => {
-                    const packRef = db.collection('diamondPacks').doc();
-                    const packData = {
-                        name: pack.name,
-                        amount: pack.amount,
-                        bonus: pack.bonus || '',
-                        price: Number(pack.price),
-                        originalPrice: pack.originalPrice ? Number(pack.originalPrice) : Number(pack.price),
-                        badge: pack.badge || '',
-                        category: pack.category || 'freefire-diamonds',
-                        status: typeof pack.status === 'boolean' ? pack.status : true,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    
-                    batch.set(packRef, packData);
-                });
-                
-                await batch.commit();
-                
-                // Reload packs
+            
+            // Reload packs
+            if (categoryValue === 'freefire-diamonds') {
                 await loadDiamondPacks();
+            } else {
                 await loadSpecialDeals();
-                
-                // Close modal
-                closeImportModal();
-                
-                showToast(`${packs.length} packs imported successfully`, 'success');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error importing packs:', error);
-                showToast('Failed to import packs', 'error');
-                hideLoading();
             }
+            
+            // Close modal
+            closeDiamondModal();
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error saving diamond pack:', error);
+            showToast('Failed to save pack: ' + error.message, 'error');
+            hideLoading();
         }
-        
-        // Export Diamonds
-        async function exportDiamonds() {
+    }
+    
+    // Update Request
+    async function updateRequest() {
+        try {
+            showLoading();
+            
+            const requestIdValue = document.getElementById('request-id').value;
+            const status = requestStatus.value;
+            const notes = requestNotes.value;
+            
+            // Update request
+            await db.collection('topupRequests').doc(requestIdValue).update({
+                status: status,
+                adminNotes: notes,
+                processedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Reload requests
+            await loadTopupRequests();
+            await loadUserRequests();
+            
+            // Close modal
+            closeRequestModal();
+            
+            showToast('Request updated successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error updating request:', error);
+            showToast('Failed to update request', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Open Import Modal
+    function openImportModal() {
+        importData.value = '';
+        importReplace.checked = false;
+        importModalOverlay.classList.add('active');
+    }
+    
+    // Import Diamonds
+    async function importDiamonds() {
+        try {
+            // Validate JSON
+            let packs;
             try {
-                showLoading();
+                packs = JSON.parse(importData.value);
                 
-                const packsSnapshot = await db.collection('diamondPacks').get();
-                const packs = [];
-                
-                packsSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    packs.push({
-                        id: doc.id,
-                        name: data.name,
-                        amount: data.amount,
-                        bonus: data.bonus || '',
-                        price: data.price,
-                        originalPrice: data.originalPrice,
-                        badge: data.badge || '',
-                        category: data.category,
-                        status: data.status
-                    });
-                });
-                
-                // Create JSON file
-                const jsonData = JSON.stringify(packs, null, 2);
-                const blob = new Blob([jsonData], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                
-                // Create download link
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'game_topup_packs.json';
-                document.body.appendChild(a);
-                a.click();
-                
-                // Clean up
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 100);
-                
-                showToast('Packs exported successfully', 'success');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error exporting packs:', error);
-                showToast('Failed to export packs', 'error');
-                hideLoading();
-            }
-        }
-        
-        // Open Delete Modal
-        function openDeleteModal(packId) {
-            document.getElementById('delete-diamond-id').value = packId;
-            deleteModalOverlay.classList.add('active');
-        }
-        
-        // Confirm Delete Diamond
-        async function confirmDeleteDiamond() {
-            try {
-                showLoading();
-                
-                const packId = document.getElementById('delete-diamond-id').value;
-                
-                // Get the pack to determine its category
-                const packDoc = await db.collection('diamondPacks').doc(packId).get();
-                const packData = packDoc.data();
-                const category = packData.category;
-                
-                // Delete the pack
-                await db.collection('diamondPacks').doc(packId).delete();
-                
-                // Reload packs based on category
-                if (category === 'freefire-diamonds') {
-                    await loadDiamondPacks();
-                } else if (category === 'special-deals') {
-                    await loadSpecialDeals();
+                if (!Array.isArray(packs)) {
+                    throw new Error('Invalid format. Expected an array of packs.');
                 }
-                
-                // Close modal
-                closeDeleteModal();
-                
-                showToast('Pack deleted successfully', 'success');
-                
-                hideLoading();
             } catch (error) {
-                console.error('Error deleting pack:', error);
-                showToast('Failed to delete pack', 'error');
-                hideLoading();
+                showToast('Invalid JSON format: ' + error.message, 'error');
+                return;
             }
-        }
-        
-        // Sync Diamonds
-        async function syncDiamonds() {
-            try {
-                if (!confirm('This will reset all packs to their default values. Continue?')) {
-                    return;
-                }
-                
-                showLoading();
-                
+            
+            showLoading();
+            
+            // Check if replacing existing packs
+            if (importReplace.checked) {
                 // Delete all existing packs
                 await deleteAllDiamonds(false);
-                
-                // Add default packs
-                await addDefaultDiamondPacks();
-                await addDefaultSpecialDeals();
-                
-                // Reload packs
-                await loadDiamondPacks();
-                await loadSpecialDeals();
-                
-                showToast('Packs synced successfully', 'success');
-                
-                hideLoading();
-            } catch (error) {
-                console.error('Error syncing packs:', error);
-                showToast('Failed to sync packs', 'error');
-                hideLoading();
             }
+            
+            // Add new packs
+            const batch = db.batch();
+            
+            packs.forEach(pack => {
+                const packRef = db.collection('diamondPacks').doc();
+                const packData = {
+                    name: pack.name,
+                    amount: pack.amount,
+                    bonus: pack.bonus || '',
+                    price: Number(pack.price),
+                    originalPrice: pack.originalPrice ? Number(pack.originalPrice) : Number(pack.price),
+                    badge: pack.badge || '',
+                    category: pack.category || 'freefire-diamonds',
+                    status: typeof pack.status === 'boolean' ? pack.status : true,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                batch.set(packRef, packData);
+            });
+            
+            await batch.commit();
+            
+            // Reload packs
+            await loadDiamondPacks();
+            await loadSpecialDeals();
+            
+            // Close modal
+            closeImportModal();
+            
+            showToast(`${packs.length} packs imported successfully`, 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error importing packs:', error);
+            showToast('Failed to import packs', 'error');
+            hideLoading();
         }
-        
-        // Update All Diamond Status
-        async function updateAllDiamondStatus(status) {
-            try {
-                const action = status ? 'activate' : 'deactivate';
-                
-                if (!confirm(`Are you sure you want to ${action} all packs?`)) {
-                    return;
-                }
-                
+    }
+    
+    // Export Diamonds
+    async function exportDiamonds() {
+        try {
+            showLoading();
+            
+            const packsSnapshot = await db.collection('diamondPacks').get();
+            const packs = [];
+            
+            packsSnapshot.forEach(doc => {
+                const data = doc.data();
+                packs.push({
+                    id: doc.id,
+                    name: data.name,
+                    amount: data.amount,
+                    bonus: data.bonus || '',
+                    price: data.price,
+                    originalPrice: data.originalPrice,
+                    badge: data.badge || '',
+                    category: data.category,
+                    status: data.status
+                });
+            });
+            
+            // Create JSON file
+            const jsonData = JSON.stringify(packs, null, 2);
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            // Create download link
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'game_topup_packs.json';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showToast('Packs exported successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error exporting packs:', error);
+            showToast('Failed to export packs', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Open Delete Modal
+    function openDeleteModal(packId) {
+        document.getElementById('delete-diamond-id').value = packId;
+        deleteModalOverlay.classList.add('active');
+    }
+    
+    // Confirm Delete Diamond
+    async function confirmDeleteDiamond() {
+        try {
+            showLoading();
+            
+            const packId = document.getElementById('delete-diamond-id').value;
+            
+            // Get the pack to determine its category
+            const packDoc = await db.collection('diamondPacks').doc(packId).get();
+            const packData = packDoc.data();
+            const category = packData.category;
+            
+            // Delete the pack
+            await db.collection('diamondPacks').doc(packId).delete();
+            
+            // Reload packs based on category
+            if (category === 'freefire-diamonds') {
+                await loadDiamondPacks();
+            } else if (category === 'special-deals') {
+                await loadSpecialDeals();
+            }
+            
+            // Close modal
+            closeDeleteModal();
+            
+            showToast('Pack deleted successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error deleting pack:', error);
+            showToast('Failed to delete pack', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Sync Diamonds
+    async function syncDiamonds() {
+        try {
+            if (!confirm('This will reset all packs to their default values. Continue?')) {
+                return;
+            }
+            
+            showLoading();
+            
+            // Delete all existing packs
+            await deleteAllDiamonds(false);
+            
+            // Add default packs
+            await addDefaultDiamondPacks();
+            await addDefaultSpecialDeals();
+            
+            // Reload packs
+            await loadDiamondPacks();
+            await loadSpecialDeals();
+            
+            showToast('Packs synced successfully', 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error('Error syncing packs:', error);
+            showToast('Failed to sync packs', 'error');
+            hideLoading();
+        }
+    }
+    
+    // Update All Diamond Status
+    async function updateAllDiamondStatus(status) {
+        try {
+            const action = status ? 'activate' : 'deactivate';
+            
+            if (!confirm(`Are you sure you want to ${action} all packs?`)) {
+                return;
+            }
+            
+            showLoading();
+            
+            const packsSnapshot = await db.collection('diamondPacks').get();
+            
+            const batch = db.batch();
+            
+            packsSnapshot.forEach(doc => {
+                batch.update(doc.ref, { status });
+            });
+            
+            await batch.commit();
+            
+            // Reload packs
+            await loadDiamondPacks();
+            await loadSpecialDeals();
+            
+            showToast(`All packs ${action}d successfully`, 'success');
+            
+            hideLoading();
+        } catch (error) {
+            console.error(`Error ${status ? 'activating' : 'deactivating'} packs:`, error);
+            showToast(`Failed to ${status ? 'activate' : 'deactivate'} packs`, 'error');
+            hideLoading();
+        }
+    }
+    
+    // Delete All Diamonds
+    async function deleteAllDiamonds(showConfirmation = true) {
+        try {
+            if (showConfirmation && !confirm('Are you sure you want to delete ALL diamond packs? This action cannot be undone.')) {
+                return;
+            }
+            
+            if (showConfirmation) {
                 showLoading();
-                
-                const packsSnapshot = await db.collection('diamondPacks').get();
-                
-                const batch = db.batch();
-                
-                packsSnapshot.forEach(doc => {
-                    batch.update(doc.ref, { status });
-                });
-                
-                await batch.commit();
-                
+            }
+            
+            const packsSnapshot = await db.collection('diamondPacks').get();
+            const batch = db.batch();
+            
+            packsSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            
+            await batch.commit();
+            
+            if (showConfirmation) {
                 // Reload packs
                 await loadDiamondPacks();
                 await loadSpecialDeals();
                 
-                showToast(`All packs ${action}d successfully`, 'success');
+                showToast('All packs deleted successfully', 'success');
                 
                 hideLoading();
-            } catch (error) {
-                console.error(`Error ${status ? 'activating' : 'deactivating'} packs:`, error);
-                showToast(`Failed to ${status ? 'activate' : 'deactivate'} packs`, 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting all packs:', error);
+            
+            if (showConfirmation) {
+                showToast('Failed to delete all packs', 'error');
                 hideLoading();
             }
+            
+            throw error;
+        }
+    }
+    
+    // Logout
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            isSigningOut = true;
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+                showToast('Failed to logout', 'error');
+            }).finally(() => {
+                isSigningOut = false;
+            });
+        }
+    }
+    
+    // Show Toast Notification
+    function showToast(message, type = 'info') {
+        const toastContainer = document.querySelector('.toast-container');
+        
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        
+        let icon = '';
+        switch (type) {
+            case 'success':
+                icon = '<i class="fas fa-check-circle"></i>';
+                break;
+            case 'error':
+                icon = '<i class="fas fa-exclamation-circle"></i>';
+                break;
+            case 'warning':
+                icon = '<i class="fas fa-exclamation-triangle"></i>';
+                break;
+            default:
+                icon = '<i class="fas fa-info-circle"></i>';
         }
         
-        // Delete All Diamonds
-        async function deleteAllDiamonds(showConfirmation = true) {
-            try {
-                if (showConfirmation && !confirm('Are you sure you want to delete ALL diamond packs? This action cannot be undone.')) {
-                    return;
-                }
-                
-                if (showConfirmation) {
-                    showLoading();
-                }
-                
-                const packsSnapshot = await db.collection('diamondPacks').get();
-                const batch = db.batch();
-                
-                packsSnapshot.forEach(doc => {
-                    batch.delete(doc.ref);
-                });
-                
-                await batch.commit();
-                
-                if (showConfirmation) {
-                    // Reload packs
-                    await loadDiamondPacks();
-                    await loadSpecialDeals();
-                    
-                    showToast('All packs deleted successfully', 'success');
-                    
-                    hideLoading();
-                }
-            } catch (error) {
-                console.error('Error deleting all packs:', error);
-                
-                if (showConfirmation) {
-                    showToast('Failed to delete all packs', 'error');
-                    hideLoading();
-                }
-                
-                throw error;
-            }
-        }
+        toast.innerHTML = `${icon} <span>${message}</span>`;
+        toastContainer.appendChild(toast);
         
-        // Logout
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                isSigningOut = true;
-                auth.signOut().then(() => {
-                    window.location.href = 'login.html';
-                }).catch((error) => {
-                    console.error('Error signing out:', error);
-                    showToast('Failed to logout', 'error');
-                }).finally(() => {
-                    isSigningOut = false;
-                });
-            }
-        }
+        // Show toast
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
         
-        // Show Toast Notification
-        function showToast(message, type = 'info') {
-            const toastContainer = document.querySelector('.toast-container');
+        // Hide toast after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
             
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            
-            let icon = '';
-            switch (type) {
-                case 'success':
-                    icon = '<i class="fas fa-check-circle"></i>';
-                    break;
-                case 'error':
-                    icon = '<i class="fas fa-exclamation-circle"></i>';
-                    break;
-                case 'warning':
-                    icon = '<i class="fas fa-exclamation-triangle"></i>';
-                    break;
-                default:
-                    icon = '<i class="fas fa-info-circle"></i>';
-            }
-            
-            toast.innerHTML = `${icon} <span>${message}</span>`;
-            toastContainer.appendChild(toast);
-            
-            // Show toast
+            // Remove toast after animation
             setTimeout(() => {
-                toast.classList.add('show');
-            }, 10);
-            
-            // Hide toast after 3 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-                
-                // Remove toast after animation
-                setTimeout(() => {
-                    toastContainer.removeChild(toast);
-                }, 300);
-            }, 3000);
-        }
-        
-        // Show Loading
-        function showLoading() {
-            const loadingOverlay = document.querySelector('.loading-overlay');
-            loadingOverlay.style.display = 'flex';
-        }
-        
-        // Hide Loading
-        function hideLoading() {
-            const loadingOverlay = document.querySelector('.loading-overlay');
-            loadingOverlay.style.display = 'none';
-        }
-    </script>
+                toastContainer.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+    
+    // Show Loading
+    function showLoading() {
+        const loadingOverlay = document.querySelector('.loading-overlay');
+        loadingOverlay.style.display = 'flex';
+    }
+    
+    // Hide Loading
+    function hideLoading() {
+        const loadingOverlay = document.querySelector('.loading-overlay');
+        loadingOverlay.style.display = 'none';
+    }
+</script>
 </body>
 </html>
+
