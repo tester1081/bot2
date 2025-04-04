@@ -6,6 +6,7 @@
 <title>Veltrawave Result Checker</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /* Reset and Base Styles */
 * {
@@ -688,6 +689,30 @@ body {
         margin: 0 auto;
     }
 }
+
+/* Balance Display */
+.balance-display {
+    background: rgba(45, 127, 249, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.balance-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.balance-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--success);
+}
 </style>
 </head>
 <body>
@@ -742,6 +767,12 @@ body {
             </svg>
         </button>
         <h1 class="page-title">Result Checker</h1>
+    </div>
+
+    <!-- Balance Display -->
+    <div class="balance-display">
+        <div class="balance-label">Wallet Balance</div>
+        <div class="balance-value" id="userBalance">Loading...</div>
     </div>
 
     <div class="info-box">
@@ -842,9 +873,30 @@ body {
     </div>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
 <script>
 // API credentials
 const ACCESS_TOKEN = "3cfedeade5a3a75342ce13245ac4de9e9b3ca0aaf86a05a5aa1447c12d7d";
+
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDeu5aIuvz107y9FDyU3quV_BT_4Cgob10",
+    authDomain: "veltrawave-vtu.firebaseapp.com",
+    projectId: "veltrawave-vtu",
+    storageBucket: "veltrawave-vtu.firebasestorage.app",
+    messagingSenderId: "431351611304",
+    appId: "1:431351611304:web:7381dd659920f9f325a79d",
+    measurementId: "G-HRHN8GJCR3"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
 // Exam data
 const EXAM_DATA = [
@@ -878,6 +930,7 @@ const responseContent = document.getElementById('responseContent');
 const toast = document.getElementById('toast');
 const toastMessage = document.getElementById('toastMessage');
 const toastIcon = document.getElementById('toastIcon');
+const userBalanceElement = document.getElementById('userBalance');
 
 // State variables
 let selectedExam = null;
@@ -885,6 +938,93 @@ let selectedExamId = null;
 let selectedExamPrice = 0;
 let currentQuantity = 1;
 let isLoading = false;
+let userBalance = 0;
+let currentUser = null;
+
+// Get user ID from Telegram WebApp
+function getUserId() {
+    // Check if running in Telegram WebApp
+    if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
+        
+        // Get user data from Telegram
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            const telegramUser = tg.initDataUnsafe.user;
+            const userId = telegramUser.id.toString();
+            console.log("Telegram user ID detected:", userId);
+            return userId;
+        }
+    }
+    
+    // Try to get from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id');
+    
+    if (userId) {
+        console.log("User ID from URL:", userId);
+        return userId;
+    }
+    
+    // If not in Telegram or URL, try localStorage
+    const storedUserId = localStorage.getItem('telegram_user_id');
+    if (storedUserId) {
+        console.log("User ID from localStorage:", storedUserId);
+        return storedUserId;
+    }
+    
+    // If no user ID found, show error and return null
+    showToast("User authentication failed. Please restart the app.", "error");
+    return null;
+}
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', function() {
+    // Get authenticated user ID
+    const userId = getUserId();
+    
+    if (userId) {
+        // Set current user
+        currentUser = { uid: userId };
+        
+        // Fetch user balance
+        fetchUserBalance();
+    } else {
+        // Handle case where no user ID is found
+        userBalanceElement.textContent = "Auth Error";
+        showToast("Authentication failed. Please restart the app.", "error");
+    }
+    
+    // Initialize page
+    initPage();
+});
+
+// Fetch user balance from Firestore
+async function fetchUserBalance() {
+    try {
+        if (!currentUser || !currentUser.uid) {
+            userBalanceElement.textContent = "Auth Error";
+            return;
+        }
+        
+        console.log("Fetching balance for user:", currentUser.uid);
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            userBalance = userData.balance || 0;
+            userBalanceElement.textContent = formatCurrency(userBalance);
+            console.log("User balance loaded:", userBalance);
+        } else {
+            console.error("User document not found for ID:", currentUser.uid);
+            userBalanceElement.textContent = "User not found";
+            showToast("User not found. Please contact support.", "error");
+        }
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        userBalanceElement.textContent = "Error";
+        showToast("Error loading balance. Please refresh.", "error");
+    }
+}
 
 // Initialize page
 function initPage() {
@@ -1059,9 +1199,17 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
+// Check if user has sufficient balance
+function checkBalance(amount) {
+    return userBalance >= amount;
+}
+
 // Show confirmation modal
 function showConfirmationModal() {
     if (!selectedExam) return;
+    
+    const totalAmount = selectedExamPrice * currentQuantity;
+    const hasSufficientBalance = checkBalance(totalAmount);
     
     confirmationDetails.innerHTML = `
         <div class="confirmation-item">
@@ -1082,9 +1230,32 @@ function showConfirmationModal() {
         </div>
         <div class="confirmation-item">
             <span class="confirmation-label">Total:</span>
-            <span class="confirmation-value">${formatCurrency(selectedExamPrice * currentQuantity)}</span>
+            <span class="confirmation-value">${formatCurrency(totalAmount)}</span>
         </div>
     `;
+    
+    // Add warning for insufficient balance
+    if (!hasSufficientBalance) {
+        const warningMessage = document.createElement('div');
+        warningMessage.className = 'warning-message';
+        warningMessage.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Insufficient balance. Please fund your wallet to continue.
+        `;
+        document.querySelector('.modal-body').insertBefore(warningMessage, confirmationDetails);
+        
+        // Update modal buttons for insufficient balance
+        confirmPurchase.innerText = "Fund Wallet";
+        confirmPurchase.className = "btn btn-warning";
+    } else {
+        // Reset buttons if balance is sufficient
+        confirmPurchase.innerText = "Confirm Purchase";
+        confirmPurchase.className = "btn btn-primary";
+    }
     
     // Hide response box
     responseBox.style.display = 'none';
@@ -1098,8 +1269,47 @@ function hideConfirmationModal() {
     confirmationModal.classList.remove('active');
 }
 
+// Update user balance in Firestore
+async function updateUserBalance(amountToDeduct) {
+    try {
+        if (currentUser && currentUser.uid) {
+            const userRef = db.collection('users').doc(currentUser.uid);
+            
+            // Update balance using a transaction to ensure accuracy
+            await db.runTransaction(async (transaction) => {
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists) {
+                    throw new Error("User document does not exist!");
+                }
+                
+                const userData = userDoc.data();
+                const newBalance = (userData.balance || 0) - amountToDeduct;
+                
+                transaction.update(userRef, { balance: newBalance });
+                
+                // Update the local balance
+                userBalance = newBalance;
+                userBalanceElement.textContent = formatCurrency(newBalance);
+            });
+        }
+    } catch (error) {
+        console.error("Error updating user balance:", error);
+        showToast('Failed to update balance. Please refresh the page.', 'error');
+    }
+}
+
 // Process exam purchase
 async function processExamPurchase() {
+    const totalAmount = selectedExamPrice * currentQuantity;
+    
+    // Check if insufficient balance
+    if (!checkBalance(totalAmount)) {
+        // Redirect to fund wallet page
+        hideConfirmationModal();
+        window.location.href = 'fund-wallet.html';
+        return;
+    }
+    
     // Show loading state in modal
     confirmPurchase.innerHTML = '<span class="loading"></span>Processing...';
     confirmPurchase.disabled = true;
@@ -1125,15 +1335,21 @@ async function processExamPurchase() {
         
         const data = await response.json();
         
-        // Hide modal first
-        hideConfirmationModal();
-        
         if (data.status === 'success') {
+            // Deduct balance from user's account
+            await updateUserBalance(totalAmount);
+            
+            // Hide modal
+            hideConfirmationModal();
+            
             // Show success toast
             showToast(`${currentQuantity} ${selectedExam} pin(s) have been sent to your email.`, 'success');
+            
+            // Reset form
             resetForm();
         } else {
             // Show error toast with modified message for insufficient funds
+            hideConfirmationModal();
             if (data.message && data.message.toLowerCase().includes('insufficient')) {
                 showToast('Veltrawave error. Contact admin.', 'error');
             } else {
@@ -1195,10 +1411,6 @@ examForm.addEventListener('submit', function(e) {
 closeModal.addEventListener('click', hideConfirmationModal);
 cancelPurchase.addEventListener('click', hideConfirmationModal);
 confirmPurchase.addEventListener('click', processExamPurchase);
-
-// Initialize the page
-initPage();
 </script>
 </body>
 </html>
-
