@@ -6,6 +6,7 @@
 <title>VeltraWave - Buy Data</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /* Reset and Base Styles */
 * {
@@ -1044,10 +1045,6 @@ body {
     backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
-    15,30,0.8);
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
     justify-content: center;
     z-index: 1000;
     opacity: 0;
@@ -1209,7 +1206,7 @@ body {
 </div>
 <div class="data-container">
     <div class="page-header">
-        <button class="back-button" onclick="window.location.href='    index.html'">
+        <button class="back-button" onclick="window.location.href='index.html'">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5"></path>
                 <path d="M12 19l-7-7 7-7"></path>
@@ -1465,8 +1462,6 @@ body {
     </div>
 </div>
 
-
-
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -1652,41 +1647,64 @@ body {
     let manualDataPlans = DEFAULT_MANUAL_PLANS;
     let currentRequestTab = 'all';
     
-    // Get user ID from URL parameter or local storage
-    // This is for Telegram integration
+    // Get user ID from Telegram WebApp
     function getUserId() {
-        // Try to get from URL parameters first
+        // Check if running in Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            
+            // Get user data from Telegram
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const telegramUser = tg.initDataUnsafe.user;
+                const userId = telegramUser.id.toString();
+                console.log("Telegram user ID detected:", userId);
+                return userId;
+            }
+        }
+        
+        // Try to get from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('user_id');
         
         if (userId) {
+            console.log("User ID from URL:", userId);
             return userId;
         }
         
-        // If not in URL, try localStorage
+        // If not in Telegram or URL, try localStorage
         const storedUserId = localStorage.getItem('telegram_user_id');
         if (storedUserId) {
+            console.log("User ID from localStorage:", storedUserId);
             return storedUserId;
         }
         
-        // Default test user ID if nothing is found
-        return "5966603094"; // Default test user
+        // If no user ID found, show error and return null
+        showToast("User authentication failed. Please restart the app.", "error");
+        return null;
     }
-    
-    // Initialize with user ID
-    const userId = getUserId();
-    currentUser = { uid: userId };
     
     // Initialize the app
     document.addEventListener('DOMContentLoaded', function() {
-        // Fetch user balance
-        fetchUserBalance();
+        // Get authenticated user ID
+        const userId = getUserId();
         
-        // Fetch manual data plans from Firestore
-        fetchManualDataPlans();
-        
-        // Fetch user's data requests
-        fetchDataRequests();
+        if (userId) {
+            // Set current user
+            currentUser = { uid: userId };
+            
+            // Fetch user balance
+            fetchUserBalance();
+            
+            // Fetch manual data plans from Firestore
+            fetchManualDataPlans();
+            
+            // Fetch user's data requests
+            fetchDataRequests();
+        } else {
+            // Handle case where no user ID is found
+            userBalanceElement.textContent = "Auth Error";
+            showToast("Authentication failed. Please restart the app.", "error");
+        }
         
         // Initialize slider
         initSlider();
@@ -1700,23 +1718,6 @@ body {
             selectNetwork('MTN', 1, mtnOption);
         }
         
-        // Wait for auth state before proceeding with data loading
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                await fetchUserBalance();
-                await fetchManualDataPlans();
-                await fetchDataRequests();
-            } else {
-                // Handle case where user isn't logged in
-                console.log("No user logged in, using default user ID");
-                // Continue with the default user ID that was set earlier
-                fetchUserBalance();
-                fetchManualDataPlans();
-                fetchDataRequests();
-            }
-        });
-        
         // Set automatic mode as default
         setMode('automatic');
     });
@@ -1724,27 +1725,27 @@ body {
     // Fetch user balance from Firestore
     async function fetchUserBalance() {
         try {
-            if (currentUser && currentUser.uid) {
-                console.log("Fetching balance for user:", currentUser.uid);
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    userBalance = userData.balance || 0;
-                    userBalanceElement.textContent = formatCurrency(userBalance);
-                } else {
-                    console.error("User document not found for ID:", currentUser.uid);
-                    userBalanceElement.textContent = formatCurrency(0);
-                    showToast("User not found. Using default balance.", "warning");
-                }
+            if (!currentUser || !currentUser.uid) {
+                userBalanceElement.textContent = "Auth Error";
+                return;
+            }
+            
+            console.log("Fetching balance for user:", currentUser.uid);
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                userBalance = userData.balance || 0;
+                userBalanceElement.textContent = formatCurrency(userBalance);
+                console.log("User balance loaded:", userBalance);
             } else {
-                console.error("No user ID available");
-                userBalanceElement.textContent = formatCurrency(0);
-                showToast("No user ID found. Using default balance.", "warning");
+                console.error("User document not found for ID:", currentUser.uid);
+                userBalanceElement.textContent = "User not found";
+                showToast("User not found. Please contact support.", "error");
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
-            userBalanceElement.textContent = "Error loading balance";
+            userBalanceElement.textContent = "Error";
             showToast("Error loading balance. Please refresh.", "error");
         }
     }
@@ -1808,60 +1809,43 @@ body {
     
     // Fetch user's data requests
     async function fetchDataRequests() {
-    try {
-        if (!currentUser || !currentUser.uid) return;
-        
-        // Show loading state in the request list
-        requestList.innerHTML = '<div class="loading-requests"><span class="loading"></span> Loading requests...</div>';
-        
-        // Check if the collection exists first
-        const requestsRef = db.collection('dataRequests');
-        const userRequestsQuery = requestsRef.where('userId', '==', currentUser.uid);
-        
-        const requestsSnapshot = await userRequestsQuery.orderBy('timestamp', 'desc').limit(20).get();
-        
-        const requests = [];
-        
-        if (requestsSnapshot.empty) {
-            // No requests found, create a sample request for demonstration
-            const sampleRequest = {
-                userId: currentUser.uid,
-                network: 'MTN',
-                planName: '1GB Data',
-                amount: 500,
-                phoneNumber: '07067479043',
-                status: 'completed',
-                timestamp: firebase.firestore.Timestamp.now()
-            };
+        try {
+            if (!currentUser || !currentUser.uid) return;
             
-            await db.collection('dataRequests').add(sampleRequest);
+            // Show loading state in the request list
+            requestList.innerHTML = '<div class="loading-requests"><span class="loading"></span> Loading requests...</div>';
             
-            // Add the sample to our display list
-            requests.push({
-                id: 'sample',
-                ...sampleRequest,
-                timestamp: new Date()
-            });
-        } else {
-            requestsSnapshot.forEach(doc => {
-                requests.push({
-                    id: doc.id,
-                    ...doc.data(),
-                    timestamp: doc.data().timestamp ? doc.data().timestamp.toDate() : new Date()
+            // Check if the collection exists first
+            const requestsRef = db.collection('dataRequests');
+            const userRequestsQuery = requestsRef.where('userId', '==', currentUser.uid);
+            
+            const requestsSnapshot = await userRequestsQuery.orderBy('timestamp', 'desc').limit(20).get();
+            
+            const requests = [];
+            
+            if (requestsSnapshot.empty) {
+                // No requests found
+                requestList.innerHTML = '<div class="empty-requests">No requests found</div>';
+            } else {
+                requestsSnapshot.forEach(doc => {
+                    requests.push({
+                        id: doc.id,
+                        ...doc.data(),
+                        timestamp: doc.data().timestamp ? doc.data().timestamp.toDate() : new Date()
+                    });
                 });
-            });
+                
+                console.log("Fetched requests:", requests);
+                renderDataRequests(requests);
+            }
+            
+            // Check for pending requests
+            await checkPendingRequests();
+        } catch (error) {
+            console.error("Error fetching data requests:", error);
+            requestList.innerHTML = '<div class="empty-requests">Error loading requests. Please try again.</div>';
         }
-        
-        console.log("Fetched requests:", requests);
-        renderDataRequests(requests);
-        
-        // Check for pending requests
-        await checkPendingRequests();
-    } catch (error) {
-        console.error("Error fetching data requests:", error);
-        requestList.innerHTML = '<div class="empty-requests">Error loading requests. Please try again.</div>';
     }
-}
     
     // Render data requests
     function renderDataRequests(requests) {
@@ -2082,36 +2066,36 @@ body {
     
     // Update UI based on selected mode
     function updateModeUI() {
-    if (isAutoMode) {
-        automaticNetworkSection.classList.add('show');
-        manualDataSection.classList.remove('show');
-        mtnSpecialPlans.classList.add('show');
-        automaticModeFields.style.display = 'block';
-        manualModeFields.style.display = 'none';
-        
-        // Set MTN as default in automatic mode
-        if (!selectedNetwork) {
-            const mtnOption = document.querySelector('.network-option.mtn');
-            if (mtnOption) {
-                selectNetwork('MTN', 1, mtnOption);
+        if (isAutoMode) {
+            automaticNetworkSection.classList.add('show');
+            manualDataSection.classList.remove('show');
+            mtnSpecialPlans.classList.add('show');
+            automaticModeFields.style.display = 'block';
+            manualModeFields.style.display = 'none';
+            
+            // Set MTN as default in automatic mode
+            if (!selectedNetwork) {
+                const mtnOption = document.querySelector('.network-option.mtn');
+                if (mtnOption) {
+                    selectNetwork('MTN', 1, mtnOption);
+                }
             }
+        } else {
+            automaticNetworkSection.classList.remove('show');
+            automaticModeFields.style.display = 'none';
+            manualModeFields.style.display = 'block';
+            
+            // Show manual data section and MTN special plans
+            manualDataSection.classList.add('show');
+            mtnSpecialPlans.classList.add('show');
+            renderManualDataPlans();
         }
-    } else {
-        automaticNetworkSection.classList.remove('show');
-        automaticModeFields.style.display = 'none';
-        manualModeFields.style.display = 'block';
-        
-        // Show manual data section and MTN special plans
-        manualDataSection.classList.add('show');
-        mtnSpecialPlans.classList.add('show');
-        renderManualDataPlans();
-    }
 
-    // Show/hide network display group based on mode
-    if (networkDisplayGroup) {
-        networkDisplayGroup.style.display = isAutoMode ? 'block' : 'none';
+        // Show/hide network display group based on mode
+        if (networkDisplayGroup) {
+            networkDisplayGroup.style.display = isAutoMode ? 'block' : 'none';
+        }
     }
-}
     
     // Initialize slider
     function initSlider() {
@@ -2120,7 +2104,8 @@ body {
             isDown = true;
             networkSlider.classList.add('active');
             startX = e.pageX - networkSlider.offsetLeft;
-            startScrollLeft = e.preventDefault();
+            startScrollLeft = networkSlider.scrollLeft;
+            e.preventDefault();
         });
     
         networkSlider.addEventListener('mouseleave', () => {
@@ -2537,14 +2522,14 @@ body {
 
     // Update submit button state
     function updateSubmitButtonState() {
-    if (isAutoMode) {
-        // In automatic mode
-        submitButton.disabled = !selectedNetwork || !selectedPlanType || !selectedDataPlan || phoneNumberInput.value.length !== 11;
-    } else {
-        // In manual mode - only need plan and phone number
-        submitButton.disabled = !selectedManualDataPlan || phoneNumberInput.value.length !== 11;
+        if (isAutoMode) {
+            // In automatic mode
+            submitButton.disabled = !selectedNetwork || !selectedPlanType || !selectedDataPlan || phoneNumberInput.value.length !== 11;
+        } else {
+            // In manual mode - only need plan and phone number
+            submitButton.disabled = !selectedManualDataPlan || phoneNumberInput.value.length !== 11;
+        }
     }
-}
 
     // Process automatic purchase
     async function processAutomaticPurchase() {
@@ -2652,4 +2637,3 @@ body {
 </script>
 </body>
 </html>
-
