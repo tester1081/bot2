@@ -6,6 +6,7 @@
 <title>N3TData - Cable TV Subscription</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /* Reset and Base Styles */
 * {
@@ -1014,58 +1015,87 @@ let isDown = false;
 let userBalance = 0;
 let currentUser = null;
 
-// Get user ID from URL parameter or local storage
-// This is for Telegram integration
+// Get user ID from Telegram WebApp
 function getUserId() {
-    // Try to get from URL parameters first
+    // Check if running in Telegram WebApp
+    if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
+        
+        // Get user data from Telegram
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            const telegramUser = tg.initDataUnsafe.user;
+            const userId = telegramUser.id.toString();
+            console.log("Telegram user ID detected:", userId);
+            return userId;
+        }
+    }
+    
+    // Try to get from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('user_id');
     
     if (userId) {
+        console.log("User ID from URL:", userId);
         return userId;
     }
     
-    // If not in URL, try localStorage
+    // If not in Telegram or URL, try localStorage
     const storedUserId = localStorage.getItem('telegram_user_id');
     if (storedUserId) {
+        console.log("User ID from localStorage:", storedUserId);
         return storedUserId;
     }
     
-    // Default test user ID if nothing is found
-    return "5966603094"; // Default test user
+    // If no user ID found, show error and return null
+    showToast("User authentication failed. Please restart the app.", "error");
+    return null;
 }
 
-// Initialize with user ID
-const userId = getUserId();
-currentUser = { uid: userId };
-
-// Fetch user balance directly without auth check
-fetchUserBalance();
+// Initialize the app
+document.addEventListener('DOMContentLoaded', function() {
+    // Get authenticated user ID
+    const userId = getUserId();
+    
+    if (userId) {
+        // Set current user
+        currentUser = { uid: userId };
+        
+        // Fetch user balance
+        fetchUserBalance();
+    } else {
+        // Handle case where no user ID is found
+        userBalanceElement.textContent = "Auth Error";
+        showToast("Authentication failed. Please restart the app.", "error");
+    }
+    
+    // Initialize slider
+    initSlider();
+});
 
 // Fetch user balance from Firestore
 async function fetchUserBalance() {
     try {
-        if (currentUser && currentUser.uid) {
-            console.log("Fetching balance for user:", currentUser.uid);
-            const userDoc = await db.collection('users').doc(currentUser.uid).get();
-            
-            if (userDoc.exists) {
-                const userData = userDoc.data();
-                userBalance = userData.balance || 0;
-                userBalanceElement.textContent = formatCurrency(userBalance);
-            } else {
-                console.error("User document not found for ID:", currentUser.uid);
-                userBalanceElement.textContent = formatCurrency(0);
-                showToast("User not found. Using default balance.", "warning");
-            }
+        if (!currentUser || !currentUser.uid) {
+            userBalanceElement.textContent = "Auth Error";
+            return;
+        }
+        
+        console.log("Fetching balance for user:", currentUser.uid);
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            userBalance = userData.balance || 0;
+            userBalanceElement.textContent = formatCurrency(userBalance);
+            console.log("User balance loaded:", userBalance);
         } else {
-            console.error("No user ID available");
-            userBalanceElement.textContent = formatCurrency(0);
-            showToast("No user ID found. Using default balance.", "warning");
+            console.error("User document not found for ID:", currentUser.uid);
+            userBalanceElement.textContent = "User not found";
+            showToast("User not found. Please contact support.", "error");
         }
     } catch (error) {
         console.error("Error fetching user data:", error);
-        userBalanceElement.textContent = "Error loading balance";
+        userBalanceElement.textContent = "Error";
         showToast("Error loading balance. Please refresh.", "error");
     }
 }
