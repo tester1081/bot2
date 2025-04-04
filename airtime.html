@@ -6,6 +6,7 @@
 <title>Veltrawave Buy Airtime</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /* Reset and Base Styles */
 * {
@@ -820,58 +821,90 @@ body {
     let userBalance = 0;
     let currentUser = null;
 
-    // Get user ID from URL parameter or local storage
-    // This is for Telegram integration
+    // Get user ID from Telegram WebApp
     function getUserId() {
-        // Try to get from URL parameters first
+        // Check if running in Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            
+            // Get user data from Telegram
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const telegramUser = tg.initDataUnsafe.user;
+                const userId = telegramUser.id.toString();
+                console.log("Telegram user ID detected:", userId);
+                return userId;
+            }
+        }
+        
+        // Try to get from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('user_id');
         
         if (userId) {
+            console.log("User ID from URL:", userId);
             return userId;
         }
         
-        // If not in URL, try localStorage
+        // If not in Telegram or URL, try localStorage
         const storedUserId = localStorage.getItem('telegram_user_id');
         if (storedUserId) {
+            console.log("User ID from localStorage:", storedUserId);
             return storedUserId;
         }
         
-        // Default test user ID if nothing is found
-        return "5966603094"; // Default test user
+        // If no user ID found, show error and return null
+        showToast("User authentication failed. Please restart the app.", "error");
+        return null;
     }
-
-    // Initialize with user ID
-    const userId = getUserId();
-    currentUser = { uid: userId };
     
-    // Fetch user balance directly without auth check
-    fetchUserBalance();
-
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get authenticated user ID
+        const userId = getUserId();
+        
+        if (userId) {
+            // Set current user
+            currentUser = { uid: userId };
+            
+            // Fetch user balance
+            fetchUserBalance();
+        } else {
+            // Handle case where no user ID is found
+            userBalanceElement.textContent = "Auth Error";
+            showToast("Authentication failed. Please restart the app.", "error");
+        }
+        
+        // Initialize slider
+        initSlider();
+        
+        // Set up event listeners
+        setupEventListeners();
+    });
+    
     // Fetch user balance from Firestore
     async function fetchUserBalance() {
         try {
-            if (currentUser && currentUser.uid) {
-                console.log("Fetching balance for user:", currentUser.uid);
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    userBalance = userData.balance || 0;
-                    userBalanceElement.textContent = formatCurrency(userBalance);
-                } else {
-                    console.error("User document not found for ID:", currentUser.uid);
-                    userBalanceElement.textContent = formatCurrency(0);
-                    showToast("User not found. Using default balance.", "warning");
-                }
+            if (!currentUser || !currentUser.uid) {
+                userBalanceElement.textContent = "Auth Error";
+                return;
+            }
+            
+            console.log("Fetching balance for user:", currentUser.uid);
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                userBalance = userData.balance || 0;
+                userBalanceElement.textContent = formatCurrency(userBalance);
+                console.log("User balance loaded:", userBalance);
             } else {
-                console.error("No user ID available");
-                userBalanceElement.textContent = formatCurrency(0);
-                showToast("No user ID found. Using default balance.", "warning");
+                console.error("User document not found for ID:", currentUser.uid);
+                userBalanceElement.textContent = "User not found";
+                showToast("User not found. Please contact support.", "error");
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
-            userBalanceElement.textContent = "Error loading balance";
+            userBalanceElement.textContent = "Error";
             showToast("Error loading balance. Please refresh.", "error");
         }
     }
@@ -1114,189 +1147,190 @@ body {
         return userBalance >= amount;
     }
 
-    // Quick Amount Buttons
-    quickAmountButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const amount = this.dataset.amount;
-            amountInput.value = amount;
+    // Set up event listeners
+    function setupEventListeners() {
+        // Quick Amount Buttons
+        quickAmountButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const amount = this.dataset.amount;
+                amountInput.value = amount;
+                updateSubmitButtonState();
+            });
+        });
+
+        // Phone Number Input
+        phoneNumberInput.addEventListener('input', function() {
+            // Allow only digits
+            this.value = this.value.replace(/\D/g, '');
             updateSubmitButtonState();
         });
-    });
 
-    // Event listeners
-    phoneNumberInput.addEventListener('input', function() {
-        // Allow only digits
-        this.value = this.value.replace(/\D/g, '');
-        updateSubmitButtonState();
-    });
+        // Amount Input
+        amountInput.addEventListener('input', function() {
+            updateSubmitButtonState();
+        });
 
-    amountInput.addEventListener('input', function() {
-        updateSubmitButtonState();
-    });
+        // Airtime Form Submit
+        airtimeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!selectedNetwork || phoneNumberInput.value.length !== 11 || !amountInput.value) {
+                showToast('Please fill in all required fields correctly', 'error');
+                return;
+            }
 
-    airtimeForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if (!selectedNetwork || phoneNumberInput.value.length !== 11 || !amountInput.value) {
-            showToast('Please fill in all required fields correctly', 'error');
-            return;
-        }
-
-        selectedAmount = parseInt(amountInput.value);
-        const hasSufficientBalance = checkBalance(selectedAmount);
-        
-        // Prepare modal content
-        let modalContent = `
-            <p>Are you sure you want to buy ${formatCurrency(selectedAmount)} airtime for ${phoneNumberInput.value}?</p>
-            <div class="summary-row">
-                <span class="summary-label">Network:</span>
-                <span class="summary-value">${selectedNetwork}</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Phone Number:</span>
-                <span class="summary-value">${phoneNumberInput.value}</span>
-            </div>
-            <div class="summary-row">
-                <span class="summary-label">Amount:</span>
-                <span class="summary-value">${formatCurrency(selectedAmount)}</span>
-            </div>
-        `;
-
-        // Add warning for insufficient balance
-        if (!hasSufficientBalance) {
-            modalContent = `
-                <div class="warning-message">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                    Insufficient balance. Please fund your wallet to continue.
+            selectedAmount = parseInt(amountInput.value);
+            const hasSufficientBalance = checkBalance(selectedAmount);
+            
+            // Prepare modal content
+            let modalContent = `
+                <p>Are you sure you want to buy ${formatCurrency(selectedAmount)} airtime for ${phoneNumberInput.value}?</p>
+                <div class="summary-row">
+                    <span class="summary-label">Network:</span>
+                    <span class="summary-value">${selectedNetwork}</span>
                 </div>
-                ${modalContent}
+                <div class="summary-row">
+                    <span class="summary-label">Phone Number:</span>
+                    <span class="summary-value">${phoneNumberInput.value}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Amount:</span>
+                    <span class="summary-value">${formatCurrency(selectedAmount)}</span>
+                </div>
             `;
 
-            // Update modal buttons for insufficient balance
-            confirmPurchaseBtn.innerText = "Fund Wallet";
-            confirmPurchaseBtn.className = "btn btn-warning";
-        } else {
-            // Reset buttons if balance is sufficient
-            confirmPurchaseBtn.innerText = "Confirm";
-            confirmPurchaseBtn.className = "btn btn-primary";
-        }
+            // Add warning for insufficient balance
+            if (!hasSufficientBalance) {
+                modalContent = `
+                    <div class="warning-message">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Insufficient balance. Please fund your wallet to continue.
+                    </div>
+                    ${modalContent}
+                `;
 
-        modalBody.innerHTML = modalContent;
-
-        // Show modal
-        showModal();
-    });
-
-    // Confirm purchase or fund wallet
-    confirmPurchaseBtn.addEventListener('click', async function() {
-        hideModal();
-        
-        // Check if insufficient balance
-        if (!checkBalance(selectedAmount)) {
-            // Redirect to fund wallet page
-            window.location.href = 'fund-wallet.html';
-            return;
-        }
-        
-        setLoading(true);
-
-        try {
-            // Generate a unique request ID
-            const requestId = `Airtime_${Date.now()}${Math.floor(Math.random() * 1000)}`;
-
-            // Prepare the request payload
-            const payload = {
-                network: selectedNetworkId,
-                phone: phoneNumberInput.value,
-                plan_type: 'VTU',
-                amount: selectedAmount,
-                bypass: false,
-                "request-id": requestId
-            };
-
-            console.log("Sending request payload:", payload);
-
-            // Make the API call
-            const response = await fetch('https://n3tdata.com/api/topup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${ACCESS_TOKEN}`
-                },
-                body: JSON.stringify(payload)
-            });
-            
-            const responseData = await response.json();
-            console.log("API Response:", responseData);
-            
-            if (responseData.status === 'success') {
-                // Deduct balance from user's account
-                await updateUserBalance(selectedAmount);
-                showToast(`${formatCurrency(selectedAmount)} airtime has been purchased for ${phoneNumberInput.value}`);
-                
-                // Reset form
-                phoneNumberInput.value = '';
-                amountInput.value = '';
-                updateSubmitButtonState();
+                // Update modal buttons for insufficient balance
+                confirmPurchaseBtn.innerText = "Fund Wallet";
+                confirmPurchaseBtn.className = "btn btn-warning";
             } else {
-                // Check if error is from API side
-                if (responseData.message && responseData.message.toLowerCase().includes('insufficient')) {
-                    showToast('Insufficient funds. Please contact admin.', 'error');
-                } else if (responseData.message) {
-                    showToast('Veltrawave error: ' + responseData.message + '. Contact admin.', 'error');
-                } else {
-                    showToast('Veltrawave error. Contact admin.', 'error');
-                }
+                // Reset buttons if balance is sufficient
+                confirmPurchaseBtn.innerText = "Confirm";
+                confirmPurchaseBtn.className = "btn btn-primary";
             }
-        } catch (error) {
-            console.error("Error purchasing airtime:", error);
-            showToast('Network error or server is unreachable. Please try again.', 'error');
-        } finally {
-            setLoading(false);
-        }
-    });
 
-    // Update user balance in Firestore
-    async function updateUserBalance(amountToDeduct) {
-        try {
-            if (currentUser && currentUser.uid) {
-                const userRef = db.collection('users').doc(currentUser.uid);
-                
-                // Update balance using a transaction to ensure accuracy
-                await db.runTransaction(async (transaction) => {
-                    const userDoc = await transaction.get(userRef);
-                    if (!userDoc.exists) {
-                        throw new Error("User document does not exist!");
-                    }
-                    
-                    const userData = userDoc.data();
-                    const newBalance = (userData.balance || 0) - amountToDeduct;
-                    
-                    transaction.update(userRef, { balance: newBalance });
-                    
-                    // Update the local balance
-                    userBalance = newBalance;
-                    userBalanceElement.textContent = formatCurrency(newBalance);
+            modalBody.innerHTML = modalContent;
+
+            // Show modal
+            showModal();
+        });
+
+        // Confirm purchase or fund wallet
+        confirmPurchaseBtn.addEventListener('click', async function() {
+            hideModal();
+            
+            // Check if insufficient balance
+            if (!checkBalance(selectedAmount)) {
+                // Redirect to fund wallet page
+                window.location.href = 'fund-wallet.html';
+                return;
+            }
+            
+            setLoading(true);
+
+            try {
+                // Generate a unique request ID
+                const requestId = `Airtime_${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+                // Prepare the request payload
+                const payload = {
+                    network: selectedNetworkId,
+                    phone: phoneNumberInput.value,
+                    plan_type: 'VTU',
+                    amount: selectedAmount,
+                    bypass: false,
+                    "request-id": requestId
+                };
+
+                console.log("Sending request payload:", payload);
+
+                // Make the API call
+                const response = await fetch('https://n3tdata.com/api/topup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${ACCESS_TOKEN}`
+                    },
+                    body: JSON.stringify(payload)
                 });
+                
+                const responseData = await response.json();
+                console.log("API Response:", responseData);
+                
+                if (responseData.status === 'success') {
+                    // Deduct balance from user's account
+                    await updateUserBalance(selectedAmount);
+                    showToast(`${formatCurrency(selectedAmount)} airtime has been purchased for ${phoneNumberInput.value}`);
+                    
+                    // Reset form
+                    phoneNumberInput.value = '';
+                    amountInput.value = '';
+                    updateSubmitButtonState();
+                } else {
+                    // Check if error is from API side
+                    if (responseData.message && responseData.message.toLowerCase().includes('insufficient')) {
+                        showToast('Insufficient funds. Please contact admin.', 'error');
+                    } else if (responseData.message) {
+                        showToast('Veltrawave error: ' + responseData.message + '. Contact admin.', 'error');
+                    } else {
+                        showToast('Veltrawave error. Contact admin.', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error("Error purchasing airtime:", error);
+                showToast('Network error or server is unreachable. Please try again.', 'error');
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error("Error updating user balance:", error);
-            showToast('Failed to update balance. Please refresh the page.', 'error');
+        });
+
+        // Update user balance in Firestore
+        async function updateUserBalance(amountToDeduct) {
+            try {
+                if (currentUser && currentUser.uid) {
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    
+                    // Update balance using a transaction to ensure accuracy
+                    await db.runTransaction(async (transaction) => {
+                        const userDoc = await transaction.get(userRef);
+                        if (!userDoc.exists) {
+                            throw new Error("User document does not exist!");
+                        }
+                        
+                        const userData = userDoc.data();
+                        const newBalance = (userData.balance || 0) - amountToDeduct;
+                        
+                        transaction.update(userRef, { balance: newBalance });
+                        
+                        // Update the local balance
+                        userBalance = newBalance;
+                        userBalanceElement.textContent = formatCurrency(newBalance);
+                    });
+                }
+            } catch (error) {
+                console.error("Error updating user balance:", error);
+                showToast('Failed to update balance. Please refresh the page.', 'error');
+            }
         }
+
+        // Cancel purchase
+        cancelPurchaseBtn.addEventListener('click', function() {
+            hideModal();
+        });
     }
-
-    // Cancel purchase
-    cancelPurchaseBtn.addEventListener('click', function() {
-        hideModal();
-    });
-
-    // Initialize the page
-    initSlider();
 </script>
 </body>
 </html>
-
