@@ -8,6 +8,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         
@@ -948,9 +951,327 @@
             font-size: 0.9rem;
             color: var(--text-secondary);
         }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 15, 30, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-spinner-large {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1.5s ease-in-out infinite;
+        }
+
+        /* Payment Modal Styles */
+        .payment-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .payment-modal-content {
+            background: var(--background);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-modal.show .payment-modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .payment-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .payment-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .payment-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-modal-close:hover {
+            color: var(--text);
+            transform: rotate(90deg);
+        }
+        
+        .payment-modal-body {
+            padding: 20px;
+        }
+        
+        .payment-summary {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .payment-summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .payment-summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+        
+        .payment-summary-label {
+            color: var(--text-secondary);
+        }
+        
+        .payment-summary-value {
+            font-weight: 500;
+        }
+        
+        .payment-methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .payment-method {
+            flex: 1;
+            min-width: 120px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-method:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .payment-method.active {
+            border-color: var(--primary);
+            background: rgba(45, 127, 249, 0.1);
+        }
+        
+        .payment-method-icon {
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+        
+        .payment-method-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .payment-modal-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .payment-modal-button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-modal-button.cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: none;
+        }
+        
+        .payment-modal-button.cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .payment-modal-button.confirm {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+        }
+        
+        .payment-modal-button.confirm:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(45, 127, 249, 0.3);
+        }
+
+        /* Manual Payment Section */
+        .manual-payment-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .manual-payment-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .bank-details {
+            margin-bottom: 20px;
+        }
+        
+        .bank-detail-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .bank-detail-label {
+            width: 120px;
+            color: var(--text-secondary);
+        }
+        
+        .bank-detail-value {
+            font-weight: 500;
+        }
+        
+        .file-upload-container {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .file-upload-container:hover {
+            border-color: var(--primary);
+            background: rgba(45, 127, 249, 0.05);
+        }
+        
+        .file-upload-icon {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        
+        .file-upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+        
+        .file-upload-subtext {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+        
+        .file-upload-input {
+            display: none;
+        }
+        
+        .file-preview {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .file-preview.show {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .file-preview-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .file-preview-name {
+            flex: 1;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
+        .file-preview-remove {
+            color: var(--error);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner-large"></div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast-notification" class="toast-notification"></div>
 
@@ -1166,6 +1487,115 @@
         </div>
     </div>
     
+    <!-- Payment Modal -->
+    <div class="payment-modal" id="paymentModal">
+        <div class="payment-modal-content">
+            <div class="payment-modal-header">
+                <h2 class="payment-modal-title">Complete Your Purchase</h2>
+                <button class="payment-modal-close" id="paymentClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="payment-modal-body">
+                <div class="payment-summary">
+                    <div class="payment-summary-row">
+                        <span class="payment-summary-label">Template:</span>
+                        <span class="payment-summary-value" id="paymentTemplate">Business Website</span>
+                    </div>
+                    <div class="payment-summary-row">
+                        <span class="payment-summary-label">Price:</span>
+                        <span class="payment-summary-value" id="paymentAmount">₦15,000</span>
+                    </div>
+                    <div class="payment-summary-row">
+                        <span class="payment-summary-label">Service Fee:</span>
+                        <span class="payment-summary-value">₦50</span>
+                    </div>
+                    <div class="payment-summary-row">
+                        <span class="payment-summary-label">Total:</span>
+                        <span class="payment-summary-value" id="paymentTotal">₦15,050</span>
+                    </div>
+                </div>
+                
+                <h4>Select Payment Method</h4>
+                <div class="payment-methods">
+                    <div class="payment-method active" data-method="card">
+                        <div class="payment-method-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="payment-method-name">Card</div>
+                    </div>
+                    <div class="payment-method" data-method="transfer">
+                        <div class="payment-method-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="payment-method-name">Transfer</div>
+                    </div>
+                    <div class="payment-method" data-method="ussd">
+                        <div class="payment-method-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="payment-method-name">USSD</div>
+                    </div>
+                    <div class="payment-method" data-method="manual">
+                        <div class="payment-method-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="payment-method-name">Manual</div>
+                    </div>
+                </div>
+                
+                <div class="manual-payment-section" id="manualPaymentSection">
+                    <h4 class="manual-payment-title">Bank Transfer Details</h4>
+                    <div class="bank-details">
+                        <div class="bank-detail-row">
+                            <div class="bank-detail-label">Bank Name:</div>
+                            <div class="bank-detail-value">First Bank</div>
+                        </div>
+                        <div class="bank-detail-row">
+                            <div class="bank-detail-label">Account Name:</div>
+                            <div class="bank-detail-value">VeltraWave Technologies</div>
+                        </div>
+                        <div class="bank-detail-row">
+                            <div class="bank-detail-label">Account Number:</div>
+                            <div class="bank-detail-value">1234567890</div>
+                        </div>
+                    </div>
+                    
+                    <p>After making the payment, please upload your payment receipt:</p>
+                    
+                    <div class="file-upload-container" id="fileUploadContainer">
+                        <div class="file-upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="file-upload-text">Click to upload payment receipt</div>
+                        <div class="file-upload-subtext">Supported formats: JPG, PNG, PDF (Max: 5MB)</div>
+                        <input type="file" id="fileUploadInput" class="file-upload-input" accept="image/jpeg,image/png,application/pdf">
+                    </div>
+                    
+                    <div class="file-preview" id="filePreview">
+                        <img src="/placeholder.svg" alt="Receipt Preview" class="file-preview-image" id="filePreviewImage">
+                        <div class="file-preview-name" id="filePreviewName"></div>
+                        <div class="file-preview-remove" id="filePreviewRemove">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="whatsapp-link" id="whatsappButton" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                        Contact us on WhatsApp to verify payment
+                    </a>
+                </div>
+            </div>
+            <div class="payment-modal-footer">
+                <button class="payment-modal-button cancel" id="paymentCancel">Cancel</button>
+                <button class="payment-modal-button confirm" id="paymentComplete">
+                    <i class="fas fa-lock"></i>
+                    Pay Now
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
         <a href="index.html" class="nav-item">
@@ -1193,12 +1623,40 @@
             appId: "1:1098979571490:web:c9b6f1a7d9956e5c4d2fb6"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
+        // Initialize Firebase and create global variables
+        let db, auth, storage;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            storage = firebase.storage();
+            
+            // Sign in anonymously to allow database access without user authentication
+            auth.signInAnonymously().then(() => {
+                console.log("Firebase initialized successfully and signed in anonymously");
+            }).catch(error => {
+                console.error("Error signing in anonymously:", error);
+            });
+        } catch (error) {
+            console.error("Error initializing Firebase:", error);
+            showToast("Error connecting to database. Using offline mode.", "error");
+        }
+        
+        // Variables
+        let userId = null;
+        let userName = null;
+        let userEmail = null;
+        let userBalance = 0;
+        let selectedTemplate = null;
+        let selectedAmount = 0;
+        let selectedMethod = 'card';
+        
+        // Service fee
+        const serviceFee = 50;
         
         // DOM Elements
+        const loadingOverlay = document.getElementById('loading-overlay');
         const previewModal = document.getElementById('previewModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalImage = document.getElementById('modalImage');
@@ -1217,14 +1675,131 @@
         const toastNotification = document.getElementById('toast-notification');
         const backButton = document.getElementById('backButton');
         
+        // Payment Modal Elements
+        const paymentModal = document.getElementById('paymentModal');
+        const paymentTemplate = document.getElementById('paymentTemplate');
+        const paymentAmount = document.getElementById('paymentAmount');
+        const paymentTotal = document.getElementById('paymentTotal');
+        const paymentClose = document.getElementById('paymentClose');
+        const paymentCancel = document.getElementById('paymentCancel');
+        const paymentComplete = document.getElementById('paymentComplete');
+        const paymentMethods = document.querySelectorAll('.payment-method');
+        
+        // Manual Payment Elements
+        const manualPaymentSection = document.getElementById('manualPaymentSection');
+        const fileUploadContainer = document.getElementById('fileUploadContainer');
+        const fileUploadInput = document.getElementById('fileUploadInput');
+        const filePreview = document.getElementById('filePreview');
+        const filePreviewImage = document.getElementById('filePreviewImage');
+        const filePreviewName = document.getElementById('filePreviewName');
+        const filePreviewRemove = document.getElementById('filePreviewRemove');
+        const whatsappButton = document.getElementById('whatsappButton');
+        
         // Initialize the app
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await initApp();
+                
+                // Hide loading screen after initialization
+                setTimeout(function() {
+                    loadingOverlay.classList.add('hide');
+                }, 1000);
+            } catch (error) {
+                console.error("Initialization error:", error);
+                showToast("Failed to initialize: " + error.message, "error");
+                loadingOverlay.classList.add('hide');
+            }
+        });
+        
+        // Initialize the app
+        async function initApp() {
+            // Wait for auth to initialize
+            await new Promise(resolve => {
+                const unsubscribe = auth.onAuthStateChanged(user => {
+                    unsubscribe();
+                    resolve();
+                });
+            });
+            
+            // Check if running in Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.expand(); // Expand the web app to full view
+                
+                // Get user data from Telegram
+                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    userId = tg.initDataUnsafe.user.id.toString();
+                    userName = `${tg.initDataUnsafe.user.first_name} ${tg.initDataUnsafe.user.last_name || ''}`.trim();
+                    
+                    // Load user data
+                    await loadUserData(userId);
+                } else {
+                    showToast("Authentication failed. Using test mode.", "warning");
+                    
+                    // For testing only - use a default user ID
+                    userId = '5966603094';
+                    userName = 'Test User';
+                    userEmail = 'customer@email.com';
+                    await loadUserData(userId);
+                }
+            } else {
+                // For testing only - use a default user ID
+                userId = '5966603094';
+                userName = 'Test User';
+                userEmail = 'customer@email.com';
+                await loadUserData(userId);
+            }
+            
+            // Check for internet connection
+            if (!navigator.onLine) {
+                showToast("No internet connection. Some features may not work properly.", "warning");
+            }
+
             // Load templates from Firebase
             loadTemplates();
             
             // Set up event listeners
             setupEventListeners();
-        });
+        }
+        
+        // Load user data from Firestore
+        async function loadUserData(userId) {
+            try {
+                if (!db) {
+                    throw new Error("Database not initialized");
+                }
+                
+                const userRef = db.collection("users").doc(userId);
+                const doc = await userRef.get();
+                
+                if (doc.exists) {
+                    const userData = doc.data();
+                    
+                    // Update user balance
+                    userBalance = userData.balance || 0;
+                } else {
+                    showToast("User data not found. Creating new user profile.", "warning");
+                    
+                    // Create a new user document
+                    await userRef.set({
+                        user_id: userId,
+                        name: userName,
+                        email: userEmail || '',
+                        balance: 0,
+                        created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    userBalance = 0;
+                }
+            } catch (error) {
+                console.error("Error loading user data:", error);
+                showToast("Error loading user data: " + error.message, "error");
+                
+                // Set default values for offline mode
+                userBalance = 0;
+            }
+        }
         
         // Load templates from Firebase
         function loadTemplates(filter = 'all') {
@@ -1412,6 +1987,11 @@
         
         // Display template in modal
         function displayTemplateInModal(template, templateId) {
+            selectedTemplate = {
+                id: templateId,
+                ...template
+            };
+            
             modalTitle.textContent = template.name || 'Template Preview';
             
             // Set image with fallback
@@ -1475,13 +2055,56 @@
         
         // Buy template
         function buyTemplate(templateId) {
-            // In a real app, you would redirect to checkout
-            // For now, just show a toast notification
-            showToast("Redirecting to checkout...", "success");
-            
-            // Close modal if open
+            // Close preview modal
             previewModal.classList.remove('show');
-            document.body.style.overflow = '';
+            
+            // Get template details
+            const template = selectedTemplate;
+            
+            if (!template) {
+                showToast("Template information not found", "error");
+                return;
+            }
+            
+            // Update payment modal with template details
+            paymentTemplate.textContent = template.name || 'Template';
+            paymentAmount.textContent = formatCurrency(template.price || 0);
+            paymentTotal.textContent = formatCurrency((template.price || 0) + serviceFee);
+            selectedAmount = template.price || 0;
+            
+            // Reset payment method to card
+            paymentMethods.forEach(method => {
+                method.classList.remove('active');
+            });
+            document.querySelector('.payment-method[data-method="card"]').classList.add('active');
+            selectedMethod = 'card';
+            
+            // Hide manual payment section
+            manualPaymentSection.style.display = 'none';
+            
+            // Show payment modal
+            paymentModal.classList.add('show');
+            
+            // Update WhatsApp link
+            updateWhatsAppLink();
+        }
+        
+        // Update WhatsApp link with current amount and user ID
+        function updateWhatsAppLink() {
+            const baseUrl = "https://wa.me/2347067479043?text=";
+            const message = `Hello VeltraWave, I just made a payment of ${formatCurrency(selectedAmount)} to purchase the template: ${selectedTemplate?.name || 'Template'}. My VeltraWave ID is: ${userId}. Please verify and process my order.`;
+            const encodedMessage = encodeURIComponent(message);
+            whatsappButton.href = baseUrl + encodedMessage;
+        }
+        
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount).replace('NGN', '₦');
         }
         
         // Set up event listeners
@@ -1569,6 +2192,85 @@
                 }
             });
             
+            // Payment Modal Events
+            paymentClose.addEventListener('click', () => {
+                paymentModal.classList.remove('show');
+            });
+            
+            paymentCancel.addEventListener('click', () => {
+                paymentModal.classList.remove('show');
+            });
+            
+            paymentComplete.addEventListener('click', () => {
+                if (selectedMethod === 'manual') {
+                    // For manual payment, check if receipt is uploaded
+                    if (!window.paymentScreenshot) {
+                        showToast("Please upload your payment receipt", "error");
+                        return;
+                    }
+                    
+                    // Process manual payment
+                    processManualPayment();
+                } else {
+                    // For other payment methods, initiate Paystack payment
+                    initiatePaystackPayment();
+                }
+            });
+            
+            // Payment Method Selection
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    // Clear active class from all methods
+                    paymentMethods.forEach(m => {
+                        m.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked method
+                    this.classList.add('active');
+                    
+                    // Update selected method
+                    selectedMethod = this.dataset.method;
+                    
+                    // Show/hide manual payment section
+                    if (selectedMethod === 'manual') {
+                        manualPaymentSection.style.display = 'block';
+                    } else {
+                        manualPaymentSection.style.display = 'none';
+                    }
+                });
+            });
+            
+            // File Upload Container Click
+            fileUploadContainer.addEventListener('click', function() {
+                fileUploadInput.click();
+            });
+            
+            // File Upload Input Change
+            fileUploadInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(event) {
+                        filePreviewImage.src = event.target.result;
+                        filePreviewName.textContent = file.name;
+                        filePreview.classList.add('show');
+                        
+                        // Store the file for later use
+                        window.paymentScreenshot = file;
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // File Preview Remove
+            filePreviewRemove.addEventListener('click', function() {
+                filePreview.classList.remove('show');
+                fileUploadInput.value = '';
+                window.paymentScreenshot = null;
+            });
+            
             // Custom Request Form Submission
             customRequestForm.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -1630,6 +2332,163 @@
                     submitButton.disabled = false;
                 }
             });
+        }
+        
+        // Process manual payment
+        async function processManualPayment() {
+            // Show loading overlay
+            loadingOverlay.classList.remove('hide');
+            
+            try {
+                // Upload receipt to Firebase Storage
+                const storageRef = storage.ref();
+                const fileRef = storageRef.child(`receipts/${userId}_${Date.now()}_${window.paymentScreenshot.name}`);
+                
+                // Upload file
+                await fileRef.put(window.paymentScreenshot);
+                
+                // Get download URL
+                const downloadURL = await fileRef.getDownloadURL();
+                
+                // Create transaction record
+                const transactionData = {
+                    user_id: userId,
+                    template_id: selectedTemplate.id,
+                    template_name: selectedTemplate.name,
+                    amount: selectedAmount,
+                    service_fee: serviceFee,
+                    total_paid: selectedAmount + serviceFee,
+                    payment_method: 'manual',
+                    receipt_url: downloadURL,
+                    status: 'pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Save transaction to Firestore
+                await db.collection('transactions').add(transactionData);
+                
+                // Close payment modal
+                paymentModal.classList.remove('show');
+                
+                // Show success toast
+                showToast("Your payment has been submitted for verification. We'll process your order soon.", "success");
+                
+                // Reset file upload
+                filePreview.classList.remove('show');
+                fileUploadInput.value = '';
+                window.paymentScreenshot = null;
+            } catch (error) {
+                console.error("Error processing manual payment:", error);
+                showToast("Error processing payment: " + error.message, "error");
+            } finally {
+                // Hide loading overlay
+                loadingOverlay.classList.add('hide');
+            }
+        }
+        
+        // Initiate Paystack payment
+        function initiatePaystackPayment() {
+            // Check for internet connection
+            if (!navigator.onLine) {
+                showToast("No internet connection. Please connect to the internet and try again.", "error");
+                return;
+            }
+            
+            // Show loading overlay
+            loadingOverlay.classList.remove('hide');
+            
+            // Generate a reference
+            const reference = 'VW_' + Math.floor(Math.random() * 1000000000) + '_' + new Date().getTime();
+            
+            try {
+                // Verify Paystack is loaded
+                if (typeof PaystackPop === 'undefined') {
+                    throw new Error("Payment service not available");
+                }
+                
+                // Get Paystack public key
+                const paystackPublicKey = "pk_live_fbcac5afea56a1cb73483dd6f0f061d201fc7341";
+                
+                if (!paystackPublicKey) {
+                    console.error("Paystack public key not found");
+                    throw new Error("Payment configuration error");
+                }
+                
+                // Initialize Paystack
+                const handler = PaystackPop.setup({
+                    key: paystackPublicKey,
+                    email: userEmail || 'customer@email.com',
+                    amount: (selectedAmount + serviceFee) * 100, // Convert to kobo
+                    currency: 'NGN',
+                    ref: reference,
+                    metadata: {
+                        user_id: userId,
+                        template_id: selectedTemplate.id,
+                        template_name: selectedTemplate.name,
+                        service_fee: serviceFee,
+                        actual_amount: selectedAmount
+                    },
+                    callback: function(response) {
+                        handlePaymentSuccess(response);
+                    },
+                    onClose: function() {
+                        loadingOverlay.classList.add('hide');
+                        showToast("Payment window closed", "warning");
+                        paymentModal.classList.remove('show');
+                    }
+                });
+                
+                // Open Paystack payment window
+                handler.openIframe();
+            } catch (error) {
+                console.error("Payment Error:", error);
+                showToast("Payment failed: " + error.message + ". Please check your internet connection.", "error");
+                loadingOverlay.classList.add('hide');
+            }
+        }
+        
+        // Handle successful payment
+        async function handlePaymentSuccess(response) {
+            try {
+                // Show processing message
+                showToast('Processing your payment...', "success");
+                
+                // Create transaction record
+                const transactionData = {
+                    user_id: userId,
+                    template_id: selectedTemplate.id,
+                    template_name: selectedTemplate.name,
+                    amount: selectedAmount,
+                    service_fee: serviceFee,
+                    total_paid: selectedAmount + serviceFee,
+                    payment_method: selectedMethod,
+                    reference: response.reference,
+                    status: 'success',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Save transaction to Firestore
+                await db.collection('transactions').add(transactionData);
+                
+                // Close payment modal
+                paymentModal.classList.remove('show');
+                
+                // Show success toast
+                showToast('Payment successful! Your template is ready for download.', "success");
+                
+                // Simulate download start
+                setTimeout(() => {
+                    showToast('Download started! Check your downloads folder.', "success");
+                }, 1500);
+            } catch (error) {
+                console.error("Error handling payment success:", error);
+                
+                // Show error notification
+                showToast('Error processing payment: ' + error.message, "error");
+            } finally {
+                // Hide loading overlay
+                loadingOverlay.classList.add('hide');
+            }
         }
         
         // Show toast notification
