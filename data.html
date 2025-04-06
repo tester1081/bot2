@@ -1491,7 +1491,7 @@ body {
   const DATA_PLANS = {
       "MTN": {
           "SME": [
-              { id: 1, name: "500MB", price: 300, validity: "1 Month" },
+              { id: 1, name: "500MB", price: 139, validity: "1 Month" },
               { id: 2, name: "1GB", price: 619, validity: "1 Month" },
               { id: 3, name: "2GB", price: 1229, validity: "1 Month" },
               { id: 4, name: "3GB", price: 1839, validity: "1 Month" },
@@ -2575,47 +2575,97 @@ body {
           
           // Check if user has enough balance
           if (userBalance < selectedDataPlan.price) {
-              showToast('Insufficient balance. Please top up your wallet.', 'error');
+              showToast('VeltraWave error contact admin', 'error');
               setLoading(false);
               return;
           }
           
-          // Create request in Firestore
-          const requestData = {
-              userId: currentUser.uid,
-              network: selectedNetwork,
-              networkId: selectedNetworkId,
-              planType: selectedPlanType,
-              planId: selectedDataPlan.id,
-              planName: selectedDataPlan.name,
-              amount: selectedDataPlan.price,
-              phoneNumber: phoneNumberInput.value,
-              status: 'pending',
-              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          // Generate a unique request ID
+          const requestId = `Data_${Date.now()}${Math.floor(Math.random() * 1000)}`;
+          
+          // Prepare the request payload
+          const payload = {
+              network: selectedNetworkId,
+              phone: phoneNumberInput.value,
+              data_plan: selectedDataPlan.id,
+              bypass: false,
+              "request-id": requestId
           };
           
-          const requestRef = await db.collection('dataRequests').add(requestData);
+          console.log("Sending API request payload:", payload);
           
-          // Deduct balance from user's wallet
-          await db.collection('users').doc(currentUser.uid).update({
-              balance: firebase.firestore.FieldValue.increment(-selectedDataPlan.price)
+          // Make the API call
+          const response = await fetch('https://n3tdata.com/api/data', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Token ${ACCESS_TOKEN}`
+              },
+              body: JSON.stringify(payload)
           });
           
-          // Refresh user balance
-          await fetchUserBalance();
+          const responseData = await response.json();
+          console.log("API Response:", responseData);
           
-          // Show success message
-          showToast('Data purchase request submitted successfully!', 'success');
-          
-          // Refresh data requests
-          await fetchDataRequests();
-          
-          // Reset form
-          phoneNumberInput.value = '';
-          resetForm();
+          if (responseData.status === 'success') {
+              // Create request in Firestore
+              const requestData = {
+                  userId: currentUser.uid,
+                  network: selectedNetwork,
+                  networkId: selectedNetworkId,
+                  planType: selectedPlanType,
+                  planId: selectedDataPlan.id,
+                  planName: selectedDataPlan.name,
+                  amount: selectedDataPlan.price,
+                  phoneNumber: phoneNumberInput.value,
+                  status: 'completed',
+                  apiResponse: responseData,
+                  timestamp: firebase.firestore.FieldValue.serverTimestamp()
+              };
+              
+              const requestRef = await db.collection('dataRequests').add(requestData);
+              
+              // Deduct balance from user's wallet
+              await db.collection('users').doc(currentUser.uid).update({
+                  balance: firebase.firestore.FieldValue.increment(-selectedDataPlan.price)
+              });
+              
+              // Refresh user balance
+              await fetchUserBalance();
+              
+              // Show success message
+              showToast(`${selectedDataPlan.name} data bundle has been purchased for ${phoneNumberInput.value}`, 'success');
+              
+              // Refresh data requests
+              await fetchDataRequests();
+              
+              // Reset form
+              phoneNumberInput.value = '';
+              resetForm();
+          } else {
+              // Handle API error
+              showToast(responseData.message || 'VeltraWave error contact admin', 'error');
+              
+              // Create failed request in Firestore
+              const requestData = {
+                  userId: currentUser.uid,
+                  network: selectedNetwork,
+                  networkId: selectedNetworkId,
+                  planType: selectedPlanType,
+                  planId: selectedDataPlan.id,
+                  planName: selectedDataPlan.name,
+                  amount: selectedDataPlan.price,
+                  phoneNumber: phoneNumberInput.value,
+                  status: 'rejected',
+                  apiResponse: responseData,
+                  timestamp: firebase.firestore.FieldValue.serverTimestamp()
+              };
+              
+              await db.collection('dataRequests').add(requestData);
+          }
       } catch (error) {
           console.error("Error processing purchase:", error);
-          showToast('An error occurred while processing your request. Please try again.', 'error');
+          showToast('VeltraWave error contact admin', 'error');
       } finally {
           setLoading(false);
       }
@@ -2628,7 +2678,7 @@ body {
           
           // Check if user has enough balance
           if (userBalance < selectedManualDataPlan.price) {
-              showToast('Insufficient balance. Please top up your wallet.', 'error');
+              showToast('VeltraWave error contact admin', 'error');
               setLoading(false);
               return;
           }
@@ -2668,7 +2718,7 @@ body {
           resetForm();
       } catch (error) {
           console.error("Error processing purchase:", error);
-          showToast('An error occurred while processing your request. Please try again.', 'error');
+          showToast('VeltraWave error contact admin', 'error');
       } finally {
           setLoading(false);
       }
