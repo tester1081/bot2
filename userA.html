@@ -988,58 +988,58 @@
                 </div>
             </div>
             
-                <div class="sidebar-menu">
-        <div class="menu-label">Main</div>
-        <a href="admin.html" class="menu-item">
-            <i class="fas fa-home"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="overviewA.html" class="menu-item">
-            <i class="fas fa-chart-line"></i>
-            <span>Overview</span>
-        </a>
-        <a href="userA.html" class="menu-item">
-            <i class="fas fa-users"></i>
-            <span>Users</span>
-        </a>
-        
-        <div class="menu-label">Management</div>
-        <a href="dataA.html" class="menu-item">
-            <i class="fas fa-wifi"></i>
-            <span>Data</span>
-        </a>
-        <a href="storeA.html" class="menu-item">
-            <i class="fas fa-store"></i>
-            <span>Store</span>
-        </a>
-        <a href="requestA.html" class="menu-item">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Requests</span>
-        </a>
-        <a href="reviewA.html" class="menu-item">
-            <i class="fas fa-star"></i>
-            <span>Reviews</span>
-        </a>
-        <a href="topupA.html" class="menu-item">
-            <i class="fas fa-gamepad"></i>
-            <span>Game Top-up</span>
-        </a>
-        <a href="templateA.html" class="menu-item">
-            <i class="fas fa-file-alt"></i>
-            <span>Templates</span>
-        </a>
-        
-        <div class="menu-label">Settings</div>
-        <a href="settingsA.html" class="menu-item">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-        </a>
-        <a href="#" class="menu-item" id="logout-btn">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-        </a>
-    </div>
-</div>
+            <div class="sidebar-menu">
+                <div class="menu-label">Main</div>
+                <a href="admin.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="overviewA.html" class="menu-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="userA.html" class="menu-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+                
+                <div class="menu-label">Management</div>
+                <a href="dataA.html" class="menu-item">
+                    <i class="fas fa-wifi"></i>
+                    <span>Data</span>
+                </a>
+                <a href="storeA.html" class="menu-item">
+                    <i class="fas fa-store"></i>
+                    <span>Store</span>
+                </a>
+                <a href="requestA.html" class="menu-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Requests</span>
+                </a>
+                <a href="reviewA.html" class="menu-item">
+                    <i class="fas fa-star"></i>
+                    <span>Reviews</span>
+                </a>
+                <a href="topupA.html" class="menu-item">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Game Top-up</span>
+                </a>
+                <a href="templateA.html" class="menu-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Templates</span>
+                </a>
+                
+                <div class="menu-label">Settings</div>
+                <a href="settingsA.html" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="menu-item" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
         
         <!-- Main Content -->
         <div class="main-content">
@@ -1557,11 +1557,8 @@
         const adminDashboard = document.getElementById('adminDashboard');
         const sidebarLinks = document.querySelectorAll('.sidebar-menu-link');
         const contentSections = document.querySelectorAll('.content-section');
-        const logoutBtn = document.getElementById('logoutBtn');
+        const logoutBtn = document.getElementById('logout-btn');
         const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-        const userInitials = document.getElementById('userInitials');
-        const userName = document.getElementById('userName');
         
         // User Detail Modal Elements
         const userDetailModal = document.getElementById('userDetailModal');
@@ -1657,7 +1654,7 @@
                     checkAdminStatus(user);
                 } else {
                     // Redirect to login page
-                    window.location.href = "/login.html";
+                    window.location.href = "login.html";
                 }
             });
             
@@ -1679,13 +1676,13 @@
                     // User is not an admin
                     showToast('You do not have admin privileges', 'error');
                     auth.signOut();
-                    window.location.href = "/login.html";
+                    window.location.href = "login.html";
                 }
             } catch (error) {
                 console.error('Error checking admin status:', error);
                 showToast('Error checking admin status', 'error');
                 auth.signOut();
-                window.location.href = "/login.html";
+                window.location.href = "login.html";
             }
         }
         
@@ -1700,17 +1697,26 @@
         
         // Update user info in sidebar
         function updateUserInfo(user) {
-            // Set user initials
-            const email = user.email || '';
-            const initials = email.charAt(0).toUpperCase();
-            userInitials.textContent = initials;
+            // Set user name in sidebar if available
+            if (document.querySelector('.sidebar-user-name')) {
+                document.querySelector('.sidebar-user-name').textContent = user.displayName || user.email;
+            }
             
-            // Set user name
-            userName.textContent = user.displayName || email;
+            // Set user initials if available
+            if (document.getElementById('userInitials')) {
+                const email = user.email || '';
+                const initials = email.charAt(0).toUpperCase();
+                document.getElementById('userInitials').textContent = initials;
+            }
             
             // Update admin settings
-            document.getElementById('adminEmail').value = email;
-            document.getElementById('adminName').value = user.displayName || '';
+            if (document.getElementById('adminEmail')) {
+                document.getElementById('adminEmail').value = user.email;
+            }
+            
+            if (document.getElementById('adminName')) {
+                document.getElementById('adminName').value = user.displayName || '';
+            }
         }
         
         // Load admin data
@@ -1722,9 +1728,11 @@
                     const adminData = adminDoc.data();
                     
                     // Update user name if available
-                    if (adminData.name) {
-                        userName.textContent = adminData.name;
-                        document.getElementById('adminName').value = adminData.name;
+                    if (adminData.name && document.querySelector('.sidebar-user-name')) {
+                        document.querySelector('.sidebar-user-name').textContent = adminData.name;
+                        if (document.getElementById('adminName')) {
+                            document.getElementById('adminName').value = adminData.name;
+                        }
                     }
                 }
             } catch (error) {
@@ -2877,10 +2885,14 @@
             });
             
             // Save settings button
-            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            if (document.getElementById('saveSettingsBtn')) {
+                document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            }
             
             // Save notification settings button
-            document.getElementById('saveNotificationSettingsBtn').addEventListener('click', saveNotificationSettings);
+            if (document.getElementById('saveNotificationSettingsBtn')) {
+                document.getElementById('saveNotificationSettingsBtn').addEventListener('click', saveNotificationSettings);
+            }
             
             // Tabs
             tabs.forEach(tab => {
@@ -2941,7 +2953,7 @@
             try {
                 await auth.signOut();
                 // Redirect to login page
-                window.location.href = "/login.html";
+                window.location.href = "login.html";
             } catch (error) {
                 console.error('Logout error:', error);
                 showToast('Logout failed: ' + error.message, 'error');
@@ -3067,7 +3079,9 @@
                 });
                 
                 // Update UI
-                userName.textContent = adminName;
+                if (document.querySelector('.sidebar-user-name')) {
+                    document.querySelector('.sidebar-user-name').textContent = adminName;
+                }
                 
                 showToast('Settings saved successfully', 'success');
             } catch (error) {
