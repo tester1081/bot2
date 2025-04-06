@@ -1045,6 +1045,10 @@ body {
   backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
+  justify-content: center15,30,0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
   justify-content: center;
   z-index: 1000;
   opacity: 0;
@@ -1491,7 +1495,7 @@ body {
   const DATA_PLANS = {
       "MTN": {
           "SME": [
-              { id: 1, name: "500MB", price: 139, validity: "1 Month" },
+              { id: 1, name: "500MB", price: 350, validity: "1 Month" },
               { id: 2, name: "1GB", price: 619, validity: "1 Month" },
               { id: 3, name: "2GB", price: 1229, validity: "1 Month" },
               { id: 4, name: "3GB", price: 1839, validity: "1 Month" },
@@ -2575,7 +2579,7 @@ body {
           
           // Check if user has enough balance
           if (userBalance < selectedDataPlan.price) {
-              showToast('VeltraWave error contact admin', 'error');
+              showToast('Insufficient balance. Please top up your wallet.', 'error');
               setLoading(false);
               return;
           }
@@ -2643,8 +2647,8 @@ body {
               phoneNumberInput.value = '';
               resetForm();
           } else {
-              // Handle API error
-              showToast(responseData.message || 'VeltraWave error contact admin', 'error');
+              // Handle API error - show VeltraWave error contact admin
+              showToast('VeltraWave error contact admin', 'error');
               
               // Create failed request in Firestore
               const requestData = {
@@ -2678,7 +2682,7 @@ body {
           
           // Check if user has enough balance
           if (userBalance < selectedManualDataPlan.price) {
-              showToast('VeltraWave error contact admin', 'error');
+              showToast('Insufficient balance. Please top up your wallet.', 'error');
               setLoading(false);
               return;
           }
